@@ -1,0 +1,3 @@
+pandas
+notion-client
+python-dotenv
