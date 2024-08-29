@@ -134,7 +134,20 @@ class Kobo2Notion:
             logger.info(
                 f"Page for '{book_title}' already exists, id: {existing_page_id}"
             )
-            return existing_page_id
+            # Delete the highlight page if it exists (set archived to true)
+            original_highlights = self.notion_client.blocks.children.list(
+                block_id=existing_page_id
+            )
+            if len(original_highlights["results"]):
+                self.notion_client.pages.update(
+                    page_id=original_highlights["results"][0]["id"], archived=True
+                )
+            # Create a new empty highlight page
+            highlight_page_id = self.notion_client.pages.create(
+                parent={"type": "page_id", "page_id": existing_page_id},
+                properties={"title": [{"text": {"content": "Highlights"}}]},
+            )
+            return highlight_page_id["id"]
         else:
             page_ids = self.create_notion_page(book_title)
             logger.info(
@@ -146,7 +159,9 @@ class Kobo2Notion:
         logger.info("Starting bookmark synchronization")
         book_titles = self.get_book_titles()
         for book_title in book_titles:
+            # Get the highlight page ID
             highlight_page_id = self.get_or_create_page(book_title)
+            # Get the highlights from the KoboReader.sqlite file
             bookmarks = self.load_bookmark(book_title, highlight_page_id)
             # Remove the leading and trailing whitespace (Source: https://github.com/starsdog/export_kobo)
             for j in range(0, len(bookmarks)):
