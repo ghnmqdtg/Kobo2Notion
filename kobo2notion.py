@@ -27,12 +27,15 @@ class Kobo2Notion:
         self.notion_client = Client(auth=notion_api_key)
         self.notion_db_id = notion_db_id
         self.bookmarks = None
+        logger.info("Kobo2Notion instance initialized")
 
     def connect_to_sqlite(self):
         try:
-            return sqlite3.connect(self.sqlite_path)
+            connection = sqlite3.connect(self.sqlite_path)
+            logger.info(f"Connected to SQLite database: {self.sqlite_path}")
+            return connection
         except sqlite3.Error as e:
-            print(f"Error connecting to SQLite: {e}")
+            logger.error(f"Error connecting to SQLite: {e}")
             return None
 
     def get_book_titles(self):
@@ -54,14 +57,9 @@ class Kobo2Notion:
         """
         # Fetch the book titles from the SQLite database
         books_in_file = pd.read_sql_query(query, self.connection)
-        titles = []
-        for i in range(0, len(books_in_file)):
-            if books_in_file["Book Title"][i] != None:
-                titles.append(books_in_file["Book Title"][i])
-        # Log the book titles
-        if DEV_MODE:
-            print(f"Book titles ({len(titles)}): {titles}")
-
+        titles = [title for title in books_in_file["Book Title"] if title is not None]
+        logger.info(f"Retrieved {len(titles)} book titles")
+        logger.debug(f"Book titles: {titles}")
         return titles
 
     def load_bookmarks(self, title):
@@ -96,9 +94,11 @@ if __name__ == "__main__":
     # Copy the KoboReader.sqlite file to temp/KoboReader.sqlite
     os.system(f"cp {os.environ['SQLITE_SOURCE']} temp/KoboReader.sqlite")
 
+    logger.info("Initializing Kobo2Notion instance")
     kobo2notion = Kobo2Notion(
         sqlite_path="temp/KoboReader.sqlite",
         notion_api_key=os.environ["NOTION_API_KEY"],
         notion_db_id=os.environ["NOTION_DB_ID"],
     )
     kobo2notion.sync_bookmarks()
+    logger.info("Kobo2Notion script completed")
