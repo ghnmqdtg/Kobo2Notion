@@ -2,12 +2,22 @@
 import os
 import json
 import dotenv
+import logging
 import sqlite3
 import pandas as pd
 from notion_client import Client
+from utils import CustomFormatter
 
 # Load environment variables
 dotenv.load_dotenv()
+# Set up logging
+logger = logging.getLogger("kobo2notion")
+logger.setLevel(logging.DEBUG)
+
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+ch.setFormatter(CustomFormatter())
+logger.addHandler(ch)
 
 
 class Kobo2Notion:
