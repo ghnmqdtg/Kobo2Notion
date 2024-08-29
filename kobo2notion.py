@@ -62,8 +62,37 @@ class Kobo2Notion:
         logger.debug(f"Book titles: {titles}")
         return titles
 
-    def load_bookmarks(self, title):
-        raise NotImplementedError
+    def load_bookmark(self, title, highlight_page_id):
+        books_in_file = pd.read_sql(
+            f"SELECT c.ContentId AS 'Content ID', c.Title AS 'Book Title' FROM content AS c WHERE c.Title LIKE '%{title}%'",
+            self.connection,
+        )
+        logger.debug(f"Books in file: {books_in_file}")
+        # Load the bookmark from the SQLite database
+        bookmark_df = pd.read_sql(
+            f"SELECT VolumeID AS 'Volume ID', Text AS 'Highlight', Annotation, DateCreated AS 'Created On', Type FROM Bookmark Where VolumeID = '{books_in_file.iloc[0]['Content ID']}' ORDER BY 4 ASC",
+            self.connection,
+        )
+        logger.debug(f"Loaded {len(bookmark_df)} bookmarks for '{title}'")
+
+        return bookmark_df
+
+    def write_text(self, page_id, text, type):
+        try:
+            self.notion_client.blocks.children.append(
+                block_id=page_id,
+                children=[
+                    {
+                        "object": "block",
+                        "type": type,
+                        type: {
+                            "rich_text": [{"type": "text", "text": {"content": text}}]
+                        },
+                    }
+                ],
+            )
+        except Exception as e:
+            print(e)
 
     def check_page_exists(self, book_title):
         logger.info(f"Checking if page exists for book: {book_title}")
@@ -118,6 +147,34 @@ class Kobo2Notion:
         book_titles = self.get_book_titles()
         for book_title in book_titles:
             highlight_page_id = self.get_or_create_page(book_title)
+            bookmarks = self.load_bookmark(book_title, highlight_page_id)
+            # Remove the leading and trailing whitespace (Source: https://github.com/starsdog/export_kobo)
+            for j in range(0, len(bookmarks)):
+                if bookmarks["Highlight"][j] != None:
+                    bookmarks.loc[j, "Highlight"] = bookmarks["Highlight"][j].strip()
+                    # Remove \n from the highlight
+                    bookmarks.loc[j, "Highlight"] = bookmarks["Highlight"][j].replace(
+                        "\n", ""
+                    )
+            # Write the highlights to the Notion page
+            for x in range(0, len(bookmarks)):
+                if bookmarks["Type"][x] == "highlight":
+                    self.write_text(
+                        highlight_page_id, bookmarks["Highlight"][x], "paragraph"
+                    )
+                else:
+                    if bookmarks["Annotation"][x] != None:
+                        self.write_text(
+                            highlight_page_id, bookmarks["Annotation"][x], "quote"
+                        )
+                    if bookmarks["Highlight"][x] != None:
+                        self.write_text(
+                            highlight_page_id, bookmarks["Highlight"][x], "paragraph"
+                        )
+
+            logger.info(f"Synced {len(bookmarks)} bookmarks for '{book_title}'")
+
+        logger.info("Bookmark synchronization completed")
 
 
 if __name__ == "__main__":
