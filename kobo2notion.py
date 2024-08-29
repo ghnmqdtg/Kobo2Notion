@@ -65,17 +65,59 @@ class Kobo2Notion:
     def load_bookmarks(self, title):
         raise NotImplementedError
 
-    def check_page_exists(self, book_title, text):
-        raise NotImplementedError
+    def check_page_exists(self, book_title):
+        logger.info(f"Checking if page exists for book: {book_title}")
+        # Check if the page exists
+        query = self.notion_client.databases.query(
+            database_id=self.notion_db_id,
+            filter={"property": "Title", "title": {"equals": book_title}},
+        )
+        exists = bool(query["results"])
+        logger.info(f"Page for '{book_title}' exists: {exists}")
+        return query["results"][0]["id"] if exists else None
 
-    def create_notion_page(self, titles):
-        raise NotImplementedError
+    def create_notion_page(self, book_title):
+        logger.info(f"Creating new page for book: {book_title}")
+        # Create a new page
+        new_page = self.notion_client.pages.create(
+            parent={"database_id": self.notion_db_id},
+            properties={"Title": {"title": [{"text": {"content": book_title}}]}},
+        )
+        logger.debug(f"Created new page for '{book_title}': {new_page['id']}")
+
+        # Create a new highlight page
+        highlight_page = self.notion_client.pages.create(
+            parent={"type": "page_id", "page_id": new_page["id"]},
+            properties={"title": [{"text": {"content": "Highlights"}}]},
+        )
+        logger.debug(
+            f"Created highlight page for '{book_title}': {highlight_page['id']}"
+        )
+
+        return {
+            "new_page_id": new_page["id"],
+            "highlight_page_id": highlight_page["id"],
+        }
+
+    def get_or_create_page(self, book_title):
+        existing_page_id = self.check_page_exists(book_title)
+        if existing_page_id:
+            logger.info(
+                f"Page for '{book_title}' already exists, id: {existing_page_id}"
+            )
+            return existing_page_id
+        else:
+            page_ids = self.create_notion_page(book_title)
+            logger.info(
+                f"Created new pages for '{book_title}'. Main page ID: {page_ids['new_page_id']}, Highlight page ID: {page_ids['highlight_page_id']}"
+            )
+            return page_ids["highlight_page_id"]
 
     def sync_bookmarks(self):
-        # Step 1: Get the book titles
+        logger.info("Starting bookmark synchronization")
         book_titles = self.get_book_titles()
-        # Step 2: Check if the book exists in Notion (if not, create it)
-        raise NotImplementedError
+        for book_title in book_titles:
+            highlight_page_id = self.get_or_create_page(book_title)
 
 
 if __name__ == "__main__":
