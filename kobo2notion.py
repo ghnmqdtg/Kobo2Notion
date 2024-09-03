@@ -5,6 +5,7 @@ import dotenv
 import logging
 import sqlite3
 import pandas as pd
+from tqdm import tqdm
 from notion_client import Client
 from utils import CustomFormatter
 
