@@ -4,6 +4,7 @@ import json
 import dotenv
 import logging
 import sqlite3
+import requests
 import pandas as pd
 from tqdm import tqdm
 from notion_client import Client
@@ -95,6 +96,33 @@ class Kobo2Notion:
         except Exception as e:
             print(e)
 
+    def fetch_book_cover(self, book_title):
+        # Fetch the book cover from google books API
+        # Step 1: Find the id of the book by GET https://www.googleapis.com/books/v1/volumes?q={book_title}
+        response = requests.get(
+            f"https://www.googleapis.com/books/v1/volumes?q={book_title}"
+        )
+        data = response.json()
+        # Step 2: Get the image link from the book info
+        book_id = data["items"][0]["id"]
+        # Step 3: Download the image and save it to the temp directory
+        # image_url = f"https://books.google.com/books/content?id={book_id}&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+        # This url can get larger image, but it's not guaranteed to be the same size as the other url
+        image_url = f"https://books.google.com/books/publisher/content/images/frontcover/{book_id}?fife=w480-h690"
+        image_response = requests.get(image_url)
+        # Check if the image is valid
+        if image_response.status_code != 200:
+            logger.error(
+                f"Failed to fetch image for '{book_title}': {image_response.status_code}"
+            )
+            return None
+        # # Save the image to the temp directory
+        # with open(f"temp/{book_title}.jpg", "wb") as f:
+        #     f.write(image_response.content)
+        # # Step 4: Return the path of the image
+        # return f"temp/{book_title}.jpg"
+        return image_url
+
     def check_page_exists(self, book_title):
         logger.info(f"Checking if page exists for book: {book_title}")
         # Check if the page exists
@@ -106,12 +134,23 @@ class Kobo2Notion:
         logger.info(f"Page for '{book_title}' exists: {exists}")
         return query["results"][0]["id"] if exists else None
 
-    def create_notion_page(self, book_title):
+    def create_notion_page(self, book_title, cover_url):
         logger.info(f"Creating new page for book: {book_title}")
         # Create a new page
         new_page = self.notion_client.pages.create(
             parent={"database_id": self.notion_db_id},
-            properties={"Title": {"title": [{"text": {"content": book_title}}]}},
+            cover={
+                "type": "external",
+                "external": {"url": cover_url},
+            },
+            icon={
+                "type": "external",
+                "external": {"url": cover_url},
+            },
+            properties={
+                "Title": {"title": [{"text": {"content": book_title}}]},
+                "Category": {"select": {"name": "Books"}},
+            },
         )
         logger.debug(f"Created new page for '{book_title}': {new_page['id']}")
 
@@ -130,10 +169,24 @@ class Kobo2Notion:
         }
 
     def get_or_create_page(self, book_title):
+        # Get the cover url
+        cover_url = self.fetch_book_cover(book_title)
         existing_page_id = self.check_page_exists(book_title)
         if existing_page_id:
             logger.info(
                 f"Page for '{book_title}' already exists, id: {existing_page_id}"
+            )
+            # Update the cover and icon (no matter if they are the same)
+            self.notion_client.pages.update(
+                page_id=existing_page_id,
+                cover={
+                    "type": "external",
+                    "external": {"url": cover_url},
+                },
+                icon={
+                    "type": "external",
+                    "external": {"url": cover_url},
+                },
             )
             # Delete the highlight page if it exists (set archived to true)
             original_highlights = self.notion_client.blocks.children.list(
@@ -148,22 +201,28 @@ class Kobo2Notion:
                 parent={"type": "page_id", "page_id": existing_page_id},
                 properties={"title": [{"text": {"content": "Highlights"}}]},
             )
-            return highlight_page_id["id"]
+            return {
+                "parent": existing_page_id,
+                "highlight": highlight_page_id["id"],
+            }
         else:
-            page_ids = self.create_notion_page(book_title)
+            page_ids = self.create_notion_page(book_title, cover_url)
             logger.info(
                 f"Created new pages for '{book_title}'. Main page ID: {page_ids['new_page_id']}, Highlight page ID: {page_ids['highlight_page_id']}"
             )
-            return page_ids["highlight_page_id"]
+            return {
+                "parent": page_ids["new_page_id"],
+                "highlight": page_ids["highlight_page_id"],
+            }
 
     def sync_bookmarks(self):
         logger.info("Starting bookmark synchronization")
         book_titles = self.get_book_titles()
         for book_title in book_titles:
             # Get the highlight page ID
-            highlight_page_id = self.get_or_create_page(book_title)
+            page_ids = self.get_or_create_page(book_title)
             # Get the highlights from the KoboReader.sqlite file
-            bookmarks = self.load_bookmark(book_title, highlight_page_id)
+            bookmarks = self.load_bookmark(book_title, page_ids["highlight"])
             # Remove the leading and trailing whitespace (Source: https://github.com/starsdog/export_kobo)
             for j in range(0, len(bookmarks)):
                 if bookmarks["Highlight"][j] != None:
@@ -173,19 +232,21 @@ class Kobo2Notion:
                         "\n", ""
                     )
             # Write the highlights to the Notion page
-            for x in range(0, len(bookmarks)):
+            for x in tqdm(range(0, len(bookmarks))):
                 if bookmarks["Type"][x] == "highlight":
                     self.write_text(
-                        highlight_page_id, bookmarks["Highlight"][x], "paragraph"
+                        page_ids["highlight"], bookmarks["Highlight"][x], "paragraph"
                     )
                 else:
                     if bookmarks["Annotation"][x] != None:
                         self.write_text(
-                            highlight_page_id, bookmarks["Annotation"][x], "quote"
+                            page_ids["highlight"], bookmarks["Annotation"][x], "quote"
                         )
                     if bookmarks["Highlight"][x] != None:
                         self.write_text(
-                            highlight_page_id, bookmarks["Highlight"][x], "paragraph"
+                            page_ids["highlight"],
+                            bookmarks["Highlight"][x],
+                            "paragraph",
                         )
 
             logger.info(f"Synced {len(bookmarks)} bookmarks for '{book_title}'")
