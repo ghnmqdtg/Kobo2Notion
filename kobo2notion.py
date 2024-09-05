@@ -44,14 +44,14 @@ class Kobo2Notion:
             SELECT DISTINCT 
                 c.Title AS 'Book Title',
                 c.isDownloaded, 
-                c.RestOfBookEstimate, 
+                c.Accessibility, 
                 c.EntitlementId, 
                 c.DownloadUrl, 
                 c.IsAbridged 
             FROM content AS c 
             WHERE 
                 c.isDownloaded = 'true' AND 
-                c.RestOfBookEstimate != 0 AND 
+                c.Accessibility = 1 AND 
                 c.EntitlementId IS NOT NULL AND 
                 c.DownloadUrl IS NOT NULL AND 
                 c.IsAbridged = 'false'
