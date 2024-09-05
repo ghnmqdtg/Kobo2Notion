@@ -136,29 +136,13 @@ class Kobo2Notion:
 
     def create_notion_page(self, book_title, cover_url):
         logger.info(f"Creating new page for book: {book_title}")
-        # Create a new page
-        new_page = self.notion_client.pages.create(
-            parent={"database_id": self.notion_db_id},
-            cover={
-                "type": "external",
-                "external": {"url": cover_url},
-            },
-            icon={
-                "type": "external",
-                "external": {"url": cover_url},
-            },
-            properties={
-                "Title": {"title": [{"text": {"content": book_title}}]},
-                "Category": {"select": {"name": "Books"}},
-            },
-        )
+
+        # Create main page
+        new_page = self._create_main_page(book_title, cover_url)
         logger.debug(f"Created new page for '{book_title}': {new_page['id']}")
 
-        # Create a new highlight page
-        highlight_page = self.notion_client.pages.create(
-            parent={"type": "page_id", "page_id": new_page["id"]},
-            properties={"title": [{"text": {"content": "Highlights"}}]},
-        )
+        # Create highlight page
+        highlight_page = self._create_highlight_page(new_page["id"])
         logger.debug(
             f"Created highlight page for '{book_title}': {highlight_page['id']}"
         )
@@ -169,51 +153,74 @@ class Kobo2Notion:
         }
 
     def get_or_create_page(self, book_title):
-        # Get the cover url
         cover_url = self.fetch_book_cover(book_title)
         existing_page_id = self.check_page_exists(book_title)
+
         if existing_page_id:
-            logger.info(
-                f"Page for '{book_title}' already exists, id: {existing_page_id}"
-            )
-            # Update the cover and icon (no matter if they are the same)
-            self.notion_client.pages.update(
-                page_id=existing_page_id,
-                cover={
-                    "type": "external",
-                    "external": {"url": cover_url},
-                },
-                icon={
-                    "type": "external",
-                    "external": {"url": cover_url},
-                },
-            )
-            # Delete the highlight page if it exists (set archived to true)
-            original_highlights = self.notion_client.blocks.children.list(
-                block_id=existing_page_id
-            )
-            if len(original_highlights["results"]):
-                self.notion_client.pages.update(
-                    page_id=original_highlights["results"][0]["id"], archived=True
-                )
-            # Create a new empty highlight page
-            highlight_page_id = self.notion_client.pages.create(
-                parent={"type": "page_id", "page_id": existing_page_id},
-                properties={"title": [{"text": {"content": "Highlights"}}]},
-            )
-            return {
-                "parent": existing_page_id,
-                "highlight": highlight_page_id["id"],
-            }
+            return self._update_existing_page(existing_page_id, cover_url)
         else:
-            page_ids = self.create_notion_page(book_title, cover_url)
-            logger.info(
-                f"Created new pages for '{book_title}'. Main page ID: {page_ids['new_page_id']}, Highlight page ID: {page_ids['highlight_page_id']}"
+            return self._create_new_pages(book_title, cover_url)
+
+    def _create_main_page(self, book_title, cover_url):
+        return self.notion_client.pages.create(
+            parent={"database_id": self.notion_db_id},
+            cover=self._get_cover_data(cover_url),
+            icon=self._get_cover_data(cover_url),
+            properties={
+                "Title": {"title": [{"text": {"content": book_title}}]},
+                "Category": {"select": {"name": "Books"}},
+            },
+        )
+
+    def _create_highlight_page(self, parent_id):
+        return self.notion_client.pages.create(
+            parent={"type": "page_id", "page_id": parent_id},
+            properties={"title": [{"text": {"content": "Highlights"}}]},
+        )
+
+    def _update_existing_page(self, page_id, cover_url):
+        logger.info(f"Page already exists, id: {page_id}")
+
+        # Update cover and icon
+        self.notion_client.pages.update(
+            page_id=page_id,
+            cover=self._get_cover_data(cover_url),
+            icon=self._get_cover_data(cover_url),
+        )
+
+        # Archive old highlight page and create a new one
+        self._archive_old_highlights(page_id)
+        highlight_page_id = self._create_highlight_page(page_id)
+
+        return {
+            "parent": page_id,
+            "highlight": highlight_page_id["id"],
+        }
+
+    def _create_new_pages(self, book_title, cover_url):
+        page_ids = self.create_notion_page(book_title, cover_url)
+        logger.info(
+            f"Created new pages for '{book_title}'. "
+            f"Main page ID: {page_ids['new_page_id']}, "
+            f"Highlight page ID: {page_ids['highlight_page_id']}"
+        )
+        return {
+            "parent": page_ids["new_page_id"],
+            "highlight": page_ids["highlight_page_id"],
+        }
+
+    def _get_cover_data(self, cover_url):
+        return {
+            "type": "external",
+            "external": {"url": cover_url},
+        }
+
+    def _archive_old_highlights(self, page_id):
+        original_highlights = self.notion_client.blocks.children.list(block_id=page_id)
+        if original_highlights["results"]:
+            self.notion_client.pages.update(
+                page_id=original_highlights["results"][0]["id"], archived=True
             )
-            return {
-                "parent": page_ids["new_page_id"],
-                "highlight": page_ids["highlight_page_id"],
-            }
 
     def sync_bookmarks(self):
         logger.info("Starting bookmark synchronization")
