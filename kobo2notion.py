@@ -174,14 +174,11 @@ class Kobo2Notion:
             "Read Percent": {"number": book["Read Percent"]},
         }
 
-        # # Add series and series number if they exist
-        # if book["Series"] is not None:
-        #     properties["Series"] = {
-        #         "rich_text": [{"text": {"content": book["Series"]}}]
-        #     }
-
-        # if book["SeriesNumber"] is not None:
-        #     properties["Series Number"] = {"number": book["SeriesNumber"]}
+        # Add sub title if it exists
+        if book["Subtitle"] is not None:
+            properties["Subtitle"] = {
+                "rich_text": [{"text": {"content": book["Subtitle"]}}]
+            }
 
         return self.notion_client.pages.create(
             parent={"database_id": self.notion_db_id},
