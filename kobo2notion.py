@@ -40,7 +40,7 @@ class Kobo2Notion:
             logger.error(f"Error connecting to SQLite: {e}")
             return None
 
-    def get_book_titles(self):
+    def get_books_data(self):
         query = """
             SELECT DISTINCT 
                 c.Title AS 'Book Title',
@@ -60,12 +60,11 @@ class Kobo2Notion:
                 c.DownloadUrl IS NOT NULL AND 
                 c.IsAbridged = 'false'
         """
-        # Fetch the book titles from the SQLite database
-        books_in_file = pd.read_sql_query(query, self.connection)
-        titles = [title for title in books_in_file["Book Title"] if title is not None]
-        logger.info(f"Retrieved {len(titles)} book titles")
-        logger.debug(f"Book titles: {titles}")
-        return titles
+        # Fetch the book data from the SQLite database
+        books_data = pd.read_sql_query(query, self.connection)
+        logger.debug(f"Books data: {books_data}")
+        logger.info(f"Retrieved data for {len(books_data)} books")
+        return books_data
 
     def load_bookmark(self, title, highlight_page_id):
         books_in_file = pd.read_sql(
@@ -137,17 +136,17 @@ class Kobo2Notion:
         logger.info(f"Page for '{book_title}' exists: {exists}")
         return query["results"][0]["id"] if exists else None
 
-    def create_notion_page(self, book_title, cover_url):
-        logger.info(f"Creating new page for book: {book_title}")
+    def create_notion_page(self, book, cover_url):
+        logger.info(f"Creating new page for book: {book['Book Title']}")
 
         # Create main page
-        new_page = self._create_main_page(book_title, cover_url)
-        logger.debug(f"Created new page for '{book_title}': {new_page['id']}")
+        new_page = self._create_main_page(book, cover_url)
+        logger.debug(f"Created new page for '{book['Book Title']}': {new_page['id']}")
 
         # Create highlight page
         highlight_page = self._create_highlight_page(new_page["id"])
         logger.debug(
-            f"Created highlight page for '{book_title}': {highlight_page['id']}"
+            f"Created highlight page for '{book['Book Title']}': {highlight_page['id']}"
         )
 
         return {
@@ -155,24 +154,40 @@ class Kobo2Notion:
             "highlight_page_id": highlight_page["id"],
         }
 
-    def get_or_create_page(self, book_title):
+    def get_or_create_page(self, book):
+        book_title = book["Book Title"]
         cover_url = self.fetch_book_cover(book_title)
         existing_page_id = self.check_page_exists(book_title)
 
         if existing_page_id:
             return self._update_existing_page(existing_page_id, cover_url)
         else:
-            return self._create_new_pages(book_title, cover_url)
+            return self._create_new_pages(book, cover_url)
 
-    def _create_main_page(self, book_title, cover_url):
+    def _create_main_page(self, book, cover_url):
+        properties = {
+            "Title": {"title": [{"text": {"content": book["Book Title"]}}]},
+            "Category": {"select": {"name": "Books"}},
+            "Author": {"rich_text": [{"text": {"content": book["Author"]}}]},
+            "Publisher": {"rich_text": [{"text": {"content": book["Publisher"]}}]},
+            "ISBN": {"rich_text": [{"text": {"content": book["ISBN"]}}]},
+            "Read Percent": {"number": book["Read Percent"]},
+        }
+
+        # # Add series and series number if they exist
+        # if book["Series"] is not None:
+        #     properties["Series"] = {
+        #         "rich_text": [{"text": {"content": book["Series"]}}]
+        #     }
+
+        # if book["SeriesNumber"] is not None:
+        #     properties["Series Number"] = {"number": book["SeriesNumber"]}
+
         return self.notion_client.pages.create(
             parent={"database_id": self.notion_db_id},
             cover=self._get_cover_data(cover_url),
             icon=self._get_cover_data(cover_url),
-            properties={
-                "Title": {"title": [{"text": {"content": book_title}}]},
-                "Category": {"select": {"name": "Books"}},
-            },
+            properties=properties,
         )
 
     def _create_highlight_page(self, parent_id):
@@ -200,10 +215,10 @@ class Kobo2Notion:
             "highlight": highlight_page_id["id"],
         }
 
-    def _create_new_pages(self, book_title, cover_url):
-        page_ids = self.create_notion_page(book_title, cover_url)
+    def _create_new_pages(self, book, cover_url):
+        page_ids = self.create_notion_page(book, cover_url)
         logger.info(
-            f"Created new pages for '{book_title}'. "
+            f"Created new pages for '{book['Book Title']}'. "
             f"Main page ID: {page_ids['new_page_id']}, "
             f"Highlight page ID: {page_ids['highlight_page_id']}"
         )
@@ -227,10 +242,11 @@ class Kobo2Notion:
 
     def sync_bookmarks(self):
         logger.info("Starting bookmark synchronization")
-        book_titles = self.get_book_titles()
-        for book_title in book_titles:
+        books_data = self.get_books_data()
+        for _, book in books_data.iterrows():
+            book_title = book["Book Title"]
             # Get the highlight page ID
-            page_ids = self.get_or_create_page(book_title)
+            page_ids = self.get_or_create_page(book)
             # Get the highlights from the KoboReader.sqlite file
             bookmarks = self.load_bookmark(book_title, page_ids["highlight"])
             # Remove the leading and trailing whitespace (Source: https://github.com/starsdog/export_kobo)
