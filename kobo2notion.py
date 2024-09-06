@@ -44,11 +44,14 @@ class Kobo2Notion:
         query = """
             SELECT DISTINCT 
                 c.Title AS 'Book Title',
-                c.isDownloaded, 
-                c.Accessibility, 
-                c.EntitlementId, 
-                c.DownloadUrl, 
-                c.IsAbridged 
+                c.Subtitle,
+                c.Attribution AS 'Author',
+                c.Publisher,
+                c.ISBN,
+                c.Series,
+                c.SeriesNumber,
+                c.___PercentRead AS 'Read Percent',
+                c.ImageId
             FROM content AS c 
             WHERE 
                 c.isDownloaded = 'true' AND 
