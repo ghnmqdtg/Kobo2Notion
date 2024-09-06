@@ -98,31 +98,47 @@ class Kobo2Notion:
         except Exception as e:
             print(e)
 
-    def fetch_book_cover(self, book_title):
-        # Fetch the book cover from google books API
-        # Step 1: Find the id of the book by GET https://www.googleapis.com/books/v1/volumes?q={book_title}
+    def fetch_book_cover(self, book_title, isbn):
+        logger.info(f"Fetching book cover for '{book_title}' (ISBN: {isbn})")
         response = requests.get(
             f"https://www.googleapis.com/books/v1/volumes?q={book_title}"
         )
         data = response.json()
-        # Step 2: Get the image link from the book info
-        book_id = data["items"][0]["id"]
-        # Step 3: Download the image and save it to the temp directory
-        # image_url = f"https://books.google.com/books/content?id={book_id}&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
-        # This url can get larger image, but it's not guaranteed to be the same size as the other url
-        image_url = f"https://books.google.com/books/publisher/content/images/frontcover/{book_id}?fife=w480-h690"
+
+        book_id = None
+        for item in data.get("items", []):
+            identifiers = item.get("volumeInfo", {}).get("industryIdentifiers", [])
+            for identifier in identifiers:
+                if (
+                    identifier.get("type") == "ISBN_13"
+                    and identifier.get("identifier") == isbn
+                ):
+                    book_id = item["id"]
+                    break
+            if book_id:
+                break
+
+        if not book_id and data.get("items"):
+            # If no ISBN match found, use the first item
+            book_id = data["items"][0]["id"]
+            logger.warning(
+                f"No exact ISBN match found for '{book_title}'. Using first result."
+            )
+
+        if not book_id:
+            logger.warning(f"Could not find any book data for '{book_title}'")
+            return None
+
+        image_url = f"https://books.google.com/books/publisher/content/images/frontcover/{book_id}?fife=w1200-h1200"
         image_response = requests.get(image_url)
-        # Check if the image is valid
+
         if image_response.status_code != 200:
             logger.error(
                 f"Failed to fetch image for '{book_title}': {image_response.status_code}"
             )
             return None
-        # # Save the image to the temp directory
-        # with open(f"temp/{book_title}.jpg", "wb") as f:
-        #     f.write(image_response.content)
-        # # Step 4: Return the path of the image
-        # return f"temp/{book_title}.jpg"
+
+        logger.info(f"Successfully fetched book cover for '{book_title}'")
         return image_url
 
     def check_page_exists(self, book_title):
@@ -155,9 +171,8 @@ class Kobo2Notion:
         }
 
     def get_or_create_page(self, book):
-        book_title = book["Book Title"]
-        cover_url = self.fetch_book_cover(book_title)
-        existing_page_id = self.check_page_exists(book_title)
+        cover_url = self.fetch_book_cover(book["Book Title"], book["ISBN"])
+        existing_page_id = self.check_page_exists(book["Book Title"])
 
         if existing_page_id:
             return self._update_existing_page(existing_page_id, cover_url)
