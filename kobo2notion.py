@@ -249,19 +249,15 @@ class Kobo2Notion:
             if os.environ["SUMMARIZE_BOOKMARKS"] == "true":
                 summary = self.summarize_bookmarks(book_title, bookmarks)
                 logger.info(f"Summary: {summary}")
-                # Add summary to the parent page
-                self.notion_client.blocks.children.append(
-                    block_id=page_ids["parent_page"],
-                    children=[
-                        {
-                            "object": "block",
-                            "type": "paragraph",
-                            "paragraph": {
-                                "rich_text": [{"text": {"content": summary}}]
-                            },
-                        }
-                    ],
-                )
+                # Parse Markdown summary into Notion blocks
+                summary_blocks = self.parse_markdown_to_notion_blocks(summary)
+
+                # Add summary to the parent page in batches of 100
+                for i in range(0, len(summary_blocks), 100):
+                    self.notion_client.blocks.children.append(
+                        block_id=page_ids["parent_page"],
+                        children=summary_blocks[i : i + 100],
+                    )
 
             # Clean up bookmarks (whitespace and newlines)
             bookmarks["Highlight"] = (
@@ -338,13 +334,61 @@ class Kobo2Notion:
             """
         else:
             prompt = f"""
-            以下從《{book_title}》節錄的重點，請幫我統整這些重點，以 markdown 格式和繁體中文回答，謝謝。
+            以下是從《{book_title}》節錄的重點，請幫我以 markdown 格式統整，並以繁體中文回答，謝謝。
             ```
             {content}
             ```
             """
         summary = model.generate_content(prompt)
         return summary.text
+
+    def parse_markdown_to_notion_blocks(self, markdown_text):
+        """
+        Parses Markdown text into a list of Notion blocks.
+        Handles headings, paragraphs, lists, and quotes.
+        """
+        notion_blocks = []
+        lines = markdown_text.split("\n")
+
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+
+            if line.startswith("#"):
+                # Heading
+                level = min(len(line.split()[0]), 3)  # Cap at h3
+                content = line.lstrip("#").strip()
+                block_type = f"heading_{level}"
+            elif line.startswith("- ") or line.startswith("* "):
+                # Bulleted list item
+                content = line[2:].strip()
+                block_type = "bulleted_list_item"
+            elif line[0].isdigit() and line[1:3] == ". ":
+                # Numbered list item
+                content = line[3:].strip()
+                block_type = "numbered_list_item"
+            elif line.startswith(">"):
+                # Quote
+                content = line[1:].strip()
+                block_type = "quote"
+            else:
+                # Paragraph
+                content = line
+                block_type = "paragraph"
+
+            notion_blocks.append(
+                {
+                    "object": "block",
+                    "type": block_type,
+                    block_type: {
+                        "rich_text": [{"type": "text", "text": {"content": content}}]
+                    },
+                }
+            )
+
+        return notion_blocks
+
 
 if __name__ == "__main__":
     # Check if the environment variables are loaded
