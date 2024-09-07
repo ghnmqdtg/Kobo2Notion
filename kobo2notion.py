@@ -9,6 +9,7 @@ import pandas as pd
 from tqdm import tqdm
 from notion_client import Client
 from utils import CustomFormatter
+import google.generativeai as genai
 
 # Load environment variables
 dotenv.load_dotenv()
@@ -66,7 +67,7 @@ class Kobo2Notion:
         logger.info(f"Retrieved data for {len(books_data)} books")
         return books_data
 
-    def load_bookmark(self, title, highlight_page_id):
+    def load_bookmark(self, title):
         books_in_file = pd.read_sql(
             f"SELECT c.ContentId AS 'Content ID', c.Title AS 'Book Title' FROM content AS c WHERE c.Title LIKE '%{title}%'",
             self.connection,
@@ -149,8 +150,8 @@ class Kobo2Notion:
         )
 
         return {
-            "new_page_id": new_page["id"],
-            "highlight_page_id": highlight_page["id"],
+            "parent_page": new_page["id"],
+            "highlight_page": highlight_page["id"],
         }
 
     def get_or_create_page(self, book):
@@ -185,9 +186,9 @@ class Kobo2Notion:
             properties=properties,
         )
 
-    def _create_highlight_page(self, parent_id):
+    def _create_highlight_page(self, parent_page_id):
         return self.notion_client.pages.create(
-            parent={"type": "page_id", "page_id": parent_id},
+            parent={"type": "page_id", "page_id": parent_page_id},
             properties={"title": [{"text": {"content": "Highlights"}}]},
         )
 
@@ -203,23 +204,23 @@ class Kobo2Notion:
 
         # Archive old highlight page and create a new one
         self._archive_old_highlights(page_id)
-        highlight_page_id = self._create_highlight_page(page_id)
+        highlight_page = self._create_highlight_page(page_id)
 
         return {
-            "parent": page_id,
-            "highlight": highlight_page_id["id"],
+            "parent_page": page_id,
+            "highlight_page": highlight_page["id"],
         }
 
     def _create_new_pages(self, book, cover_url):
         page_ids = self.create_notion_page(book, cover_url)
         logger.info(
             f"Created new pages for '{book['Book Title']}'. "
-            f"Main page ID: {page_ids['new_page_id']}, "
-            f"Highlight page ID: {page_ids['highlight_page_id']}"
+            f"Main page ID: {page_ids['parent_page']}, "
+            f"Highlight page ID: {page_ids['highlight_page']}"
         )
         return {
-            "parent": page_ids["new_page_id"],
-            "highlight": page_ids["highlight_page_id"],
+            "parent_page": page_ids["parent_page"],
+            "highlight_page": page_ids["highlight_page"],
         }
 
     def _get_cover_data(self, cover_url):
@@ -242,7 +243,25 @@ class Kobo2Notion:
         for _, book in books_data.iterrows():
             book_title = book["Book Title"]
             page_ids = self.get_or_create_page(book)
-            bookmarks = self.load_bookmark(book_title, page_ids["highlight"])
+            bookmarks = self.load_bookmark(book_title)
+
+            # Summarize bookmarks if SUMMARIZE_BOOKMARKS is true
+            if os.environ["SUMMARIZE_BOOKMARKS"] == "true":
+                summary = self.summarize_bookmarks(book_title, bookmarks)
+                logger.info(f"Summary: {summary}")
+                # Add summary to the parent page
+                self.notion_client.blocks.children.append(
+                    block_id=page_ids["parent_page"],
+                    children=[
+                        {
+                            "object": "block",
+                            "type": "paragraph",
+                            "paragraph": {
+                                "rich_text": [{"text": {"content": summary}}]
+                            },
+                        }
+                    ],
+                )
 
             # Clean up bookmarks (whitespace and newlines)
             bookmarks["Highlight"] = (
@@ -282,36 +301,68 @@ class Kobo2Notion:
 
                 # Send data in batches of 100 (Notion API limit)
                 if len(children_blocks) == 100:
-                    self._send_bookmark_batch(page_ids["highlight"], children_blocks)
+                    self._send_bookmark_batch(
+                        page_ids["highlight_page"], children_blocks
+                    )
                     children_blocks = []
 
             # Send any remaining blocks
             if children_blocks:
-                self._send_bookmark_batch(page_ids["highlight"], children_blocks)
+                self._send_bookmark_batch(page_ids["highlight_page"], children_blocks)
 
             logger.info(f"Synced {len(bookmarks)} bookmarks for '{book_title}'")
 
         logger.info("Bookmark synchronization completed")
 
-    def _send_bookmark_batch(self, highlight_page_id, children_blocks):
+    def _send_bookmark_batch(self, highlight_page, children_blocks):
         try:
             self.notion_client.blocks.children.append(
-                block_id=highlight_page_id,
+                block_id=highlight_page,
                 children=children_blocks,
             )
         except Exception as e:
             logger.error(f"Error syncing bookmarks to Notion: {e}")
 
+    def summarize_bookmarks(self, book_title, bookmarks):
+        logger.info(f"Summarizing bookmarks for '{book_title}'")
+        # Use Gemini API to summarize bookmarks
+        model = genai.GenerativeModel(os.environ["GEMINI_MODEL"])
+        content = bookmarks["Highlight"].str.cat(sep="\n")
+        if os.environ["SUMMARIZE_LANGUAGE"] == "en":
+            prompt = f"""
+            The following is a list of highlights from a book: {book_title}
+            ```
+            {content}
+            ```
+            Please summarize the highlights into a concise and coherent summary using markdown format. Thank you.
+            """
+        else:
+            prompt = f"""
+            以下從《{book_title}》節錄的重點，請幫我統整這些重點，以 markdown 格式和繁體中文回答，謝謝。
+            ```
+            {content}
+            ```
+            """
+        summary = model.generate_content(prompt)
+        return summary.text
 
 if __name__ == "__main__":
     # Check if the environment variables are loaded
     assert os.environ["NOTION_API_KEY"] is not None, "NOTION_API_KEY is not set"
     assert os.environ["NOTION_DB_ID"] is not None, "NOTION_DB_ID is not set"
+
+    # Enable Gemini API if SUMMARIZE_BOOKMARKS is true
+    if os.environ["SUMMARIZE_BOOKMARKS"] == "true":
+        assert os.environ["GEMINI_API_KEY"] is not None, "GEMINI_API_KEY is not set"
+        # Initialize Gemini client
+        genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+
     # Check if it's in dev mode
     if os.environ["DEV_MODE"] == "true":
         DEV_MODE = True
     else:
         DEV_MODE = False
+
     # Copy the KoboReader.sqlite file to temp/KoboReader.sqlite
     # This is to avoid conflicts with the original file
     # Create a temp directory if it doesn't exist
