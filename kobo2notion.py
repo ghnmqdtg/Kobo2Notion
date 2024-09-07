@@ -81,23 +81,6 @@ class Kobo2Notion:
 
         return bookmark_df
 
-    def write_text(self, page_id, text, type):
-        try:
-            self.notion_client.blocks.children.append(
-                block_id=page_id,
-                children=[
-                    {
-                        "object": "block",
-                        "type": type,
-                        type: {
-                            "rich_text": [{"type": "text", "text": {"content": text}}]
-                        },
-                    }
-                ],
-            )
-        except Exception as e:
-            print(e)
-
     def fetch_book_cover(self, book_title, isbn):
         logger.info(f"Fetching book cover for '{book_title}' (ISBN: {isbn})")
         response = requests.get(
@@ -255,41 +238,69 @@ class Kobo2Notion:
     def sync_bookmarks(self):
         logger.info("Starting bookmark synchronization")
         books_data = self.get_books_data()
+
         for _, book in books_data.iterrows():
             book_title = book["Book Title"]
-            # Get the highlight page ID
             page_ids = self.get_or_create_page(book)
-            # Get the highlights from the KoboReader.sqlite file
             bookmarks = self.load_bookmark(book_title, page_ids["highlight"])
-            # Remove the leading and trailing whitespace (Source: https://github.com/starsdog/export_kobo)
-            for j in range(0, len(bookmarks)):
-                if bookmarks["Highlight"][j] != None:
-                    bookmarks.loc[j, "Highlight"] = bookmarks["Highlight"][j].strip()
-                    # Remove \n from the highlight
-                    bookmarks.loc[j, "Highlight"] = bookmarks["Highlight"][j].replace(
-                        "\n", ""
+
+            # Clean up bookmarks (whitespace and newlines)
+            bookmarks["Highlight"] = (
+                bookmarks["Highlight"]
+                .astype(str)
+                .str.strip()
+                .str.replace("\n", "", regex=False)
+            )
+
+            # Prepare children blocks for batch update
+            children_blocks = []
+            for _, bookmark in bookmarks.iterrows():
+                if bookmark["Type"] == "highlight":
+                    content = bookmark["Highlight"]
+                    block_type = "paragraph"
+                else:  # Assuming it's an annotation
+                    content = (
+                        bookmark["Annotation"]
+                        if bookmark["Annotation"] is not None
+                        else ""
                     )
-            # Write the highlights to the Notion page
-            for x in tqdm(range(0, len(bookmarks))):
-                if bookmarks["Type"][x] == "highlight":
-                    self.write_text(
-                        page_ids["highlight"], bookmarks["Highlight"][x], "paragraph"
-                    )
-                else:
-                    if bookmarks["Annotation"][x] != None:
-                        self.write_text(
-                            page_ids["highlight"], bookmarks["Annotation"][x], "quote"
-                        )
-                    if bookmarks["Highlight"][x] != None:
-                        self.write_text(
-                            page_ids["highlight"],
-                            bookmarks["Highlight"][x],
-                            "paragraph",
-                        )
+                    if bookmark["Highlight"] is not None:
+                        content += "\n" + bookmark["Highlight"]
+                    block_type = "quote"
+
+                children_blocks.append(
+                    {
+                        "object": "block",
+                        "type": block_type,
+                        block_type: {
+                            "rich_text": [
+                                {"type": "text", "text": {"content": content}}
+                            ]
+                        },
+                    }
+                )
+
+                # Send data in batches of 100 (Notion API limit)
+                if len(children_blocks) == 100:
+                    self._send_bookmark_batch(page_ids["highlight"], children_blocks)
+                    children_blocks = []
+
+            # Send any remaining blocks
+            if children_blocks:
+                self._send_bookmark_batch(page_ids["highlight"], children_blocks)
 
             logger.info(f"Synced {len(bookmarks)} bookmarks for '{book_title}'")
 
         logger.info("Bookmark synchronization completed")
+
+    def _send_bookmark_batch(self, highlight_page_id, children_blocks):
+        try:
+            self.notion_client.blocks.children.append(
+                block_id=highlight_page_id,
+                children=children_blocks,
+            )
+        except Exception as e:
+            logger.error(f"Error syncing bookmarks to Notion: {e}")
 
 
 if __name__ == "__main__":
