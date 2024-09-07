@@ -248,7 +248,7 @@ class Kobo2Notion:
             # Summarize bookmarks if SUMMARIZE_BOOKMARKS is true
             if os.environ["SUMMARIZE_BOOKMARKS"] == "true":
                 summary = self.summarize_bookmarks(book_title, bookmarks)
-                logger.info(f"Summary: {summary}")
+                # logger.debug(f"Summary: {summary}")
                 # Parse Markdown summary into Notion blocks
                 summary_blocks = self.parse_markdown_to_notion_blocks(summary)
 
@@ -326,18 +326,29 @@ class Kobo2Notion:
         content = bookmarks["Highlight"].str.cat(sep="\n")
         if os.environ["SUMMARIZE_LANGUAGE"] == "en":
             prompt = f"""
-            The following is a list of highlights from a book: {book_title}
+            The following is a list of highlights from a book: {book_title}.
             ```
             {content}
             ```
-            Please summarize the highlights into a concise and coherent summary using markdown format. Thank you.
+
+            Please summarize the highlights into a concise and coherent summary using markdown format. Here are some guidelines:
+            1. The highlights are ordered, but don't have a specific chapter or section, so please group them into sections.
+            2. Please use bold text to highlight the most important words or sentences.
+            3. It's okay to have numbers in the heading, such as "# 1. Section Title" or "# 二、段落標題"
             """
         else:
             prompt = f"""
-            以下是從《{book_title}》節錄的重點，請幫我以 markdown 格式統整，並以繁體中文回答，謝謝。
+            以下是從《{book_title}》節錄的重點：
             ```
             {content}
             ```
+            請幫我以 markdown 格式統整，並以繁體中文回答，以下為注意事項：
+            1. 請以繁體中文回答。
+            2. 這些重點的順序是連續的，但可能分散於不同章節，請依內容自行分類統整。謝謝。
+            3. 直接回答重點，不要有任何額外的說明。
+            4. 若有段落，其 heading 標籤可以同時附帶標號以更加醒目，例如：「# 1. 段落標題」或「# 一、段落標題」，其內容則以 list 或 bullet point 表示。
+            5. 冒號和括號以全形「：」和「（）」表示。
+            6. 若重點有所重複，可以刪減以保持簡潔。
             """
         summary = model.generate_content(prompt)
         return summary.text
