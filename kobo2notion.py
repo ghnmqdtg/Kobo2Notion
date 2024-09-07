@@ -1,12 +1,11 @@
 # Load packages
 import os
-import json
 import dotenv
 import logging
 import sqlite3
 import requests
 import pandas as pd
-from tqdm import tqdm
+from time import time
 from notion_client import Client
 from utils import CustomFormatter
 import google.generativeai as genai
@@ -28,7 +27,12 @@ class Kobo2Notion:
         self.connection = self._connect_to_sqlite(sqlite_path)
         self.notion_client = Client(auth=notion_api_key)
         self.notion_db_id = notion_db_id
-        logger.info("Kobo2Notion instance initialized")
+        # Use Gemini API to summarize bookmarks
+        if os.environ["SUMMARIZE_BOOKMARKS"] == "true":
+            self.model = genai.GenerativeModel(os.environ["GEMINI_MODEL"])
+            logger.info(f"Using {os.environ['GEMINI_MODEL']} to summarize bookmarks")
+        else:
+            self.model = None
 
     def _connect_to_sqlite(self, sqlite_path):
         try:
@@ -73,7 +77,7 @@ class Kobo2Notion:
             f"SELECT VolumeID AS 'Volume ID', Text AS 'Highlight', Annotation, DateCreated AS 'Created On', Type FROM Bookmark Where VolumeID = '{content_id}' ORDER BY 4 ASC",
             self.connection,
         )
-        logger.debug(f"Loaded {len(bookmark_df)} bookmarks for '{title}'")
+        # logger.debug(f"Loaded {len(bookmark_df)} bookmarks for '{title}'")
         return bookmark_df
 
     def fetch_book_cover(self, book_title, isbn):
@@ -167,59 +171,75 @@ class Kobo2Notion:
     def sync_bookmarks(self):
         logger.info("Starting bookmark synchronization")
         for _, book in self.get_books_data().iterrows():
+            start_time = time()
+            logger.info(f"{book['Book Title']} | Syncing bookmarks")
             page_ids = self.get_or_create_page(book)
             bookmarks = self.load_bookmark(book["Book Title"])
 
+            # Sync original bookmarks
+            bookmark_blocks = self._prepare_bookmark_blocks(bookmarks)
+            self.sync_blocks(page_ids["highlight_page"], bookmark_blocks)
+            logger.info(
+                f"{book['Book Title']} | Synced {len(bookmark_blocks)} bookmarks in {time() - start_time:.2f} seconds"
+            )
+
+            # Summarize and sync summary if enabled
             if os.environ["SUMMARIZE_BOOKMARKS"] == "true":
+                # Summarize bookmarks
+                logger.info(f"{book['Book Title']} | Summarizing bookmarks")
+                start_time = time()
                 summary = self.summarize_bookmarks(book["Book Title"], bookmarks)
+                logger.info(
+                    f"{book['Book Title']} | Summarized bookmarks in {time() - start_time:.2f} seconds"
+                )
+                # Sync summary
+                start_time = time()
                 summary_blocks = self.parse_markdown_to_notion_blocks(summary)
-                for i in range(0, len(summary_blocks), 100):
-                    self.notion_client.blocks.children.append(
-                        block_id=page_ids["parent_page"],
-                        children=summary_blocks[i : i + 100],
-                    )
+                self.sync_blocks(page_ids["parent_page"], summary_blocks)
+                logger.info(
+                    f"{book['Book Title']} | Synced summary in {time() - start_time:.2f} seconds"
+                )
 
-            self._sync_highlights(page_ids["highlight_page"], bookmarks)
-        logger.info("Bookmark synchronization completed")
+        logger.info(f"All {len(self.get_books_data())} books are synced")
 
-    def _sync_highlights(self, highlight_page, bookmarks):
-        children_blocks = []
+    def _prepare_bookmark_blocks(self, bookmarks):
+        blocks = []
         for _, bookmark in bookmarks.iterrows():
+            content = ""
             if bookmark["Highlight"] is not None:
                 content = str(bookmark["Highlight"]).strip().replace("\n", " ")
+
             block_type = "paragraph" if bookmark["Type"] == "highlight" else "quote"
+
             if bookmark["Type"] != "highlight" and bookmark["Annotation"]:
-                content = f"{bookmark['Annotation']}\n{content}"
+                annotation = str(bookmark["Annotation"]).strip()
+                content = f"{annotation}\n{content}" if content else annotation
 
-            children_blocks.append(
-                {
-                    "object": "block",
-                    "type": block_type,
-                    block_type: {
-                        "rich_text": [{"type": "text", "text": {"content": content}}]
-                    },
-                }
-            )
+            if content:
+                blocks.append(
+                    {
+                        "object": "block",
+                        "type": block_type,
+                        block_type: {
+                            "rich_text": [
+                                {"type": "text", "text": {"content": content}}
+                            ]
+                        },
+                    }
+                )
+        return blocks
 
-            if len(children_blocks) == 100:
-                self._send_bookmark_batch(highlight_page, children_blocks)
-                children_blocks = []
-
-        if children_blocks:
-            self._send_bookmark_batch(highlight_page, children_blocks)
-
-    def _send_bookmark_batch(self, highlight_page, children_blocks):
-        try:
-            self.notion_client.blocks.children.append(
-                block_id=highlight_page, children=children_blocks
-            )
-        except Exception as e:
-            logger.error(f"Error syncing bookmarks to Notion: {e}")
+    def sync_blocks(self, page_id, blocks):
+        for i in range(0, len(blocks), 100):
+            batch = blocks[i : i + 100]
+            try:
+                self.notion_client.blocks.children.append(
+                    block_id=page_id, children=batch
+                )
+            except Exception as e:
+                logger.error(f"Error syncing blocks to Notion: {e}")
 
     def summarize_bookmarks(self, book_title, bookmarks):
-        logger.info(f"Summarizing bookmarks for '{book_title}'")
-        # Use Gemini API to summarize bookmarks
-        model = genai.GenerativeModel(os.environ["GEMINI_MODEL"])
         content = bookmarks["Highlight"].str.cat(sep="\n")
         if os.environ["SUMMARIZE_LANGUAGE"] == "en":
             prompt = f"""
@@ -251,7 +271,7 @@ class Kobo2Notion:
             7. 若重點有所重複，可以刪減以保持簡潔。
             8. 請於最開頭加上摘要，並於最後加上總結。
             """
-        summary = model.generate_content(prompt)
+        summary = self.model.generate_content(prompt)
         return summary.text
 
     def parse_markdown_to_notion_blocks(self, markdown_text):
@@ -358,7 +378,7 @@ if __name__ == "__main__":
     # Copy the KoboReader.sqlite file to temp/KoboReader.sqlite
     os.system(f"cp {os.environ['SQLITE_SOURCE']} temp/KoboReader.sqlite")
 
-    logger.info("Initializing Kobo2Notion instance")
+    # logger.info("Initializing Kobo2Notion instance")
     kobo2notion = Kobo2Notion(
         sqlite_path="temp/KoboReader.sqlite",
         notion_api_key=os.environ["NOTION_API_KEY"],
