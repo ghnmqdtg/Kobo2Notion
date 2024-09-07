@@ -345,47 +345,79 @@ class Kobo2Notion:
     def parse_markdown_to_notion_blocks(self, markdown_text):
         """
         Parses Markdown text into a list of Notion blocks.
-        Handles headings, paragraphs, lists, and quotes.
+        Handles headings, paragraphs, lists, quotes, nested structures, and bold text.
         """
         notion_blocks = []
         lines = markdown_text.split("\n")
+        current_list = None
+        list_stack = []
+
+        def create_block(block_type, content, children=None):
+            block = {
+                "object": "block",
+                "type": block_type,
+                block_type: {"rich_text": parse_rich_text(content)},
+            }
+            if children:
+                block[block_type]["children"] = children
+            return block
+
+        def parse_rich_text(content):
+            parts = content.split("**")
+            rich_text = []
+            for i, part in enumerate(parts):
+                if part:
+                    text = {"type": "text", "text": {"content": part}}
+                    if i % 2 == 1:  # Odd indices are bold
+                        text["annotations"] = {"bold": True}
+                    rich_text.append(text)
+            return rich_text
 
         for line in lines:
             line = line.strip()
             if not line:
                 continue
 
+            indent = len(line) - len(line.lstrip())
+            line = line.strip()
+
             if line.startswith("#"):
                 # Heading
                 level = min(len(line.split()[0]), 3)  # Cap at h3
                 content = line.lstrip("#").strip()
-                block_type = f"heading_{level}"
+                notion_blocks.append(create_block(f"heading_{level}", content))
+                current_list = None
             elif line.startswith("- ") or line.startswith("* "):
                 # Bulleted list item
                 content = line[2:].strip()
-                block_type = "bulleted_list_item"
-            elif line[0].isdigit() and line[1:3] == ". ":
+                new_item = create_block("bulleted_list_item", content)
+
+                if current_list and indent > list_stack[-1]:
+                    current_list["bulleted_list_item"]["children"].append(new_item)
+                else:
+                    notion_blocks.append(new_item)
+                    current_list = new_item
+                    list_stack = [indent]
+            elif line[0].isdigit() and ". " in line:
                 # Numbered list item
-                content = line[3:].strip()
-                block_type = "numbered_list_item"
+                content = line.split(". ", 1)[1].strip()
+                new_item = create_block("numbered_list_item", content)
+
+                if current_list and indent > list_stack[-1]:
+                    current_list["numbered_list_item"]["children"].append(new_item)
+                else:
+                    notion_blocks.append(new_item)
+                    current_list = new_item
+                    list_stack = [indent]
             elif line.startswith(">"):
                 # Quote
                 content = line[1:].strip()
-                block_type = "quote"
+                notion_blocks.append(create_block("quote", content))
+                current_list = None
             else:
                 # Paragraph
-                content = line
-                block_type = "paragraph"
-
-            notion_blocks.append(
-                {
-                    "object": "block",
-                    "type": block_type,
-                    block_type: {
-                        "rich_text": [{"type": "text", "text": {"content": content}}]
-                    },
-                }
-            )
+                notion_blocks.append(create_block("paragraph", line))
+                current_list = None
 
         return notion_blocks
 
