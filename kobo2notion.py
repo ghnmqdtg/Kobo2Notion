@@ -232,6 +232,8 @@ class Kobo2Notion:
             1. The highlights are ordered, but don't have a specific chapter or section, so please group them into sections.
             2. Please use bold text to highlight the most important words or sentences.
             3. It's okay to have numbers in the heading, such as "# 1. Section Title" or "# 二、段落標題"
+            4. If there are duplicate highlights, please remove them to keep the summary concise.
+            5. Please add abstract at the beginning and conclusion at the end.
             """
         else:
             prompt = f"""
@@ -243,9 +245,11 @@ class Kobo2Notion:
             1. 請以繁體中文回答。
             2. 這些重點的順序是連續的，但可能分散於不同章節，請依內容自行分類統整。謝謝。
             3. 直接回答重點，不要有任何額外的說明。
-            4. 若有段落，其 heading 標籤可以同時附帶標號以更加醒目，例如：「# 1. 段落標題」或「# 一、段落標題」，其內容則以 list 或 bullet point 表示。
+            4. 若有段落，其 heading 標籤可以同時附帶標號以更加醒目，例如：「# 一、段落標題」，其內容則以 numbered list 或 bullet point 表示。
             5. 冒號和括號以全形「：」和「（）」表示。
-            6. 若重點有所重複，可以刪減以保持簡潔。
+            6. 中、英文及數字間以半形空格隔開。
+            7. 若重點有所重複，可以刪減以保持簡潔。
+            8. 請於最開頭加上摘要，並於最後加上總結。
             """
         summary = model.generate_content(prompt)
         return summary.text
