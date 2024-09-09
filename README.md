@@ -91,10 +91,24 @@ Kobo2Notion is a Python-based tool that extracts bookmark data from Kobo e-reade
 6. Adjust any other settings in the `config.py` file. For example, you can change the prompt language to `en` for English.
 
 ## Usage
-Run the export script:
+1. Run the export script and wait for the script to finish.
 ```bash
 python kobo2notion.py
 ```
+
+2. Check the Notion database to see the bookmarks.
+
+    1. The overview of the library. You can see all the books you purchased.
+
+        <p align="left">
+            <img src="assets/demo_01.png" width="70%">
+        </p>
+
+    2. The detail of the book. The original highlight is saved in `Highlight` page, and the summary is saved in the main page.
+        
+        <p align="left">
+            <img src="assets/demo_02.png" width="70%">
+        </p>
 
 ## Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
