@@ -124,3 +124,8 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Contact
 For questions or support, please open an issue on the GitHub repository.
+
+## Some notes
+1. Setup the electron app with React
+    
+    https://www.electronforge.io/guides/framework-integration/react
