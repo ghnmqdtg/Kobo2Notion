@@ -1,8 +1,9 @@
-import Versions from './components/Versions'
-import electronLogo from './assets/electron.svg'
+import Versions from './components/Versions';
+import electronLogo from './assets/electron.svg';
+import { Button } from "@/components/ui/button";
 
-function App() {
-  const ipcHandle = () => window.electron.ipcRenderer.send('ping')
+function App(): JSX.Element {
+  const ipcHandle = (): void => window.electron.ipcRenderer.send('ping');
 
   return (
     <>
@@ -10,6 +11,7 @@ function App() {
       <div className="creator">Powered by electron-vite</div>
       <div className="text">
         Build an Electron app with <span className="react">React</span>
+        &nbsp;and <span className="ts">TypeScript</span>
       </div>
       <p className="tip">
         Please try pressing <code>F12</code> to open the devTool
@@ -25,11 +27,13 @@ function App() {
             Send IPC
           </a>
         </div>
+        <div>
+          <Button>Click me</Button>
+        </div>
       </div>
       <Versions></Versions>
     </>
-  )
+  );
 }
 
-export default App
-
+export default App;
