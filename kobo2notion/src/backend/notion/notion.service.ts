@@ -4,15 +4,17 @@ import {
     UpdatePageParameters,
     QueryDatabaseParameters,
 } from '@notionhq/client/build/src/api-endpoints';
-import { Book, Bookmark } from '../models';
+import { Book, Bookmark, NotionBlock, Block } from '../models';
 import { fetchBookCover, parseMarkdownToNotionBlocks } from '../utils';
-import { BlockObjectRequest } from '@notionhq/client/build/src/api-endpoints';
+import { env } from '../../config/env.config';
 
 export class NotionService {
     private notion: Client;
+    private databaseId: string;
 
-    constructor(private notionApiKey: string, private notionDbId: string) {
-        this.notion = new Client({ auth: this.notionApiKey });
+    constructor() {
+        this.notion = new Client({ auth: env.NOTION_API_KEY });
+        this.databaseId = env.NOTION_DATABASE_ID;
     }
 
     async getOrCreatePage(book: Book): Promise<{ parentPageId: string; highlightPageId: string; }> {
@@ -44,7 +46,7 @@ export class NotionService {
 
     private async _queryExistingPage(bookTitle: string) {
         const queryParams: QueryDatabaseParameters = {
-            database_id: this.notionDbId,
+            database_id: this.databaseId,
             filter: {
                 property: 'Title',
                 title: {
@@ -65,7 +67,7 @@ export class NotionService {
 
     private async _createMainPage(coverUrl: string, properties: any) {
         const createPageParams: CreatePageParameters = {
-            parent: { database_id: this.notionDbId },
+            parent: { database_id: this.databaseId },
             cover: { type: 'external', external: { url: coverUrl } },
             icon: { type: 'external', external: { url: coverUrl } },
             properties: properties,
@@ -111,8 +113,8 @@ export class NotionService {
         await this.syncBlocks(highlightPageId, bookmarkBlocks);
     }
 
-    private _prepareBookmarkBlocks(bookmarks: Bookmark[]): BlockObjectRequest[] {
-        const blocks: BlockObjectRequest[] = [];
+    private _prepareBookmarkBlocks(bookmarks: Bookmark[]): NotionBlock[] {
+        const blocks: NotionBlock[] = [];
         for (const bookmark of bookmarks) {
             let content = '';
             if (bookmark.highlight) {
@@ -133,15 +135,17 @@ export class NotionService {
                     [blockType]: {
                         rich_text: [{ type: 'text', text: { content } }],
                     },
-                });
+                } as NotionBlock);
             }
         }
         return blocks;
     }
 
-    async syncBlocks(pageId: string, blocks: BlockObjectRequest[]): Promise<void> {
+
+    async syncBlocks(pageId: string, blocks: NotionBlock[]): Promise<void> {
+        const typedBlocks = blocks as unknown as any[];
         for (let i = 0; i < blocks.length; i += 100) {
-            const batch = blocks.slice(i, i + 100);
+            const batch = typedBlocks.slice(i, i + 100);
             try {
                 await this.notion.blocks.children.append({
                     block_id: pageId,

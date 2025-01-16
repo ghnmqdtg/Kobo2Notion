@@ -1,4 +1,4 @@
-import { BlockObjectRequest, RichTextItemRequest } from '@notionhq/client/build/src/api-endpoints';
+import { Block, NotionBlock, RichTextItem } from './models';
 
 export async function fetchBookCover(bookTitle: string, isbn: string): Promise<string> {
     const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${bookTitle}`);
@@ -20,35 +20,37 @@ export async function fetchBookCover(bookTitle: string, isbn: string): Promise<s
     return imageResponse.status === 200 ? imageUrl : ''; // Return empty string if not found
 }
 
-export function parseMarkdownToNotionBlocks(markdownText: string): BlockObjectRequest[] {
-    const notionBlocks: BlockObjectRequest[] = [];
+export function parseMarkdownToNotionBlocks(markdownText: string): NotionBlock[] {
+    const notionBlocks: NotionBlock[] = [];
     const lines = markdownText.split('\n');
     let currentList: any = null;
     const listStack: number[] = [];
 
-    function createBlock(blockType: string, content: string, children: BlockObjectRequest[] = []): BlockObjectRequest {
-        const block: BlockObjectRequest = {
+    function createBlock(
+        blockType: 'paragraph' | 'heading_1' | 'heading_2' | 'heading_3' | 'bulleted_list_item' | 'numbered_list_item' | 'quote',
+        content: string,
+        children: NotionBlock[] = []
+    ): NotionBlock {
+        const block: NotionBlock = {
             object: 'block',
             type: blockType,
             [blockType]: {
                 rich_text: parseRichText(content),
             },
-        };
+        } as NotionBlock;
+
         if (children.length > 0) {
-            block[blockType] = {
-                ...block[blockType],
-                children: children,
-            };
+            (block[blockType] as any).children = children;
         }
         return block;
     }
 
-    function parseRichText(content: string): RichTextItemRequest[] {
+    function parseRichText(content: string): RichTextItem[] {
         const parts = content.split('**');
-        const richText: RichTextItemRequest[] = [];
+        const richText: RichTextItem[] = [];
         for (let i = 0; i < parts.length; i++) {
             if (parts[i]) {
-                const text: RichTextItemRequest = {
+                const text: RichTextItem = {
                     type: 'text',
                     text: { content: parts[i] },
                 };
@@ -75,7 +77,8 @@ export function parseMarkdownToNotionBlocks(markdownText: string): BlockObjectRe
             // Heading
             const level = Math.min(trimmedLine.split(' ')[0].length, 3);
             const content = trimmedLine.substring(level).trim();
-            notionBlocks.push(createBlock(`heading_${level}`, content));
+            const heading_level = `heading_${level}` as 'heading_1' | 'heading_2' | 'heading_3';
+            notionBlocks.push(createBlock(heading_level, content));
             currentList = null;
             listStack.length = 0;
         } else if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('* ')) {
