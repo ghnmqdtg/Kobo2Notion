@@ -127,3 +127,9 @@ For questions or support, please open an issue on the GitHub repository.
 
 ## Some notes
 1. Setup the electron app with React
+
+## Environment Setup
+
+1. Copy `.env.example` to `.env`
+2. Fill in your API keys and other configuration in `.env`
+3. Never commit `.env` file to version control

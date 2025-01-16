@@ -18,14 +18,17 @@
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "electron-vite build && electron-builder --mac",
-    "build:linux": "electron-vite build && electron-builder --linux"
+    "build:linux": "electron-vite build && electron-builder --linux",
+    "test": "jest"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^3.0.0",
+    "@google/generative-ai": "^0.21.0",
     "@radix-ui/react-slot": "^1.1.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^16.4.7",
     "electron-updater": "^6.1.7",
     "lucide-react": "^0.471.1",
     "tailwind-merge": "^2.6.0"
@@ -35,6 +38,7 @@
     "@electron-toolkit/eslint-config-ts": "^2.0.0",
     "@electron-toolkit/tsconfig": "^1.0.1",
     "@notionhq/client": "^2.2.15",
+    "@types/dotenv": "^8.2.3",
     "@types/jest": "^29.5.14",
     "@types/node": "^20.17.12",
     "@types/react": "^18.3.3",
