@@ -3,3 +3,4 @@ temp/
 *.sqlite
 *.log
 *.vscode/
+*node_modules
