@@ -15,11 +15,12 @@ interface EnvironmentConfig {
 
 // Validate environment variables
 const getConfig = (): EnvironmentConfig => {
+
     const config = {
         SQLITE_SOURCE: process.env.SQLITE_SOURCE,
-        NOTION_API_KEY: process.env.NOTION_API_KEY,
+        NOTION_API_KEY: process.env.NOTION_API,
         NOTION_DATABASE_ID: process.env.NOTION_DATABASE_ID,
-        GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+        GEMINI_API_KEY: process.env.GEMINI_API,
         GEMINI_MODEL: process.env.GEMINI_MODEL,
     };
 
