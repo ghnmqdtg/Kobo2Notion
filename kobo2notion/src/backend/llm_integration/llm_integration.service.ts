@@ -45,7 +45,7 @@ export class GeminiService {
         2. Please use bold text to highlight the most important words or sentences.
         3. It's okay to have numbers in the heading, such as "# 1. Section Title" or "# 二、段落標題"
         4. If there are duplicate highlights, please remove them to keep the summary concise.
-        5. Please add abstract at the beginning and conclusion at the end.
+        5. Please add abstract at the beginning and conclusion at the end, both with heading.
         `;
         } else {
             return `
@@ -61,7 +61,7 @@ export class GeminiService {
         5. 冒號和括號以全形「：」和「（）」表示。
         6. 中、英文及數字間以半形空格隔開。
         7. 若重點有所重複，可以刪減以保持簡潔。
-        8. 請於最開頭加上摘要，並於最後加上總結。
+        8. 請於最開頭加上摘要，並於最後加上總結，兩段落皆使用 heading。
         `;
         }
     }
