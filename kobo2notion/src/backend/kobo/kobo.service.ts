@@ -1,11 +1,15 @@
 import sqlite3 from 'sqlite3';
 import { open, Database } from 'sqlite';
 import { Book, Bookmark } from '../models'; // Create a models.ts to define types
+import { env } from '../../config/env.config';
 
 export class KoboService {
     private db: Database | null = null;
+    private sqlitePath: string;
 
-    constructor(private sqlitePath: string) { }
+    constructor() {
+        this.sqlitePath = env.SQLITE_SOURCE;
+    }
 
     async connect(): Promise<void> {
         try {

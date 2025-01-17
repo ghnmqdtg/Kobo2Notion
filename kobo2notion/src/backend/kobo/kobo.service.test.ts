@@ -119,7 +119,7 @@ describe('KoboService', () => {
         }
 
         // Initialize the KoboService with the in-memory database
-        service = new KoboService(':memory:');
+        service = new KoboService();
         service['db'] = db; // Directly set the 'db' property of the service
     });
 
