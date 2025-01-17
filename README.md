@@ -80,7 +80,7 @@ Kobo2Notion is a Python-based tool that extracts bookmark data from Kobo e-reade
 
 5. Get the Google Gemini API key [here](https://aistudio.google.com/app/apikey) (optional)
 
-    > This is an optional feature if you want to summarize your bookmarks. The api for `gemini-1.5-flash` is free on Google AI Studio. If you don't need it, set `SUMMARIZE_BOOKMARKS` to `false` in `.env` file.
+    > This is an optional feature if you want to summarize your bookmarks. The api for `gemini-1.5-flash` is free on Google AI Studio. If you don't need it, set `SUMMARIZE_ENABLED` to `false` in `.env` file.
 
     Copy the `API Key` value into the `GEMINI_API_KEY` environment variable in `.env` file.
 

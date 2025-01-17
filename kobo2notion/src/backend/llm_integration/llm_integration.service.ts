@@ -4,14 +4,20 @@ import {
     GenerateContentResult,
 } from '@google/generative-ai';
 import { Bookmark } from '../models';
+import { env } from '../../config/env.config';
 
 export class GeminiService {
     private genAI: GoogleGenerativeAI;
     private model: any;
+    // private summarizeEnabled: boolean;
+    private summarizeLanguage: string;
 
-    constructor(private geminiApiKey: string, private geminiModel: string) {
-        this.genAI = new GoogleGenerativeAI(this.geminiApiKey);
-        this.model = this.genAI.getGenerativeModel({ model: this.geminiModel });
+    constructor() {
+        this.genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
+        this.model = this.genAI.getGenerativeModel({ model: env.GEMINI_MODEL });
+        // We don't set these variables in the constructor because we want to pass them in the function call
+        // this.summarizeEnabled = env.SUMMARIZE_ENABLED;
+        // this.summarizeLanguage = env.SUMMARIZE_LANGUAGE;
     }
 
     async summarizeBookmarks(bookTitle: string, bookmarks: Bookmark[], summarizeLanguage: string): Promise<string> {

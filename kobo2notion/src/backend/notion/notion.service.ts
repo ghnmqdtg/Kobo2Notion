@@ -158,7 +158,9 @@ export class NotionService {
     }
 
     async syncSummary(pageId: string, summary: string): Promise<void> {
-        const summaryBlocks = parseMarkdownToNotionBlocks(summary);
-        await this.syncBlocks(pageId, summaryBlocks);
+        if (env.SUMMARIZE_ENABLED) {
+            const summaryBlocks = parseMarkdownToNotionBlocks(summary);
+            await this.syncBlocks(pageId, summaryBlocks);
+        }
     }
 }
