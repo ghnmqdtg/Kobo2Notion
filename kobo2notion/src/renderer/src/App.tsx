@@ -1,16 +1,16 @@
 import { Button } from "@/components/ui/button";
+import { ThemeProvider } from "@/components/theme-provider";
+import { ModeToggle } from "@/components/mode-toggle";
 
 function App(): JSX.Element {
 
   return (
-    <>
-      <h1 className="text-3xl font-bold underline">
-        Hello world!
-      </h1>
+    <ThemeProvider>
+      <h1 className="text-3xl font-bold underline">Hello world!</h1>
       <div>
-        <Button>Click me</Button>
+        <ModeToggle />
       </div>
-    </>
+    </ThemeProvider>
   );
 }
 

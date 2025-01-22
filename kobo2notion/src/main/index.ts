@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron';
+import { app, shell, BrowserWindow, ipcMain, globalShortcut } from 'electron';
 import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
@@ -19,6 +19,19 @@ function createWindow(): void {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
+  });
+
+  // Dev tools
+  // mainWindow.webContents.openDevTools();
+
+  globalShortcut.register('f5', function () {
+    console.log('f5 is pressed');
+    mainWindow.reload();
+  });
+
+  globalShortcut.register('CommandOrControl+R', function () {
+    console.log('CommandOrControl+R is pressed');
+    mainWindow.reload();
   });
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
