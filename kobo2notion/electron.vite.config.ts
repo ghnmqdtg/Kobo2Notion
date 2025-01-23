@@ -7,7 +7,9 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin()]
   },
   preload: {
-    plugins: [externalizeDepsPlugin()]
+    plugins: [externalizeDepsPlugin({
+      include: ['sqlite3']
+    })]
   },
   renderer: {
     resolve: {
@@ -17,5 +19,5 @@ export default defineConfig({
       }
     },
     plugins: [react()]
-  }
+  },
 });

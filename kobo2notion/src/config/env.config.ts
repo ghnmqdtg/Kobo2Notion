@@ -5,7 +5,7 @@ import path from 'path';
 // ! The path should be update after electron migration
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
-interface EnvironmentConfig {
+export interface EnvironmentConfig {
     SQLITE_SOURCE: string;
     NOTION_API_KEY: string;
     NOTION_DATABASE_ID: string;
