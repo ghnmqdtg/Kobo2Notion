@@ -58,9 +58,9 @@ function App(): JSX.Element {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-grow">
-        <div className="container mx-auto py-4">
-          <div className="flex justify-between items-center mb-4">
+      <main className="flex-grow overflow-y-auto">
+        <div className="container mx-auto py-4 h-full">
+          <div className="flex justify-between items-center mb-4 px-4">
             <h1 className="text-2xl font-bold">Your Books</h1>
             <Button
               onClick={handleExport}
