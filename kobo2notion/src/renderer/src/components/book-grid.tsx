@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Book } from '../../../backend/models';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { cn } from '@/lib/utils';
 
 interface BookGridProps {
     books: Book[];
@@ -30,25 +31,26 @@ function BookCard({ bookTitle, subtitle, author, readPercent, isbn, isSelected, 
     }, [bookTitle, isbn]);
 
     return (
-        <Card className="flex flex-col overflow-hidden">
+        <Card
+            className={cn(
+                "flex flex-col overflow-hidden cursor-pointer transition-all border border-border hover:border-primary",
+                isSelected && "border-2 border-primary"
+            )}
+            onClick={onSelect}
+        >
             <div className="relative aspect-[3/4] w-full overflow-hidden">
                 {coverUrl ? (
                     <img
                         src={coverUrl}
                         alt={`${bookTitle} cover`}
-                        className="object-cover w-full h-full"
+                        className="object-cover w-full h-full select-none"
+                        draggable="false"
                     />
                 ) : (
                     <div className="w-full h-full bg-muted flex items-center justify-center">
                         <span className="text-muted-foreground">No cover</span>
                     </div>
                 )}
-                <div className="absolute top-2 left-2">
-                    <Checkbox
-                        checked={isSelected}
-                        onCheckedChange={onSelect}
-                    />
-                </div>
             </div>
             <CardContent className="flex-grow p-4">
                 <div className="space-y-1">

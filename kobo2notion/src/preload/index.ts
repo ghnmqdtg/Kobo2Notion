@@ -5,6 +5,7 @@ import { NotionService } from '../backend/notion/notion.service';
 import { GeminiService } from '../backend/llm_integration/llm_integration.service';
 import { env } from '../config/env.config';
 import { fetchBookCover } from '../backend/utils';
+import { Book } from '../backend/models';
 
 const koboService = new KoboService();
 const notionService = new NotionService();
@@ -18,7 +19,7 @@ const api = {
     await koboService.close();
     return books;
   },
-  exportBook: async (book) => {
+  exportBook: async (book: Book) => {
     await koboService.connect();
     const bookmarks = await koboService.getBookmarks(book.bookTitle);
 
@@ -31,7 +32,7 @@ const api = {
         bookmarks,
         env.SUMMARIZE_LANGUAGE
       );
-      await notionService.syncSummary(highlightPageId, summary);
+      await notionService.syncSummary(parentPageId, summary);
     }
 
     await koboService.close();
