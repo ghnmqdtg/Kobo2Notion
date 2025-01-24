@@ -16,8 +16,8 @@ export async function fetchBookCover(bookTitle: string, isbn: string): Promise<s
     }
 
     const imageUrl = `https://books.google.com/books/publisher/content/images/frontcover/${bookId}?fife=w1200-h1200`;
-    const imageResponse = await fetch(imageUrl);
-    return imageResponse.status === 200 ? imageUrl : ''; // Return empty string if not found
+
+    return imageUrl;
 }
 
 export function parseMarkdownToNotionBlocks(markdownText: string): NotionBlock[] {

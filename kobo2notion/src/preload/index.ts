@@ -4,6 +4,7 @@ import { KoboService } from '../backend/kobo/kobo.service';
 import { NotionService } from '../backend/notion/notion.service';
 import { GeminiService } from '../backend/llm_integration/llm_integration.service';
 import { env } from '../config/env.config';
+import { fetchBookCover } from '../backend/utils';
 
 const koboService = new KoboService();
 const notionService = new NotionService();
@@ -34,6 +35,9 @@ const api = {
     }
 
     await koboService.close();
+  },
+  fetchBookCover: async (bookTitle: string, isbn: string) => {
+    return fetchBookCover(bookTitle, isbn);
   }
 };
 
