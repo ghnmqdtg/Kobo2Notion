@@ -61,12 +61,20 @@ function BookCard({ bookTitle, subtitle, author, readPercent, isbn, isSelected, 
                 <CardContent className="flex-1 p-4">
                     <div className="space-y-1">
                         <h3 className="font-bold line-clamp-2">{bookTitle}</h3>
-                        {subtitle && (
+                        {/* {subtitle && (
                             <p className="text-sm text-muted-foreground line-clamp-2">
                                 {subtitle}
                             </p>
-                        )}
-                        <p className="text-sm text-muted-foreground">{author}</p>
+                        )} */}
+                        {/* Hide the authors after the third person with "..." */}
+                        <p title={author} className="text-sm text-muted-foreground">
+                            {(() => {
+                                const authorsArray = author.split(', ');
+                                const firstThreeAuthors = authorsArray.slice(0, 3).join(', ');
+                                const remainingAuthors = authorsArray.slice(3).length > 0 ? `, ${authorsArray.slice(3).length} more` : '';
+                                return `${firstThreeAuthors}${remainingAuthors}`;
+                            })()}
+                        </p>
                     </div>
                 </CardContent>
                 <CardFooter className="p-4 pt-0 mt-auto shrink-0">
