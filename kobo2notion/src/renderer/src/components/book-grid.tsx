@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Book } from '../../../backend/models';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Progress } from "@/components/ui/progress";
 import { cn } from '@/lib/utils';
 
 interface BookGridProps {
@@ -33,8 +33,7 @@ function BookCard({ bookTitle, subtitle, author, readPercent, isbn, isSelected, 
 
     return (
         <div className={cn(
-            "relative rounded-lg",
-            // Create an outer border that doesn't affect layout
+            "relative rounded-lg h-full",
             "before:absolute before:inset-0 before:rounded-lg before:transition-all",
             "before:pointer-events-none",
             isSelected
@@ -42,10 +41,10 @@ function BookCard({ bookTitle, subtitle, author, readPercent, isbn, isSelected, 
                 : "before:border before:border-border hover:before:border-primary"
         )}>
             <Card
-                className="flex flex-col overflow-hidden cursor-pointer rounded-lg"
+                className="flex flex-col overflow-hidden cursor-pointer rounded-lg h-full"
                 onClick={onSelect}
             >
-                <div className="relative aspect-[3/4] w-full overflow-hidden p-4">
+                <div className="relative aspect-[3/4] w-full overflow-hidden p-4 shrink-0">
                     {coverUrl ? (
                         <img
                             src={coverUrl}
@@ -59,7 +58,7 @@ function BookCard({ bookTitle, subtitle, author, readPercent, isbn, isSelected, 
                         </div>
                     )}
                 </div>
-                <CardContent className="flex-grow p-4">
+                <CardContent className="flex-1 p-4">
                     <div className="space-y-1">
                         <h3 className="font-bold line-clamp-2">{bookTitle}</h3>
                         {subtitle && (
@@ -70,12 +69,18 @@ function BookCard({ bookTitle, subtitle, author, readPercent, isbn, isSelected, 
                         <p className="text-sm text-muted-foreground">{author}</p>
                     </div>
                 </CardContent>
-                <CardFooter className="p-4 pt-0">
-                    <div className="w-full">
-                        <Progress value={progress} />
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                        Read: {Math.round(readPercent)}%
+                <CardFooter className="p-4 pt-0 mt-auto shrink-0">
+                    <div className="w-full flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">
+                            Read
+                        </span>
+                        <Progress
+                            value={progress}
+                            className="h-1"
+                        />
+                        <span className="text-sm text-muted-foreground">
+                            {Math.round(progress)}%
+                        </span>
                     </div>
                 </CardFooter>
             </Card>
@@ -85,7 +90,7 @@ function BookCard({ bookTitle, subtitle, author, readPercent, isbn, isSelected, 
 
 export function BookGrid({ books, selectedBooks, onSelectBook }: BookGridProps) {
     return (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6 p-4 auto-rows-fr">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 p-4 auto-rows-fr">
             {books.map((book) => (
                 <BookCard
                     key={book.bookTitle}
