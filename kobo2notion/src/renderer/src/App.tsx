@@ -109,10 +109,10 @@ function App(): JSX.Element {
   };
 
   return (
-    <div className="min-h-screen flex flex-col w-full">
+    <div className="h-screen flex flex-col w-full">
       <Navbar />
-      <main className="flex-grow overflow-auto">
-        <div className="container mx-auto py-4 h-full">
+      <main className="flex-1 overflow-hidden">
+        <div className="container mx-auto h-full">
           {renderContent()}
         </div>
       </main>

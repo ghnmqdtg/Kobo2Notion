@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Book } from '../../../backend/models';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from "@/components/ui/progress";
 import { cn } from '@/lib/utils';
 
@@ -98,15 +99,17 @@ function BookCard({ bookTitle, subtitle, author, readPercent, isbn, isSelected, 
 
 export function BookGrid({ books, selectedBooks, onSelectBook }: BookGridProps) {
     return (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 p-4 auto-rows-fr">
-            {books.map((book) => (
-                <BookCard
-                    key={book.bookTitle}
-                    {...book}
-                    isSelected={selectedBooks.has(book.bookTitle)}
-                    onSelect={() => onSelectBook(book.bookTitle)}
-                />
-            ))}
-        </div>
+        <ScrollArea className="h-[calc(100vh-8rem)]">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 p-4 auto-rows-fr">
+                {books.map((book) => (
+                    <BookCard
+                        key={book.bookTitle}
+                        {...book}
+                        isSelected={selectedBooks.has(book.bookTitle)}
+                        onSelect={() => onSelectBook(book.bookTitle)}
+                    />
+                ))}
+            </div>
+        </ScrollArea>
     );
 } 
