@@ -24,14 +24,18 @@ function createWindow(): void {
   // Dev tools
   // mainWindow.webContents.openDevTools();
 
-  globalShortcut.register('f5', function () {
-    console.log('f5 is pressed');
-    mainWindow.reload();
+  app.on('browser-window-focus', () => {
+    globalShortcut.register('f5', function () {
+      mainWindow.reload();
+    });
+
+    globalShortcut.register('CommandOrControl+R', function () {
+      mainWindow.reload();
+    });
   });
 
-  globalShortcut.register('CommandOrControl+R', function () {
-    console.log('CommandOrControl+R is pressed');
-    mainWindow.reload();
+  app.on('browser-window-blur', () => {
+    globalShortcut.unregisterAll();
   });
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
