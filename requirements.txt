@@ -1,4 +1,0 @@
-pandas
-notion-client
-python-dotenv
-google-generativeai

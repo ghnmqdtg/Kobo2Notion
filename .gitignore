@@ -1,10 +1,15 @@
-__pycache__/
-temp/
-*.sqlite
-*.log
-*.vscode/
-*node_modules
+node_modules
+dist
+out
+.DS_Store
+*.log*
 # Environment variables
 .env
 .env.local
 .env.*.local
+
+# VSCode
+.vscode
+
+# Electron
+build/
