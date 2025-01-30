@@ -45,7 +45,7 @@ function BookCard({ bookTitle, subtitle, author, readPercent, isbn, isSelected, 
                 className="flex flex-col overflow-hidden cursor-pointer rounded-lg h-full"
                 onClick={onSelect}
             >
-                <div className="relative aspect-[3/4] w-full overflow-hidden p-4 shrink-0">
+                <div className="relative aspect-[3/4] w-full p-4">
                     {coverUrl ? (
                         <img
                             src={coverUrl}
@@ -100,7 +100,7 @@ function BookCard({ bookTitle, subtitle, author, readPercent, isbn, isSelected, 
 export function BookGrid({ books, selectedBooks, onSelectBook }: BookGridProps) {
     return (
         <ScrollArea className="h-[calc(100vh-8rem)]">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 p-4 auto-rows-fr">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6 px-4 auto-rows-fr">
                 {books.map((book) => (
                     <BookCard
                         key={book.bookTitle}

@@ -90,7 +90,7 @@ function App(): JSX.Element {
 
     return (
       <>
-        <div className="flex justify-between items-center mb-4 px-4">
+        <div className="flex justify-between items-center p-4">
           <h1 className="text-2xl font-bold">Your Books</h1>
           <Button
             onClick={handleExport}
