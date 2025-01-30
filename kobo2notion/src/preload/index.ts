@@ -16,7 +16,8 @@ const api = {
   getBooks: async () => {
     await koboService.connect();
     const books = await koboService.getBooks();
-    await koboService.close();
+    // If we close the connection here, when the user refreshes the page, the app will not work.
+    // await koboService.close();
     return books;
   },
   exportBook: async (book: Book) => {
@@ -35,7 +36,7 @@ const api = {
       await notionService.syncSummary(parentPageId, summary);
     }
 
-    await koboService.close();
+    // await koboService.close();
   },
   fetchBookCover: async (bookTitle: string, isbn: string) => {
     return fetchBookCover(bookTitle, isbn);

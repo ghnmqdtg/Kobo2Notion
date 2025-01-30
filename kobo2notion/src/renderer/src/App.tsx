@@ -2,24 +2,28 @@ import { useState, useEffect } from 'react';
 import { Navbar } from '@/components/navbar';
 import { BookGrid } from '@/components/book-grid';
 import { Button } from '@/components/ui/button';
+import { Loader2, AlertCircle } from 'lucide-react';
 import { Book } from '../../backend/models';
 
 function App(): JSX.Element {
   const [books, setBooks] = useState<Book[]>([]);
   const [selectedBooks, setSelectedBooks] = useState<Set<string>>(new Set());
+  const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
-    // Load books when component mounts
     loadBooks();
   }, []);
 
   const loadBooks = async () => {
+    setIsLoading(true);
     try {
       const loadedBooks = await window.api.getBooks();
       setBooks(loadedBooks);
     } catch (error) {
       console.error('Error loading books:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -55,25 +59,42 @@ function App(): JSX.Element {
     }
   };
 
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-lg text-muted-foreground">Loading books...</p>
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <div className="flex justify-between items-center mb-4 px-4">
+          <h1 className="text-2xl font-bold">Your Books</h1>
+          <Button
+            onClick={handleExport}
+            disabled={selectedBooks.size === 0 || isExporting}
+          >
+            {isExporting ? 'Exporting...' : 'Export to Notion'}
+          </Button>
+        </div>
+        <BookGrid
+          books={books}
+          selectedBooks={selectedBooks}
+          onSelectBook={handleSelectBook}
+        />
+      </>
+    );
+  };
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col w-full">
       <Navbar />
-      <main className="flex-grow overflow-y-auto">
+      <main className="flex-grow overflow-auto">
         <div className="container mx-auto py-4 h-full">
-          <div className="flex justify-between items-center mb-4 px-4">
-            <h1 className="text-2xl font-bold">Your Books</h1>
-            <Button
-              onClick={handleExport}
-              disabled={selectedBooks.size === 0 || isExporting}
-            >
-              {isExporting ? 'Exporting...' : 'Export to Notion'}
-            </Button>
-          </div>
-          <BookGrid
-            books={books}
-            selectedBooks={selectedBooks}
-            onSelectBook={handleSelectBook}
-          />
+          {renderContent()}
         </div>
       </main>
     </div>
