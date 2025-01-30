@@ -1,5 +1,26 @@
 import { Block, NotionBlock, RichTextItem } from './models';
 
+
+/**
+ * Normalizes a string by converting it to lowercase and removing punctuation and special characters.
+ * @param str - The string to normalize.
+ * @returns The normalized string.
+ */
+function normalizeString(str: string): string {
+  return str
+    .toLowerCase() // Convert to lowercase
+    .replace(/[‧•]/g, '') // Remove specific middle dot variations
+    .replace(/[^\w\s]/g, '') // Remove punctuation and special characters
+    .replace(/─/g, '') // Remove ─
+    .replace(/[:：]/g, ''); // Remove full width and half width colon
+}
+
+/**
+ * Fetches the book cover from Google Books.
+ * @param bookTitle - The title of the book.
+ * @param isbn - The ISBN of the book.
+ * @returns The URL of the book cover.
+ */
 export async function fetchBookCover(bookTitle: string, isbn: string): Promise<string> {
     const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${bookTitle}`);
     const data = await response.json();
@@ -8,7 +29,10 @@ export async function fetchBookCover(bookTitle: string, isbn: string): Promise<s
         item.volumeInfo?.industryIdentifiers?.some(
             (id: any) => id.type === 'ISBN_13' && id.identifier === isbn
         )
-    )?.id ?? data.items?.[0]?.id;
+    )?.id ?? data.items?.find((item: any) => {
+        console.log(normalizeString(item.volumeInfo?.title), normalizeString(bookTitle));
+        return normalizeString(item.volumeInfo?.title) === normalizeString(bookTitle);
+    })?.id;
 
     if (!bookId) {
         console.warn(`Could not find book data for '${bookTitle}'`);
@@ -20,6 +44,11 @@ export async function fetchBookCover(bookTitle: string, isbn: string): Promise<s
     return imageUrl;
 }
 
+/**
+ * Parses a markdown text into a list of Notion blocks.
+ * @param markdownText - The markdown text to parse.
+ * @returns A list of Notion blocks.
+ */
 export function parseMarkdownToNotionBlocks(markdownText: string): NotionBlock[] {
     const notionBlocks: NotionBlock[] = [];
     const lines = markdownText.split('\n');
