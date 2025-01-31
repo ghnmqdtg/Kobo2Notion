@@ -1,19 +1,4 @@
-import { Block, NotionBlock, RichTextItem } from './models';
-
-
-/**
- * Normalizes a string by converting it to lowercase and removing punctuation and special characters.
- * @param str - The string to normalize.
- * @returns The normalized string.
- */
-function normalizeString(str: string): string {
-  return str
-    .toLowerCase() // Convert to lowercase
-    .replace(/[‧•]/g, '') // Remove specific middle dot variations
-    .replace(/[^\w\s]/g, '') // Remove punctuation and special characters
-    .replace(/─/g, '') // Remove ─
-    .replace(/[:：]/g, ''); // Remove full width and half width colon
-}
+import { NotionBlock, RichTextItem } from './models';
 
 /**
  * Fetches the book cover from Google Books.
@@ -30,8 +15,14 @@ export async function fetchBookCover(bookTitle: string, isbn: string): Promise<s
             (id: any) => id.type === 'ISBN_13' && id.identifier === isbn
         )
     )?.id ?? data.items?.find((item: any) => {
-        console.log(normalizeString(item.volumeInfo?.title), normalizeString(bookTitle));
-        return normalizeString(item.volumeInfo?.title) === normalizeString(bookTitle);
+        // Split the titles by ':' or '：' and compare the first part
+        // For example, "連結：從石器時代到AI紀元", the first part is "連結"
+        const retrievedTitle = item.volumeInfo?.title?.split(/[:：─]/)[0];
+        const existingTitle = bookTitle.split(/[:：─]/)[0];
+        if (retrievedTitle === existingTitle) {
+            console.log('Title: ', retrievedTitle, ' Book title: ', existingTitle)
+        }
+        return retrievedTitle === existingTitle;
     })?.id;
 
     if (!bookId) {
