@@ -63,7 +63,7 @@ function BookCard({ bookTitle, subtitle, author, readPercent, isbn, imageId, isS
                         </div>
                     )}
                 </div>
-                <CardContent className="flex-1 p-4">
+                <CardContent className="flex-1 p-4 pt-0">
                     <div className="space-y-1">
                         <h3 className="font-bold line-clamp-2">{bookTitle}</h3>
                         {/* {subtitle && (
@@ -104,7 +104,7 @@ function BookCard({ bookTitle, subtitle, author, readPercent, isbn, imageId, isS
 export function BookGrid({ books, selectedBooks, onSelectBook }: BookGridProps) {
     return (
         <ScrollArea className="h-[calc(100vh-8rem)]">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6 p-4 auto-rows-fr">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 p-4 auto-rows-fr">
                 {books.map((book) => (
                     <BookCard
                         key={book.bookTitle}

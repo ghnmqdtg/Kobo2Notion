@@ -9,7 +9,7 @@ export function Navbar() {
         <nav className="border-b">
             <div className="flex h-16 items-center px-4">
                 <div className="flex items-center space-x-4">
-                    <h2 className="text-2xl font-bold">Kobo2Notion</h2>
+                    <h2 className="text-3xl font-bold">Kobo2Notion</h2>
                 </div>
                 <div className="ml-auto flex items-center space-x-4">
                     <Sheet>
@@ -30,16 +30,16 @@ export function Navbar() {
                                 <Separator />
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Notion API Key</label>
-                                    <Input type="password" value={window.env.NOTION_API} readOnly />
+                                    <Input type="password" value={window.env.NOTION_API_KEY} readOnly />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Notion Database ID</label>
-                                    <Input type="password" value={window.env.NOTION_DB} readOnly />
+                                    <Input type="password" value={window.env.NOTION_DATABASE_ID} readOnly />
                                 </div>
                                 <Separator />
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Gemini API Key</label>
-                                    <Input type="password" value={window.env.GEMINI_API} readOnly />
+                                    <Input type="password" value={window.env.GEMINI_API_KEY} readOnly />
                                 </div>
                             </div>
                         </SheetContent>
