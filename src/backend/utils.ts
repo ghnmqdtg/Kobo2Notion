@@ -1,38 +1,13 @@
 import { NotionBlock, RichTextItem } from './models';
 
 /**
- * Fetches the book cover from Google Books.
- * @param bookTitle - The title of the book.
- * @param isbn - The ISBN of the book.
+ * Fetches the book cover from Kobo CDN.
+ * @param imageId - The image ID of the book.
  * @returns The URL of the book cover.
  */
-export async function fetchBookCover(bookTitle: string, isbn: string): Promise<string> {
-    const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${bookTitle}`);
-    const data = await response.json();
-
-    const bookId = data.items?.find((item: any) =>
-        item.volumeInfo?.industryIdentifiers?.some(
-            (id: any) => id.type === 'ISBN_13' && id.identifier === isbn
-        )
-    )?.id ?? data.items?.find((item: any) => {
-        // Split the titles by ':' or '：' and compare the first part
-        // For example, "連結：從石器時代到AI紀元", the first part is "連結"
-        const retrievedTitle = item.volumeInfo?.title?.split(/[:：─]/)[0];
-        const existingTitle = bookTitle.split(/[:：─]/)[0];
-        if (retrievedTitle === existingTitle) {
-            console.log('Title: ', retrievedTitle, ' Book title: ', existingTitle)
-        }
-        return retrievedTitle === existingTitle;
-    })?.id;
-
-    if (!bookId) {
-        console.warn(`Could not find book data for '${bookTitle}'`);
-        return ''; // Return empty string instead of null
-    }
-
-    const imageUrl = `https://books.google.com/books/publisher/content/images/frontcover/${bookId}?fife=w1200-h1200`;
-
-    return imageUrl;
+export async function fetchBookCover(imageId: string): Promise<string> {
+    // Get the image URL from Kobo CDN, using corsproxy to avoid CORS issues
+    return `https://corsproxy.io/?url=https://cdn.kobo.com/book-images/${imageId}/1200/1200/90/False/0.jpg`
 }
 
 /**

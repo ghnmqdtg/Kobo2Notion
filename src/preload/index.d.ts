@@ -5,7 +5,7 @@ import { EnvironmentConfig } from '../config/env.config';
 export interface IElectronAPI {
   getBooks: () => Promise<Book[]>;
   exportBook: (book: Book) => Promise<void>;
-  fetchBookCover: (bookTitle: string, isbn: string) => Promise<string>;
+  fetchBookCover: (imageId: string) => Promise<string>;
 }
 
 declare global {

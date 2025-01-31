@@ -16,14 +16,18 @@ interface BookCardProps extends Book {
     onSelect: () => void;
 }
 
-function BookCard({ bookTitle, subtitle, author, readPercent, isbn, isSelected, onSelect }: BookCardProps) {
+function BookCard({ bookTitle, subtitle, author, readPercent, isbn, imageId, isSelected, onSelect }: BookCardProps) {
     const [coverUrl, setCoverUrl] = useState<string>('');
     const [progress, setProgress] = useState<number>(Math.round(readPercent));
 
     useEffect(() => {
         const loadCover = async () => {
             try {
-                const url = await window.api.fetchBookCover(bookTitle, isbn);
+                if (!imageId) {
+                    console.warn(`No image ID found for book: ${bookTitle}`);
+                    return;
+                }
+                const url = await window.api.fetchBookCover(imageId);
                 setCoverUrl(url);
             } catch (error) {
                 console.error('Error loading book cover:', error);

@@ -38,8 +38,8 @@ const api = {
 
     // await koboService.close();
   },
-  fetchBookCover: async (bookTitle: string, isbn: string) => {
-    return fetchBookCover(bookTitle, isbn);
+  fetchBookCover: async (imageId: string) => {
+    return fetchBookCover(imageId);
   }
 };
 

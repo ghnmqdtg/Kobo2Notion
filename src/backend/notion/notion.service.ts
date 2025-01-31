@@ -18,7 +18,8 @@ export class NotionService {
     }
 
     async getOrCreatePage(book: Book): Promise<{ parentPageId: string; highlightPageId: string; }> {
-        const coverUrl = await fetchBookCover(book.bookTitle, book.isbn);
+        console.log('book: ', book.imageId);
+        const coverUrl = await fetchBookCover(book.imageId ?? '');
 
         const properties: any = {
             Title: { title: [{ text: { content: book.bookTitle } }] },
