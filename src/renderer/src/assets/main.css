@@ -29,6 +29,9 @@ code {
 }
 
 #root {
+  width: 80%;
+  max-width: 1200px;
+  min-width: 800px;
   display: flex;
   align-items: center;
   justify-content: center;
