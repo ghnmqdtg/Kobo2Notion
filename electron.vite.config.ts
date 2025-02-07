@@ -18,6 +18,11 @@ export default defineConfig({
         '@': resolve('src/renderer/src'),
       }
     },
-    plugins: [react()]
+    plugins: [react()],
+    server: {
+      watch: {
+          ignored: ['**/.env*']
+        }
+    },
   },
 });
