@@ -5,36 +5,35 @@ import icon from '../../resources/icon.png?asset';
 import fs from 'fs/promises';
 import path from 'path';
 
-async function updateEnvFile(key: string, value: string): Promise<void> {
+async function updateEnvFile(entries: { key: string, value: string }[]): Promise<void> {
   const envPath = path.resolve(__dirname, '../../.env');
   let content: string;
   
   try {
-    content = await fs.readFile(envPath, 'utf-8');
-    console.log('content', content);
+    content = await fs.readFile(envPath, 'utf-8')
   } catch (error) {
     content = '';
     console.error('Failed to read .env file:', error);
   }
 
-  const lines = content.split('\n');
-  const keyExists = lines.some((line, index) => {
-    if (line.startsWith(`${key}=`)) {
-      console.log('line', line);
-      lines[index] = `${key}=${value}`;
-      return true;
+  let lines = content.split('\n');
+
+  // Process all entries and update corresponding lines
+  entries.forEach((entry) => {
+    const matchingLineIndex = lines.findIndex((line) => 
+      line.match(new RegExp(entry.key))
+    );
+
+    if (matchingLineIndex !== -1) {
+      lines[matchingLineIndex] = `${entry.key}=${entry.value}`;
     }
-    return false;
   });
 
-  console.log('keyExists', keyExists);
-
-  if (!keyExists) {
-    lines.push(`${key}=${value}`);
-  }
-
   await fs.writeFile(envPath, lines.join('\n'));
-  console.log('updated');
+
+  console.log('Updated env file');
+}
+
 }
 
 async function ensureEnvFile(): Promise<void> {

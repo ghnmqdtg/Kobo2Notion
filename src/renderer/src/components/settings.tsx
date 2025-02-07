@@ -20,10 +20,8 @@ export function Settings() {
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            console.log('values', values);
-            for (const [key, value] of Object.entries(values)) {
-                await window.api.updateEnvValue(key, value);
-            }
+            const entries = Object.entries(values).map(([key, value]) => ({ key, value }));
+            await window.api.updateEnvValue(entries);
             toast.success('Settings saved successfully');
         } catch (error) {
             toast.error('Failed to save settings');

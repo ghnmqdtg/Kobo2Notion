@@ -41,11 +41,13 @@ const api = {
   fetchBookCover: async (imageId: string) => {
     return fetchBookCover(imageId);
   },
-  updateEnvValue: async (key: string, value: string) => {
+  updateEnvValue: async (entries: { key: string, value: string }[]) => {
     try {
-      ipcRenderer.send('update-env', { key, value });
+      ipcRenderer.send('update-env', entries);
       // Update the cached env value
-      env[key] = value;
+      entries.forEach(({ key, value }) => {
+        env[key] = value;
+      });
       return true;
     } catch (error) {
       console.error('Error updating env value:', error);
