@@ -1,10 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navbar } from '@/components/navbar';
 import { Books } from '@/components/books';
 import { Settings } from '@/components/settings';
 
 function App(): JSX.Element {
   const [showSettings, setShowSettings] = useState(false);
+
+  useEffect(() => {
+    // Check if all required env values are set
+    const requiredEnvs = [
+      'SQLITE_SOURCE',
+      'NOTION_API_KEY',
+      'NOTION_DATABASE_ID',
+      'GEMINI_API_KEY'
+    ];
+
+    const missingEnvs = requiredEnvs.filter(key => !window.env[key]);
+    console.log('missingEnvs', missingEnvs);
+    if (missingEnvs.length > 0) {
+      setShowSettings(true);
+    }
+  }, []);
 
   return (
     <div className="h-screen flex flex-col w-full">

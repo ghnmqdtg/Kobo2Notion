@@ -3,7 +3,7 @@ import path from 'path';
 
 // Load environment variables from .env file
 // ! The path should be update after electron migration
-dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 export interface EnvironmentConfig {
     SQLITE_SOURCE: string;
@@ -44,4 +44,4 @@ const getConfig = (): EnvironmentConfig => {
     return config as EnvironmentConfig;
 };
 
-export const env = getConfig(); 
+export const env = getConfig();

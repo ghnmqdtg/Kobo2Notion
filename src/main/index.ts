@@ -2,6 +2,57 @@ import { app, shell, BrowserWindow, ipcMain, globalShortcut } from 'electron';
 import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
+import fs from 'fs/promises';
+import path from 'path';
+
+async function updateEnvFile(key: string, value: string): Promise<void> {
+  const envPath = path.resolve(__dirname, '../../.env');
+  let content: string;
+  
+  try {
+    content = await fs.readFile(envPath, 'utf-8');
+    console.log('content', content);
+  } catch (error) {
+    content = '';
+    console.error('Failed to read .env file:', error);
+  }
+
+  const lines = content.split('\n');
+  const keyExists = lines.some((line, index) => {
+    if (line.startsWith(`${key}=`)) {
+      console.log('line', line);
+      lines[index] = `${key}=${value}`;
+      return true;
+    }
+    return false;
+  });
+
+  console.log('keyExists', keyExists);
+
+  if (!keyExists) {
+    lines.push(`${key}=${value}`);
+  }
+
+  await fs.writeFile(envPath, lines.join('\n'));
+  console.log('updated');
+}
+
+async function ensureEnvFile(): Promise<void> {
+  const envPath = path.resolve(__dirname, '../../.env');
+  const exampleEnvPath = path.resolve(__dirname, '../../.env.example');
+
+  try {
+    await fs.access(envPath);
+  } catch {
+    // If .env doesn't exist, copy from .env.example
+    try {
+      const exampleContent = await fs.readFile(exampleEnvPath, 'utf-8');
+      await fs.writeFile(envPath, exampleContent);
+    } catch (error) {
+      console.error('Failed to create .env file:', error);
+    }
+  }
+}
 
 function createWindow(): void {
   // Create the browser window.
@@ -50,12 +101,19 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   }
+
+  // Add IPC handlers
+  ipcMain.on('update-env', async (_, { key, value }) => {
+    console.log('update-env', key, value);
+    await updateEnvFile(key, value);
+  });
 }
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  await ensureEnvFile();
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron');
 
@@ -65,9 +123,6 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window);
   });
-
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'));
 
   createWindow();
 

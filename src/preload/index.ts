@@ -1,4 +1,4 @@
-import { contextBridge } from 'electron';
+import { contextBridge, ipcRenderer } from 'electron';
 import { electronAPI } from '@electron-toolkit/preload';
 import { KoboService } from '../backend/kobo/kobo.service';
 import { NotionService } from '../backend/notion/notion.service';
@@ -40,6 +40,17 @@ const api = {
   },
   fetchBookCover: async (imageId: string) => {
     return fetchBookCover(imageId);
+  },
+  updateEnvValue: async (key: string, value: string) => {
+    try {
+      ipcRenderer.send('update-env', { key, value });
+      // Update the cached env value
+      env[key] = value;
+      return true;
+    } catch (error) {
+      console.error('Error updating env value:', error);
+      return false;
+    }
   }
 };
 
