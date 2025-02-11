@@ -117,12 +117,10 @@ function createWindow(): void {
   ipcMain.on('update-env', async (event, entries: { key: string; value: string }[]) => {
     try {
       await updateEnvFile(entries);
-      
       // Reload the env file
       dotenv.config({ path: envPath, override: true });
-      
       // Send confirmation back to renderer
-      event.reply('env-change', entries);
+      event.reply('env-change', entries)
     } catch (error) {
       console.error('Error updating env:', error);
       event.reply('env-change-error', error);
