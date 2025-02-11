@@ -34,6 +34,16 @@ async function updateEnvFile(entries: { key: string, value: string }[]): Promise
   console.log('Updated env file');
 }
 
+function cleanEnvKeys(): void {
+  console.log('cleaning env keys: ', process.env.NOTION_API, process.env.NOTION_DB, process.env.GEMINI_API, process.env.GEMINI_MODEL, process.env.SUMMARIZE_ENABLED, process.env.SUMMARIZE_LANGUAGE);
+  delete process.env.SQLITE_SOURCE;
+  delete process.env.NOTION_API;
+  delete process.env.NOTION_DB;
+  delete process.env.GEMINI_API;
+  delete process.env.GEMINI_MODEL;
+  delete process.env.SUMMARIZE_ENABLED;
+  delete process.env.SUMMARIZE_LANGUAGE;
+  console.log('cleaned env keys: ', process.env.NOTION_API, process.env.NOTION_DB, process.env.GEMINI_API, process.env.GEMINI_MODEL, process.env.SUMMARIZE_ENABLED, process.env.SUMMARIZE_LANGUAGE);
 }
 
 async function ensureEnvFile(): Promise<void> {
