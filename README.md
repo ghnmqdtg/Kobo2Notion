@@ -15,7 +15,7 @@ Kobo2Notion is an Electron application built with TypeScript and React that extr
 - Free and open-source
 
 ## Prerequisites
-- Node.js 18 or later
+- Node.js 18 or later (tested on v22.2.0)
 - Kobo e-reader
 - Notion account
 - Google Cloud account (for Gemini API access)
@@ -49,7 +49,7 @@ Kobo2Notion is an Electron application built with TypeScript and React that extr
    - Notion API Key
    - Notion Database ID
    - Gemini API Key (optional, for bookmark summarization)
-   > How can I get these values? Please refer to the [Configuration](#configuration) section.
+   > How can I get these values? Please refer to the [Config](#how-can-i-get-the-values-for-the-configuration) section.
 
 
 3. After saving your settings, the application will display your Kobo library. Select the books you want to export and click the export button.
@@ -74,24 +74,13 @@ Kobo2Notion is an Electron application built with TypeScript and React that extr
             <img src="assets/demo_03.png" width="70%">
         </p>
 
-## Building for Distribution
-To build the application for your platform:
+## How can I get the values for the configuration?
 
-```bash
-# For Windows
-npm run build:win
+<details>
+<summary>Click to read the details</summary>
 
-# For macOS
-npm run build:mac
+1. The path of the `KoboReader.sqlite` file
 
-# For Linux
-npm run build:linux
-```
-
-## Configuration
-Connect your Kobo e-reader to your computer before every time you launch the app.
-
-1.  The path of the `KoboReader.sqlite` file
    - MacOS: `/Volumes/KOBOeReader/.kobo/KoboReader.sqlite`
    - Windows: Usually under the drive letter assigned to your Kobo device, e.g., `E:\.kobo\KoboReader.sqlite`
 
@@ -144,6 +133,11 @@ Connect your Kobo e-reader to your computer before every time you launch the app
     <p align="left">
         <img src="assets/gemini_key_01.png" width="70%">
     </p>
+
+</details>
+
+## Building for Distribution
+Currently, I've tried to build the app for MacOS by running `npm run build:mac`. However, I encountered an issue that the `sqlite3` module is not found. I'm still working on it ;(
 
 ## Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
