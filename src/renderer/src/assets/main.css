@@ -39,6 +39,12 @@ code {
   margin-bottom: 80px;
 }
 
+#footer {
+  width: 80%;
+  max-width: 1200px;
+  min-width: 800px;
+}
+
 .logo {
   margin-bottom: 20px;
   -webkit-user-drag: none;

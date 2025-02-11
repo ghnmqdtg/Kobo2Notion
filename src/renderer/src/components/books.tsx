@@ -3,6 +3,7 @@ import { BookGrid } from '@/components/book-grid';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, AlertCircle } from 'lucide-react';
+import { Footer } from '@/components/footer';
 import { Book } from '../../../backend/models';
 
 export function Books() {
@@ -12,6 +13,11 @@ export function Books() {
     const [error, setError] = useState<string | null>(null);
     const [isExporting, setIsExporting] = useState(false);
     const [retryCount, setRetryCount] = useState(0);
+    const [exportProgress, setExportProgress] = useState({
+        currentBook: '',
+        currentStep: '',
+        completed: 0
+    });
 
     const maxRetries = 3;
     const retryInterval = 5000;
@@ -65,18 +71,37 @@ export function Books() {
         if (selectedBooks.size === 0) return;
 
         setIsExporting(true);
+        let completed = 0;
+
         try {
             for (const bookTitle of selectedBooks) {
                 const book = books.find((b) => b.bookTitle === bookTitle);
                 if (!book) continue;
 
+                setExportProgress({
+                    currentBook: book.bookTitle,
+                    currentStep: 'Exporting highlights...',
+                    completed
+                });
+
                 await window.api.exportBook(book);
+                completed++;
+
+                setExportProgress(prev => ({
+                    ...prev,
+                    completed
+                }));
             }
             setSelectedBooks(new Set());
         } catch (error) {
             console.error('Error exporting books:', error);
         } finally {
             setIsExporting(false);
+            setExportProgress({
+                currentBook: '',
+                currentStep: '',
+                completed: 0
+            });
         }
     };
 
@@ -109,14 +134,26 @@ export function Books() {
     }
 
     return (
-        <>
+        <div className="pb-16 relative">
             <div className="flex justify-between items-center p-4 pb-0">
                 <h1 className="text-2xl font-bold">Your Books</h1>
-                <Button onClick={handleExport} disabled={selectedBooks.size === 0 || isExporting}>
-                    {isExporting ? 'Exporting...' : 'Export to Notion'}
-                </Button>
             </div>
-            <BookGrid books={books} selectedBooks={selectedBooks} onSelectBook={handleSelectBook} />
-        </>
+            <div className="relative">
+                <BookGrid
+                    books={books}
+                    selectedBooks={selectedBooks}
+                    onSelectBook={handleSelectBook}
+                />
+                <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+            </div>
+            <Footer
+                selectedCount={selectedBooks.size}
+                totalSelected={selectedBooks.size}
+                isExporting={isExporting}
+                currentBook={exportProgress.currentBook}
+                currentStep={exportProgress.currentStep}
+                onExport={handleExport}
+            />
+        </div>
     );
 } 

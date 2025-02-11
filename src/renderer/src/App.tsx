@@ -25,7 +25,7 @@ function App(): JSX.Element {
   return (
     <div className="h-screen flex flex-col w-full">
       <Navbar onSettingsClick={() => setShowSettings(!showSettings)} />
-      <main className="flex-1 overflow-hidden">
+      <main className="flex-1 overflow-auto">
         <div className="container mx-auto h-full">
           {showSettings ? <Settings /> : <Books />}
         </div>

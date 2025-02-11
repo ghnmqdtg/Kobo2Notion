@@ -63,7 +63,7 @@ function BookCard({ bookTitle, subtitle, author, readPercent, isbn, imageId, isS
                         </div>
                     )}
                 </div>
-                <CardContent className="flex-1 p-4 pt-0">
+                <CardContent className="flex-1 p-4 pt-0 pb-4">
                     <div className="space-y-1">
                         <h3 className="font-bold line-clamp-2">{bookTitle}</h3>
                         {/* {subtitle && (
