@@ -11,6 +11,16 @@ const koboService = new KoboService();
 const notionService = new NotionService();
 const geminiService = new GeminiService();
 
+// Reload env values once the env file is updated
+const reloadEnvValues = (entries: { key: string; value: string }[]) => {
+  entries.forEach(({ key, value }) => {
+    // Update the env object
+    env[key] = value;
+    // Update process.env
+    process.env[key] = value;
+  });
+};
+
 // Custom APIs for renderer
 const api = {
   getBooks: async () => {
@@ -41,14 +51,20 @@ const api = {
   fetchBookCover: async (imageId: string) => {
     return fetchBookCover(imageId);
   },
-  updateEnvValue: async (entries: { key: string, value: string }[]) => {
+  updateEnvValue: async (entries: { key: string; value: string }[]) => {
     try {
       ipcRenderer.send('update-env', entries);
-      // Update the cached env value
-      entries.forEach(({ key, value }) => {
-        env[key] = value;
+      
+      // Listen for the confirmation that env was updated
+      return new Promise((resolve, reject) => {
+        ipcRenderer.once('env-change', (_event, updatedEntries) => {
+          reloadEnvValues(updatedEntries);
+          resolve(true);
+        });
+
+        // Add timeout to prevent hanging
+        setTimeout(() => reject(new Error('Timeout updating env')), 5000);
       });
-      return true;
     } catch (error) {
       console.error('Error updating env value:', error);
       return false;

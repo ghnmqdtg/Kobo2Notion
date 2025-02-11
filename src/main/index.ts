@@ -113,10 +113,20 @@ function createWindow(): void {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   }
 
-  // Add IPC handlers
-  ipcMain.on('update-env', async (_, { key, value }) => {
-    console.log('update-env', key, value);
-    await updateEnvFile(key, value);
+  // Update IPC handler to send confirmation
+  ipcMain.on('update-env', async (event, entries: { key: string; value: string }[]) => {
+    try {
+      await updateEnvFile(entries);
+      
+      // Reload the env file
+      dotenv.config({ path: envPath, override: true });
+      
+      // Send confirmation back to renderer
+      event.reply('env-change', entries);
+    } catch (error) {
+      console.error('Error updating env:', error);
+      event.reply('env-change-error', error);
+    }
   });
 }
 
