@@ -1,10 +1,3 @@
-import dotenv from 'dotenv';
-import path from 'path';
-
-// Load environment variables from .env file
-// ! The path should be update after electron migration
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
-
 export interface EnvironmentConfig {
     SQLITE_SOURCE: string;
     NOTION_API_KEY: string;
@@ -15,33 +8,40 @@ export interface EnvironmentConfig {
     SUMMARIZE_LANGUAGE: string;
 }
 
-// Validate environment variables
-const getConfig = (): EnvironmentConfig => {
+// Providing defaults for missing values (or simply empty strings)
+const defaultConfig: EnvironmentConfig = {
+    SQLITE_SOURCE: '',
+    NOTION_API_KEY: '',
+    NOTION_DATABASE_ID: '',
+    GEMINI_API_KEY: '',
+    GEMINI_MODEL: 'gemini-1.5-flash',
+    SUMMARIZE_ENABLED: false,
+    SUMMARIZE_LANGUAGE: 'zh',
+};
 
-    const config = {
-        SQLITE_SOURCE: process.env.SQLITE_SOURCE,
-        NOTION_API_KEY: process.env.NOTION_API,
-        NOTION_DATABASE_ID: process.env.NOTION_DB,
-        GEMINI_API_KEY: process.env.GEMINI_API,
-        GEMINI_MODEL: process.env.GEMINI_MODEL,
-        SUMMARIZE_ENABLED: process.env.SUMMARIZE_ENABLED === 'true',
-        SUMMARIZE_LANGUAGE: process.env.SUMMARIZE_LANGUAGE,
+const initConfig = (): EnvironmentConfig => {
+    const config: EnvironmentConfig = {
+        SQLITE_SOURCE: process.env.SQLITE_SOURCE || defaultConfig.SQLITE_SOURCE,
+        NOTION_API_KEY: process.env.NOTION_API || defaultConfig.NOTION_API_KEY,
+        NOTION_DATABASE_ID: process.env.NOTION_DB || defaultConfig.NOTION_DATABASE_ID,
+        GEMINI_API_KEY: process.env.GEMINI_API || defaultConfig.GEMINI_API_KEY,
+        GEMINI_MODEL: process.env.GEMINI_MODEL || defaultConfig.GEMINI_MODEL,
+        SUMMARIZE_ENABLED: process.env.SUMMARIZE_ENABLED === 'true' || defaultConfig.SUMMARIZE_ENABLED,
+        SUMMARIZE_LANGUAGE: process.env.SUMMARIZE_LANGUAGE || defaultConfig.SUMMARIZE_LANGUAGE,
     };
 
-    console.info('config', config);
-
-    // Validate that all required environment variables are present
     const missingKeys = Object.entries(config)
         .filter(([_, value]) => !value)
         .map(([key]) => key);
 
     if (missingKeys.length > 0) {
-        throw new Error(
-            `Missing required environment variables: ${missingKeys.join(', ')}`
+        console.warn(
+            `Incomplete config. Missing values for: ${missingKeys.join(', ')}. ` +
+            'Display settings page to collect these values.'
         );
     }
 
-    return config as EnvironmentConfig;
+    return config;
 };
 
-export const env = getConfig();
+export const env = initConfig();
