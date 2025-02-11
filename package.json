@@ -1,9 +1,9 @@
 {
   "name": "kobo2notion",
   "version": "1.0.0",
-  "description": "An Electron application with React and TypeScript",
+  "description": "Easily sync your Kobo highlights to Notion.",
   "main": "./out/main/index.js",
-  "author": "example.com",
+  "author": "ghnmqdtg@gmail.com",
   "homepage": "https://electron-vite.org",
   "scripts": {
     "format": "prettier --write .",
