@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from "@/components/ui/password-input";
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -52,16 +53,14 @@ export function Settings() {
                     <Separator />
                     <div className="space-y-2">
                         <label className="text-md font-medium">Notion API Key</label>
-                        <Input
-                            type="password"
+                        <PasswordInput
                             value={values.NOTION_API}
                             onChange={(e) => handleChange('NOTION_API', e.target.value)}
                         />
                     </div>
                     <div className="space-y-2">
                         <label className="text-md font-medium">Notion Database ID</label>
-                        <Input
-                            type="password"
+                        <PasswordInput
                             value={values.NOTION_DB}
                             onChange={(e) => handleChange('NOTION_DB', e.target.value)}
                         />
@@ -69,8 +68,7 @@ export function Settings() {
                     <Separator />
                     <div className="space-y-2">
                         <label className="text-md font-medium">Gemini API Key</label>
-                        <Input
-                            type="password"
+                        <PasswordInput
                             value={values.GEMINI_API}
                             onChange={(e) => handleChange('GEMINI_API', e.target.value)}
                         />
