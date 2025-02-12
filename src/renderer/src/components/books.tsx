@@ -49,7 +49,7 @@ export function Books() {
             setRetryCount(0);
         } catch (error) {
             console.error('Error loading books:', error);
-            setError('Failed to load the books, please check the file path at Settings.');
+            setError('Failed to load the books.\nPlease check the file path at Settings and try again.');
         } finally {
             setIsLoading(false);
         }
@@ -107,15 +107,26 @@ export function Books() {
 
     if (error) {
         return (
-            <div className="flex flex-col items-center justify-center h-full space-y-6 p-4">
-                <Alert variant="destructive" className="max-w-md flex space-x-2 p-2">
-                    <AlertCircle className="w-4" />
-                    <AlertDescription className="text-md">{error}</AlertDescription>
+            <div className="flex flex-col items-center justify-center h-full space-y-6">
+                <Alert variant="destructive" className="max-w-lg rounded-md">
+                    <div className="flex items-center space-x-3">
+                        <AlertCircle className="h-6 w-6" />
+                        <AlertDescription className="text-lg whitespace-pre-line">
+                            {error}
+                        </AlertDescription>
+                    </div>
                 </Alert>
-                <Button onClick={loadBooks} variant="outline" disabled={retryCount < maxRetries}>
-                    <Loader2 className="mr-2 h-4 w-4" />
+                <Button
+                    className="text-md font-bold"
+                    onClick={loadBooks}
+                    variant="outline"
+                    disabled={retryCount < maxRetries}
+                >
                     {retryCount < maxRetries ? (
-                        <span className="ml-1">Retrying... ({retryCount}/{maxRetries})</span>
+                        <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span className="ml-1">Retrying... ({retryCount}/{maxRetries})</span>
+                        </>
                     ) : (
                         'Retry'
                     )}
