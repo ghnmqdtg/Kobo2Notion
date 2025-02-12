@@ -90,19 +90,9 @@ export function Settings() {
         <>
             <div className="flex justify-between items-center p-4 pb-0">
                 <h1 className="text-2xl font-bold">Settings</h1>
-                <div className="space-x-2">
-                    {!isFirstTime && (
-                        <Button variant="outline" onClick={() => window.location.reload()}>
-                            Cancel
-                        </Button>
-                    )}
-                    <Button onClick={handleSave} disabled={!isValid() || isSaving}>
-                        {isSaving ? 'Saving...' : 'Save Changes'}
-                    </Button>
-                </div>
             </div>
             <div className="p-4 flex justify-center">
-                <div className="grid gap-6 w-1/3">
+                <div className="grid gap-6 w-full lg:w-1/2 xl:w-2/5">
                     <div className="space-y-2">
                         <label className="text-md font-medium">Kobo Highlights File Path</label>
                         <Input
@@ -178,6 +168,26 @@ export function Settings() {
                                 </div>
                             </>
                         )}
+                    </div>
+
+                    <Separator />
+                    <div className="flex justify-center space-x-2">
+                        {!isFirstTime && (
+                            <Button
+                                variant="outline"
+                                className="w-full text-md font-bold"
+                                onClick={() => window.location.reload()}
+                            >
+                                Cancel
+                            </Button>
+                        )}
+                        <Button
+                            className="w-full text-md font-bold"
+                            onClick={handleSave}
+                            disabled={!isValid() || isSaving}
+                        >
+                            {isSaving ? 'Saving...' : 'Save'}
+                        </Button>
                     </div>
                 </div>
             </div>
