@@ -3,7 +3,9 @@ import { Book } from '../../../backend/models';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from '@/lib/utils';
+import { useNetworkState } from '@uidotdev/usehooks';
 
 interface BookGridProps {
     books: Book[];
@@ -19,6 +21,8 @@ interface BookCardProps extends Book {
 function BookCard({ bookTitle, subtitle, author, readPercent, isbn, imageId, isSelected, onSelect }: BookCardProps) {
     const [coverUrl, setCoverUrl] = useState<string>('');
     const [progress, setProgress] = useState<number>(Math.round(readPercent));
+    const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
+    const networkState = useNetworkState();
 
     useEffect(() => {
         const loadCover = async () => {
@@ -31,10 +35,38 @@ function BookCard({ bookTitle, subtitle, author, readPercent, isbn, imageId, isS
                 setCoverUrl(url);
             } catch (error) {
                 console.error('Error loading book cover:', error);
+            } finally {
+                setHasAttemptedLoad(true);
             }
         };
-        loadCover();
-    }, [bookTitle, isbn]);
+
+        if (networkState.online && !hasAttemptedLoad) {
+            loadCover();
+        }
+    }, [bookTitle, isbn, networkState.online, hasAttemptedLoad]);
+
+    const renderCover = () => {
+        if (coverUrl) {
+            return (
+                <img
+                    src={coverUrl}
+                    alt={`${bookTitle} cover`}
+                    className="object-cover w-full h-full select-none"
+                    draggable="false"
+                />
+            );
+        }
+
+        if (!networkState.online && !hasAttemptedLoad) {
+            return <Skeleton className="w-full h-full" />;
+        }
+
+        return (
+            <div className="w-full h-full bg-muted flex items-center justify-center">
+                <span className="text-muted-foreground">No cover</span>
+            </div>
+        );
+    };
 
     return (
         <div className={cn(
@@ -50,18 +82,7 @@ function BookCard({ bookTitle, subtitle, author, readPercent, isbn, imageId, isS
                 onClick={onSelect}
             >
                 <div className="relative aspect-[3/4] w-full p-4">
-                    {coverUrl ? (
-                        <img
-                            src={coverUrl}
-                            alt={`${bookTitle} cover`}
-                            className="object-cover w-full h-full select-none"
-                            draggable="false"
-                        />
-                    ) : (
-                        <div className="w-full h-full bg-muted flex items-center justify-center">
-                            <span className="text-muted-foreground">No cover</span>
-                        </div>
-                    )}
+                    {renderCover()}
                 </div>
                 <CardContent className="flex-1 p-4 pt-0 pb-4">
                     <div className="space-y-1">
