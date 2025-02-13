@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useNetworkState } from '@uidotdev/usehooks';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Loader2 } from 'lucide-react';
 
 interface FooterProps {
     selectedCount: number;
@@ -56,7 +56,10 @@ export function Footer({
                     {!isOnline.online
                         ? 'No Network Connection ;('
                         : isExporting
-                            ? 'Exporting...'
+                            ? <div className="flex items-center space-x-2">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span>Exporting...</span>
+                            </div>
                             : 'Export to Notion'
                     }
                 </Button>
