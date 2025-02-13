@@ -71,6 +71,9 @@ const api = {
       console.error('Error updating env value:', error);
       return false;
     }
+  },
+  openFileDialog: async () => {
+    return ipcRenderer.invoke('open-file-dialog');
   }
 };
 

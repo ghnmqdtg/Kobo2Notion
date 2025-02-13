@@ -7,6 +7,7 @@ export interface IElectronAPI {
   exportBook: (book: Book) => Promise<void>;
   fetchBookCover: (imageId: string) => Promise<string>;
   updateEnvValue: (entries: { key: string, value: string }[]) => Promise<boolean>;
+  openFileDialog: () => Promise<string | null>;
 }
 
 declare global {

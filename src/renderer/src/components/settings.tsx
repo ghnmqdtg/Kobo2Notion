@@ -12,6 +12,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { FolderOpen } from 'lucide-react';
 
 interface SettingsValues {
     SQLITE_SOURCE: string;
@@ -86,6 +87,18 @@ export function Settings() {
         }
     };
 
+    const handleFilePick = async () => {
+        try {
+            const filePath = await window.api.openFileDialog();
+            if (filePath) {
+                handleChange('SQLITE_SOURCE', filePath);
+            }
+        } catch (error) {
+            console.error('Error picking file:', error);
+            toast.error('Failed to select file');
+        }
+    };
+
     return (
         <>
             <div className="flex justify-between items-center p-4 pb-0">
@@ -95,11 +108,22 @@ export function Settings() {
                 <div className="grid gap-6 w-full lg:w-1/2 xl:w-2/5">
                     <div className="space-y-2">
                         <label className="text-md font-medium">Kobo Highlights File Path</label>
-                        <Input
-                            type="text"
-                            value={values.SQLITE_SOURCE}
-                            onChange={(e) => handleChange('SQLITE_SOURCE', e.target.value)}
-                        />
+                        <div className="flex space-x-2">
+                            <Input
+                                type="text"
+                                value={values.SQLITE_SOURCE}
+                                onChange={(e) => handleChange('SQLITE_SOURCE', e.target.value)}
+                                placeholder="/Volumes/KOBOeReader/.kobo/KoboReader.sqlite"
+                            />
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={handleFilePick}
+                                title="Choose file"
+                            >
+                                <FolderOpen className="h-4 w-4" />
+                            </Button>
+                        </div>
                     </div>
                     <Separator />
                     <div className="space-y-2">
