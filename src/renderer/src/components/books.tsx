@@ -159,10 +159,10 @@ export function Books() {
             </div>
             <Footer
                 selectedCount={selectedBooks.size}
-                totalSelected={selectedBooks.size}
                 isExporting={isExporting}
                 currentBook={exportProgress.currentBook}
                 currentStep={exportProgress.currentStep}
+                completed={exportProgress.completed}
                 onExport={handleExport}
             />
         </div>
