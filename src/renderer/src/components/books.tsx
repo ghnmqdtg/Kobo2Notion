@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { BookGrid } from '@/components/book-grid';
+import { BookList } from './book-list';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, AlertCircle, CheckSquare, Bold } from 'lucide-react';
-import { Toggle } from "@/components/ui/toggle";
+import { Loader2, AlertCircle, CheckSquare, Bold, Underline, Italic, LayoutGrid, List } from 'lucide-react';
+import { Toggle } from '@/components/ui/toggle';
 import {
     Tooltip,
     TooltipContent,
@@ -26,6 +27,7 @@ export function Books() {
         completed: 0
     });
     const [selectAll, setSelectAll] = useState(false);
+    const [isGridView, setIsGridView] = useState(true);
 
     const maxRetries = 3;
     const retryInterval = 5000;
@@ -185,29 +187,51 @@ export function Books() {
         <div className="pb-16 relative">
             <div className="flex justify-between items-center p-4 pb-0">
                 <h1 className="text-2xl font-bold">Your Books</h1>
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Toggle
-                                pressed={selectAll}
-                                onPressedChange={setSelectAll}
-                                aria-label="Toggle select all"
-                            >
-                                <CheckSquare className="h-4 w-4" />
-                            </Toggle>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Select all books</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
+
+                <div className="flex items-center gap-2">
+                    <Toggle
+                        pressed={selectAll}
+                        onPressedChange={setSelectAll}
+                        aria-label="Toggle select all"
+                    >
+                        <CheckSquare className="h-4 w-4" />
+                        <span>Select all</span>
+                    </Toggle>
+
+                    <Toggle
+                        pressed={isGridView}
+                        onPressedChange={setIsGridView}
+                        aria-label="Toggle view"
+                    >
+                        {isGridView ? (
+                            <>
+                                <List className="h-4 w-4" />
+                                <span>List view</span>
+                            </>
+                        ) : (
+                            <>
+                                <LayoutGrid className="h-4 w-4" />
+                                <span>Grid view</span>
+                            </>
+                        )}
+                    </Toggle>
+                </div>
+
             </div>
             <div className="relative">
-                <BookGrid
-                    books={books}
-                    selectedBooks={selectedBooks}
-                    onSelectBook={handleSelectBook}
-                />
+                {isGridView ? (
+                    <BookGrid
+                        books={books}
+                        selectedBooks={selectedBooks}
+                        onSelectBook={handleSelectBook}
+                    />
+                ) : (
+                    <BookList
+                        books={books}
+                        selectedBooks={selectedBooks}
+                        onSelectBook={handleSelectBook}
+                    />
+                )}
                 <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent pointer-events-none" />
             </div>
             <Footer
