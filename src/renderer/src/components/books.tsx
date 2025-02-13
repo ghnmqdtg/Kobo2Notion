@@ -77,7 +77,9 @@ export function Books() {
             const newSet = new Set(prev);
             if (newSet.has(bookTitle)) {
                 newSet.delete(bookTitle);
-                setSelectAll(false);
+                if (newSet.size < books.length) {
+                    setSelectAll(false);
+                }
             } else {
                 newSet.add(bookTitle);
                 if (newSet.size === books.length) {
@@ -180,25 +182,23 @@ export function Books() {
     return (
         <div className="pb-16 relative">
             <div className="flex justify-between items-center p-4 pb-0">
-                <div className="flex items-center space-x-4">
-                    <h1 className="text-2xl font-bold">Your Books</h1>
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Toggle
-                                    pressed={selectAll}
-                                    onPressedChange={setSelectAll}
-                                    aria-label="Toggle select all"
-                                >
-                                    <CheckSquare className="h-4 w-4" />
-                                </Toggle>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Select all books</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                </div>
+                <h1 className="text-2xl font-bold">Your Books</h1>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Toggle
+                                pressed={selectAll}
+                                onPressedChange={setSelectAll}
+                                aria-label="Toggle select all"
+                            >
+                                <CheckSquare className="h-4 w-4" />
+                            </Toggle>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Select all books</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
             </div>
             <div className="relative">
                 <BookGrid
