@@ -4,7 +4,8 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Switch } from "@/components/ui/switch";
-import { toast } from 'sonner';
+import { useToast } from "@/hooks/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 import {
     Select,
     SelectContent,
@@ -36,11 +37,16 @@ export function Settings() {
     });
     const [isSaving, setIsSaving] = useState(false);
     const [isFirstTime, setIsFirstTime] = useState(true);
+    const { toast } = useToast();
 
     useEffect(() => {
         // Check if it's first time setup
         setIsFirstTime(!values.SQLITE_SOURCE && !values.NOTION_API && !values.NOTION_DB);
     }, []);
+
+    const validateSqlitePath = (path: string): boolean => {
+        return path.toLowerCase().includes('koboreader.sqlite');
+    };
 
     const handleChange = (key: string, value: string | boolean) => {
         setValues(prev => ({ ...prev, [key]: value }));
@@ -78,9 +84,17 @@ export function Settings() {
                 value: typeof value === 'boolean' ? value.toString() : value
             }));
             await window.api.updateEnvValue(entries);
-            toast.success('Settings saved successfully');
+            toast({
+                title: 'Settings saved successfully',
+                description: 'Please restart the app to apply changes',
+                variant: 'default'
+            });
         } catch (error) {
-            toast.error('Failed to save settings');
+            toast({
+                title: 'Failed to save settings',
+                description: 'Please check your settings and try again',
+                variant: 'destructive'
+            });
             console.error('Error saving settings:', error);
         } finally {
             setIsSaving(false);
@@ -91,11 +105,23 @@ export function Settings() {
         try {
             const filePath = await window.api.openFileDialog();
             if (filePath) {
+                if (!validateSqlitePath(filePath)) {
+                    toast({
+                        title: 'Invalid file path',
+                        description: 'Must be KoboReader.sqlite',
+                        action: <ToastAction altText="Try again" > Try again</ToastAction>,
+                    });
+                    return;
+                }
                 handleChange('SQLITE_SOURCE', filePath);
             }
         } catch (error) {
             console.error('Error picking file:', error);
-            toast.error('Failed to select file');
+            toast({
+                title: 'Failed to select file',
+                description: 'Please try again',
+                variant: 'destructive'
+            });
         }
     };
 
@@ -112,8 +138,9 @@ export function Settings() {
                             <Input
                                 type="text"
                                 value={values.SQLITE_SOURCE}
-                                onChange={(e) => handleChange('SQLITE_SOURCE', e.target.value)}
                                 placeholder="/Volumes/KOBOeReader/.kobo/KoboReader.sqlite"
+                                className={!validateSqlitePath(values.SQLITE_SOURCE) && values.SQLITE_SOURCE ? 'border-destructive' : ''}
+                                readOnly
                             />
                             <Button
                                 variant="outline"
@@ -124,6 +151,11 @@ export function Settings() {
                                 <FolderOpen className="h-4 w-4" />
                             </Button>
                         </div>
+                        {values.SQLITE_SOURCE && !validateSqlitePath(values.SQLITE_SOURCE) && (
+                            <p className="text-sm text-destructive">
+                                File must be KoboReader.sqlite
+                            </p>
+                        )}
                     </div>
                     <Separator />
                     <div className="space-y-2">

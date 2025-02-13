@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Navbar } from '@/components/navbar';
 import { Books } from '@/components/books';
 import { Settings } from '@/components/settings';
+import { Toaster } from "@/components/ui/toaster";
 
 function App(): JSX.Element {
   const [showSettings, setShowSettings] = useState(false);
@@ -30,6 +31,7 @@ function App(): JSX.Element {
           {showSettings ? <Settings /> : <Books />}
         </div>
       </main>
+      <Toaster />
     </div>
   );
 }
