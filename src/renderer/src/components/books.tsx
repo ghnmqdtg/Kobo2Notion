@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { BookGrid } from '@/components/book-grid';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle, CheckSquare, Bold } from 'lucide-react';
+import { Toggle } from "@/components/ui/toggle";
 import { Footer } from '@/components/footer';
 import { Book } from '../../../backend/models';
 
@@ -18,6 +19,7 @@ export function Books() {
         currentStep: '',
         completed: 0
     });
+    const [selectAll, setSelectAll] = useState(false);
 
     const maxRetries = 3;
     const retryInterval = 5000;
@@ -38,6 +40,15 @@ export function Books() {
 
         return () => clearInterval(intervalId);
     }, [error, retryCount]);
+
+    useEffect(() => {
+        if (selectAll) {
+            const allBookTitles = books.map(book => book.bookTitle);
+            setSelectedBooks(new Set(allBookTitles));
+        } else {
+            setSelectedBooks(new Set());
+        }
+    }, [selectAll, books]);
 
     const loadBooks = async () => {
         setIsLoading(true);
@@ -60,8 +71,12 @@ export function Books() {
             const newSet = new Set(prev);
             if (newSet.has(bookTitle)) {
                 newSet.delete(bookTitle);
+                setSelectAll(false);
             } else {
                 newSet.add(bookTitle);
+                if (newSet.size === books.length) {
+                    setSelectAll(true);
+                }
             }
             return newSet;
         });
@@ -159,7 +174,16 @@ export function Books() {
     return (
         <div className="pb-16 relative">
             <div className="flex justify-between items-center p-4 pb-0">
-                <h1 className="text-2xl font-bold">Your Books</h1>
+                <div className="flex items-center space-x-4">
+                    <h1 className="text-2xl font-bold">Your Books</h1>
+                    <Toggle
+                        pressed={selectAll}
+                        onPressedChange={setSelectAll}
+                        aria-label="Toggle select all"
+                    >
+                        <CheckSquare className="h-4 w-4" />
+                    </Toggle>
+                </div>
             </div>
             <div className="relative">
                 <BookGrid
