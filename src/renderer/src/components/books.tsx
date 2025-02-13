@@ -49,7 +49,7 @@ export function Books() {
             setRetryCount(0);
         } catch (error) {
             console.error('Error loading books:', error);
-            setError('Failed to load the books.\nPlease check the file path at Settings and try again.');
+            setError('Failed to load the books.\nPlease ensure the kobo is connected and try again.');
         } finally {
             setIsLoading(false);
         }
