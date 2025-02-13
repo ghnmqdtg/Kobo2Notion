@@ -5,6 +5,7 @@ import { EnvironmentConfig } from '../config/env.config';
 export interface IElectronAPI {
   getBooks: () => Promise<Book[]>;
   exportBook: (book: Book) => Promise<void>;
+  summarizeBook: (book: Book, parentPageId: string) => Promise<void>;
   fetchBookCover: (imageId: string) => Promise<string>;
   updateEnvValue: (entries: { key: string, value: string }[]) => Promise<boolean>;
   openFileDialog: () => Promise<string | null>;

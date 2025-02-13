@@ -39,16 +39,18 @@ const api = {
     const { parentPageId, highlightPageId } = await notionService.getOrCreatePage(book);
     await notionService.syncBookmarks(highlightPageId, bookmarks);
 
-    if (env.SUMMARIZE_ENABLED) {
-      const summary = await geminiService.summarizeBookmarks(
-        book.bookTitle,
-        bookmarks,
-        env.SUMMARIZE_LANGUAGE
-      );
-      await notionService.syncSummary(parentPageId, summary);
-    }
+    return { parentPageId, highlightPageId };
+  },
+  summarizeBook: async (book: Book, parentPageId: string) => {
+    await koboService.connect();
+    const bookmarks = await koboService.getBookmarks(book.bookTitle);
 
-    // await koboService.close();
+    const summary = await geminiService.summarizeBookmarks(
+      book.bookTitle,
+      bookmarks,
+      env.SUMMARIZE_LANGUAGE
+    );
+    await notionService.syncSummary(parentPageId, summary);
   },
   fetchBookCover: async (imageId: string) => {
     return fetchBookCover(imageId);

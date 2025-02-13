@@ -7,10 +7,10 @@ import { useEffect } from 'react';
 
 interface FooterProps {
     selectedCount: number;
-    totalSelected: number;
     isExporting: boolean;
     currentBook?: string;
     currentStep?: string;
+    completed: number;
     onExport: () => void;
 }
 
@@ -36,10 +36,10 @@ export function Footer({
                     ) : isExporting ? (
                         <>
                             <div className="flex justify-between text-sm text-muted-foreground">
-                                <span>({completed} / {selectedCount}) {currentBook}</span>
-                                <span>{currentStep}</span>
+                                <span className="font-bold">{currentBook}</span>
+                                <span className="font-bold">{currentStep}</span>
                             </div>
-                            <Progress value={(selectedCount / totalSelected) * 100} />
+                            <Progress value={(completed / selectedCount) * 100} />
                         </>
                     ) : (
                         <div className="text-md font-bold">

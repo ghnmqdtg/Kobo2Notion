@@ -78,18 +78,30 @@ export function Books() {
                 const book = books.find((b) => b.bookTitle === bookTitle);
                 if (!book) continue;
 
+                // First step: Exporting highlights
                 setExportProgress({
                     currentBook: book.bookTitle,
                     currentStep: 'Exporting highlights...',
                     completed
                 });
 
-                await window.api.exportBook(book);
-                completed++;
+                const { parentPageId, highlightPageId } = await window.api.exportBook(book);
 
+                // Second step: Summarizing (if enabled)
+                if (window.env.SUMMARIZE_ENABLED) {
+                    setExportProgress(prev => ({
+                        ...prev,
+                        currentStep: 'Summarizing highlights...'
+                    }));
+
+                    await window.api.summarizeBook(book, parentPageId);
+                }
+
+                completed++;
                 setExportProgress(prev => ({
                     ...prev,
-                    completed
+                    completed,
+                    currentStep: ''
                 }));
             }
             setSelectedBooks(new Set());
