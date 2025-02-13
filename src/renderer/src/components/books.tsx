@@ -52,7 +52,9 @@ export function Books() {
             const allBookTitles = books.map(book => book.bookTitle);
             setSelectedBooks(new Set(allBookTitles));
         } else {
-            setSelectedBooks(new Set());
+            if (selectedBooks.size === books.length) {
+                setSelectedBooks(new Set());
+            }
         }
     }, [selectAll, books]);
 
