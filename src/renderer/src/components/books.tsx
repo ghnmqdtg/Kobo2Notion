@@ -4,6 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, AlertCircle, CheckSquare, Bold } from 'lucide-react';
 import { Toggle } from "@/components/ui/toggle";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Footer } from '@/components/footer';
 import { Book } from '../../../backend/models';
 
@@ -176,13 +182,22 @@ export function Books() {
             <div className="flex justify-between items-center p-4 pb-0">
                 <div className="flex items-center space-x-4">
                     <h1 className="text-2xl font-bold">Your Books</h1>
-                    <Toggle
-                        pressed={selectAll}
-                        onPressedChange={setSelectAll}
-                        aria-label="Toggle select all"
-                    >
-                        <CheckSquare className="h-4 w-4" />
-                    </Toggle>
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Toggle
+                                    pressed={selectAll}
+                                    onPressedChange={setSelectAll}
+                                    aria-label="Toggle select all"
+                                >
+                                    <CheckSquare className="h-4 w-4" />
+                                </Toggle>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Select all books</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
                 </div>
             </div>
             <div className="relative">
