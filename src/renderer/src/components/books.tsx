@@ -16,6 +16,7 @@ export function Books() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isExporting, setIsExporting] = useState(false);
+    const [minLoadingTime] = useState(300); // 0.3 second minimum loading time
     const [retryCount, setRetryCount] = useState(0);
     const [exportProgress, setExportProgress] = useState({
         currentBook: '',
@@ -69,7 +70,9 @@ export function Books() {
             console.error('Error loading books:', error);
             setError('Failed to load the books.\nPlease ensure the kobo is connected and try again.');
         } finally {
-            setIsLoading(false);
+            setTimeout(() => {
+                setIsLoading(false);
+            }, minLoadingTime);
         }
     };
 
