@@ -194,10 +194,11 @@ function createWindow(): void {
       // Reload the env file
       dotenv.config({ path: envPath, override: true });
       // Send confirmation back to renderer
-      event.reply('env-change', entries)
+      event.reply('env-change', entries);
     } catch (error) {
       console.error('Error updating env:', error);
-      event.reply('env-change-error', error);
+      // Send detailed error back to renderer
+      event.reply('env-change-error', error instanceof Error ? error.message : 'Unknown error');
     }
   });
 

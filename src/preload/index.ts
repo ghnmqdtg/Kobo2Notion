@@ -57,21 +57,31 @@ const api = {
   },
   updateEnvValue: async (entries: { key: string; value: string }[]) => {
     try {
-      ipcRenderer.send('update-env', entries);
-      
-      // Listen for the confirmation that env was updated
       return new Promise((resolve, reject) => {
+        // Send the update request
+        ipcRenderer.send('update-env', entries);
+
+        // Listen for success response
         ipcRenderer.once('env-change', (_event, updatedEntries) => {
           reloadEnvValues(updatedEntries);
           resolve(true);
         });
 
-        // Add timeout to prevent hanging
-        setTimeout(() => reject(new Error('Timeout updating env')), 5000);
+        // Listen for error response
+        ipcRenderer.once('env-change-error', (_event, error) => {
+          reject(new Error(`Failed to update env: ${error}`));
+        });
+
+        // Set timeout to 5 seconds
+        setTimeout(() => {
+          ipcRenderer.removeAllListeners('env-change');
+          ipcRenderer.removeAllListeners('env-change-error');
+          reject(new Error('Timeout updating env (5s)'));
+        }, 5000);
       });
     } catch (error) {
       console.error('Error updating env value:', error);
-      return false;
+      throw error;
     }
   },
   openFileDialog: async () => {
