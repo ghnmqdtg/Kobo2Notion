@@ -10,7 +10,7 @@ export class GeminiService {
     private genAI: GoogleGenerativeAI;
     private model: any;
     // private summarizeEnabled: boolean;
-    private summarizeLanguage: string;
+    // private summarizeLanguage: string;
 
     constructor() {
         this.genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
