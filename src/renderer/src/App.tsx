@@ -3,6 +3,7 @@ import { Navbar } from '@/components/navbar';
 import { Books } from '@/components/books';
 import { Settings } from '@/components/settings';
 import { Toaster } from "@/components/ui/toaster";
+import { ThemeProvider } from '@/components/theme-provider';
 
 function App(): JSX.Element {
   const [showSettings, setShowSettings] = useState(false);
@@ -24,15 +25,17 @@ function App(): JSX.Element {
   }, []);
 
   return (
-    <div className="h-screen flex flex-col w-full">
-      <Navbar onSettingsClick={() => setShowSettings(!showSettings)} />
-      <main className="flex-1 overflow-auto">
-        <div className="container mx-auto h-full">
-          {showSettings ? <Settings /> : <Books />}
-        </div>
-      </main>
-      <Toaster />
-    </div>
+    <ThemeProvider>
+      <div className="h-screen flex flex-col w-full">
+        <Navbar onSettingsClick={() => setShowSettings(!showSettings)} />
+        <main className="flex-1 overflow-auto">
+          <div className="container mx-auto h-full">
+            {showSettings ? <Settings /> : <Books />}
+          </div>
+        </main>
+        <Toaster />
+      </div>
+    </ThemeProvider>
   );
 }
 
