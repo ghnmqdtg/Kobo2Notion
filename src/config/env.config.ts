@@ -6,6 +6,7 @@ export interface EnvironmentConfig {
     GEMINI_MODEL: string;
     SUMMARIZE_ENABLED: boolean;
     SUMMARIZE_LANGUAGE: string;
+    THEME: string;
 }
 
 // Providing defaults for missing values (or simply empty strings)
@@ -17,6 +18,7 @@ const defaultConfig: EnvironmentConfig = {
     GEMINI_MODEL: 'gemini-1.5-flash',
     SUMMARIZE_ENABLED: false,
     SUMMARIZE_LANGUAGE: 'zh',
+    THEME: 'light',
 };
 
 const initConfig = (): EnvironmentConfig => {
@@ -28,6 +30,7 @@ const initConfig = (): EnvironmentConfig => {
         GEMINI_MODEL: process.env.GEMINI_MODEL || defaultConfig.GEMINI_MODEL,
         SUMMARIZE_ENABLED: process.env.SUMMARIZE_ENABLED === 'true' || defaultConfig.SUMMARIZE_ENABLED,
         SUMMARIZE_LANGUAGE: process.env.SUMMARIZE_LANGUAGE || defaultConfig.SUMMARIZE_LANGUAGE,
+        THEME: process.env.THEME || defaultConfig.THEME,
     };
 
     const missingKeys = Object.entries(config)
