@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, globalShortcut, dialog } from 'electron';
+import { app, shell, BrowserWindow, ipcMain, globalShortcut, dialog, Menu, MenuItemConstructorOptions } from 'electron';
 import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
@@ -64,9 +64,57 @@ async function ensureEnvFile(): Promise<void> {
   }
 }
 
+function createMenu(): void {
+    const isMac = process.platform === 'darwin';
+
+    const template = [
+        // App menu (macOS only)
+        ...(isMac ? [{
+            label: 'Kobo2Notion',
+            submenu: [
+                { role: 'about' },
+                { type: 'separator' },
+                { role: 'services' },
+                { type: 'separator' },
+                { role: 'hide' },
+                { role: 'hideOthers' },
+                { role: 'unhide' },
+                { type: 'separator' },
+                { role: 'quit' }
+            ]
+        }] : []),
+        // View menu
+        {
+            label: 'View',
+            submenu: [
+                { role: 'reload' },
+                { role: 'forceReload' },
+                { type: 'separator' },
+                { role: 'resetZoom' },
+                { role: 'zoomIn' },
+                { role: 'zoomOut' },
+                { type: 'separator' },
+                { role: 'togglefullscreen' }
+            ]
+        },
+        // Window menu
+        {
+            label: 'Window',
+            submenu: [
+                { role: 'minimize' },
+                { role: 'zoom' }
+            ]
+        }
+    ];
+
+    const menu = Menu.buildFromTemplate(template as MenuItemConstructorOptions[]);
+    Menu.setApplicationMenu(menu);
+}
+
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
+    title: 'Kobo2Notion',
     width: 1280,
     height: 900,
     show: false,
@@ -150,6 +198,9 @@ function initializeApp(): void {
   app.whenReady().then(async () => {
     // Set app user model id for windows
     electronApp.setAppUserModelId('com.electron');
+
+    // Create menu
+    createMenu();
 
     // Default open or close DevTools by F12 in development
     // and ignore CommandOrControl + R in production.
