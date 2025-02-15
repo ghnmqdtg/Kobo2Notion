@@ -5,14 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, AlertCircle, CheckSquare, Bold, Underline, Italic, LayoutGrid, List } from 'lucide-react';
 import { Toggle } from '@/components/ui/toggle';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { Footer } from '@/components/footer';
 import { Book } from '../../../backend/models';
+import { useToast } from "@/hooks/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 
 export function Books() {
     const [books, setBooks] = useState<Book[]>([]);
@@ -28,6 +24,7 @@ export function Books() {
     });
     const [selectAll, setSelectAll] = useState(false);
     const [isGridView, setIsGridView] = useState(true);
+    const { toast } = useToast();
 
     const maxRetries = 3;
     const retryInterval = 5000;
@@ -134,6 +131,11 @@ export function Books() {
             setSelectedBooks(new Set());
         } catch (error) {
             console.error('Error exporting books:', error);
+            toast({
+                title: 'Error exporting books',
+                description: 'Please check the Kobo is connected.',
+                action: <ToastAction onClick={loadBooks} altText="Try reloading">Try again</ToastAction>
+            });
         } finally {
             setIsExporting(false);
             setExportProgress({
