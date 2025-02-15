@@ -83,6 +83,32 @@ function createMenu(): void {
                 { role: 'quit' }
             ]
         }] : []),
+        // Edit menu
+        {
+            label: 'Edit',
+            submenu: [
+                { role: 'undo' },
+                { role: 'redo' },
+                { type: 'separator' },  
+                { role: 'cut' },
+                { role: 'copy' },
+                { role: 'paste' },
+                { role: 'pasteAndMatchStyle' },
+                { role: 'selectAll' },
+                { type: 'separator' },
+                // Speech menu in submenu
+                {
+                    label: 'Speech',
+                    submenu: [
+                        { role: 'startSpeaking' },
+                        { role: 'stopSpeaking' },
+                        { type: 'separator' },
+                        { role: 'decreaseFontSize' },
+                        { role: 'increaseFontSize' },
+                    ]
+                },
+            ]
+        },
         // View menu
         {
             label: 'View',
