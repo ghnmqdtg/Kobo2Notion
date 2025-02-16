@@ -65,10 +65,17 @@ export class KoboService {
 
         const contentId = contentIdResult.contentId;
 
+        // Clean the contentId: remove all the text after ! sign (including the ! sign)
+        const cleanedContentId = contentId.split('!')[0];
+
+        console.info(`Retrieving bookmarks for content ID: ${cleanedContentId}`);
+
         const bookmarks = await this.db.all<Bookmark[]>(
             `SELECT VolumeID AS volumeId, Text AS highlight, Annotation AS annotation, DateCreated AS createdOn, Type AS type FROM Bookmark WHERE VolumeID = ? ORDER BY DateCreated ASC`,
-            [contentId]
+            [cleanedContentId]
         );
+
+        console.log(bookmarks);
         return bookmarks;
     }
 
