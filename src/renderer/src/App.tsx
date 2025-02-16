@@ -7,6 +7,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 
 function App(): JSX.Element {
   const [showSettings, setShowSettings] = useState(false);
+  const [isFirstTime, setIsFirstTime] = useState(true);
 
   useEffect(() => {
     // Check if all required env values are set
@@ -17,8 +18,10 @@ function App(): JSX.Element {
     ];
 
     const missingEnvs = requiredEnvs.filter(key => !window.env[key]);
-    console.log('missingEnvs', missingEnvs);
-    if (missingEnvs.length > 0) {
+    const isFirstTimeSetup = missingEnvs.length > 0;
+
+    setIsFirstTime(isFirstTimeSetup);
+    if (isFirstTimeSetup) {
       setShowSettings(true);
     }
   }, []);
@@ -26,7 +29,10 @@ function App(): JSX.Element {
   return (
     <ThemeProvider>
       <div className="h-screen flex flex-col w-full">
-        <Navbar onSettingsClick={() => setShowSettings(!showSettings)} />
+        <Navbar
+          onSettingsClick={() => setShowSettings(!showSettings)}
+          isFirstTime={isFirstTime}
+        />
         <main className="flex-1 overflow-auto">
           <div className="container mx-auto h-full">
             {showSettings ? <Settings /> : <Books />}
