@@ -169,8 +169,14 @@ function createWindow(): void {
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
+      devTools: is.dev,
     }
   });
+
+  // Open DevTools by default
+  if (is.dev) {
+    mainWindow.webContents.openDevTools();
+  }
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
