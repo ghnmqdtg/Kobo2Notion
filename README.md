@@ -157,8 +157,7 @@ Kobo2Notion is an Electron application built with TypeScript and React that extr
 </details>
 
 ## Building for Distribution
-Currently, I've only built the app for MacOS. Windows and Linux are not supported yet. You can build the app by running:
-
+You can build the app by running:
 ```bash
 # Build for MacOS
 npm run build:mac
@@ -169,6 +168,8 @@ npm run build:win
 # Build for Linux
 npm run build:linux
 ```
+
+Windows and Linux are not yet supported. I've only built the app for MacOS. However, I haven't signed the app yet because my Apple Developer Program membership has expired, and I don't have a budget to renew it. Therefore, I cannot distribute the app on the macOS. If you want to use the app, you can build it yourself, or just run the app in development mode.
 
 ## Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
