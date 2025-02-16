@@ -11,7 +11,7 @@ export interface EnvironmentConfig {
 
 // Providing defaults for missing values (or simply empty strings)
 const defaultConfig: EnvironmentConfig = {
-    SQLITE_SOURCE: '',
+    SQLITE_SOURCE: process.platform === 'darwin' ? '/Volumes/KOBOeReader/.kobo/KoboReader.sqlite' : '',
     NOTION_API_KEY: '',
     NOTION_DATABASE_ID: '',
     GEMINI_API_KEY: '',
