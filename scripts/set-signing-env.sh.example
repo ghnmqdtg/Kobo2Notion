@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Export code signing environment variables
+export APPLE_ID=""  # Your Apple ID email
+export APPLE_APP_SPECIFIC_PASSWORD=""  # App-specific password from Apple ID settings
+export APPLE_TEAM_ID=""  # Your Team ID from developer.apple.com
+export CSC_LINK=""  # Path to your .p12 certificate
+export CSC_KEY_PASSWORD=""  # Certificate password
+
+# Print status
+echo "✅ Code signing environment variables set" 
+echo "🔑 Using certificate: $CSC_LINK"
+echo "👤 Apple ID: $APPLE_ID"
+echo "🏢 Team ID: $APPLE_TEAM_ID" 

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <!-- Allow Just-In-Time (JIT) compilation required for Electron -->
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+    <!-- Required for Electron -->
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
+    <!-- Allow debugger -->
+    <key>com.apple.security.cs.debugger</key>
+    <true/>
+    <!-- Allow network access -->
+    <key>com.apple.security.network.client</key>
+    <true/>
+    <!-- Allow read/write access to user-selected files -->
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+  </dict>
+</plist> 

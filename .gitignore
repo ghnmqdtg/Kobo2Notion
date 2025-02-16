@@ -14,3 +14,7 @@ out
 # Electron
 build/
 release/
+
+# Code signing
+scripts/set-signing-env.sh
+certs/
