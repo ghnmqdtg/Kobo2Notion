@@ -41,6 +41,8 @@ Kobo2Notion is an Electron application built with TypeScript and React that extr
 - Google Cloud account (for Gemini API access)
 
 ## Installation
+> If you're a windows user, you can just download the latest released `.exe` file from the [Releases](https://github.com/ghnmqdtg/Kobo2Notion/releases) page.
+
 1. Clone the repository:
    ```bash
    git clone https://github.com/ghnmqdtg/Kobo2Notion.git
@@ -169,7 +171,7 @@ npm run build:win
 npm run build:linux
 ```
 
-Windows and Linux are not yet supported. I've only built the app for MacOS. However, I haven't signed the app yet because my Apple Developer Program membership has expired, and I don't have a budget to renew it. Therefore, I cannot distribute the app on the macOS. If you want to use the app, you can build it yourself, or just run the app in development mode.
+I haven't signed the macOS app yet because my Apple Developer Program membership has expired, and I don't have a budget to renew it. Therefore, I cannot distribute the app on the macOS. If you want to use the app, you can build it yourself, or just run the app in development mode.
 
 ## Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
