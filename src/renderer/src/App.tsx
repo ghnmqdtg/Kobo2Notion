@@ -13,8 +13,7 @@ function App(): JSX.Element {
     const requiredEnvs = [
       'SQLITE_SOURCE',
       'NOTION_API_KEY',
-      'NOTION_DATABASE_ID',
-      'GEMINI_API_KEY'
+      'NOTION_DATABASE_ID'
     ];
 
     const missingEnvs = requiredEnvs.filter(key => !window.env[key]);
