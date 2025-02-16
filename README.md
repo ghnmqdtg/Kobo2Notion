@@ -1,11 +1,29 @@
-# Kobo2Notion
+<!-- <img align="center" src="resources/icon.png" height="32pt"> Kobo2Notion -->
 
-## Introduction
+<p align="center">
+    <img src="assets/badge.png" width="80%">
+</p>
+
+---
+<br>
+
 Kobo2Notion is an Electron application built with TypeScript and React that extracts bookmark data from Kobo e-readers and seamlessly uploads it into your Notion database. Additionally, it can summarize bookmarks using Google Gemini. This project offers a cost-free alternative to existing solutions like Readwise, providing users with greater control over their reading data.
 
-> This app is still under development. Some features are not implemented yet.
-
 <img src="assets/demo_01.png" width="90%">
+
+<!-- Table of Contents -->
+## Table of Contents
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Configuration](#how-can-i-get-the-values-for-the-configuration)
+- [Building for Distribution](#building-for-distribution)
+- [Contributing](#contributing)
+- [Contact](#contact)
+- [License](#license)
+- [Acknowledgements](#acknowledgements)
+- [Buy me a coffee](#buy-me-a-coffee)
 
 ## Features
 - Extract bookmarks from Kobo e-readers
@@ -137,13 +155,30 @@ Kobo2Notion is an Electron application built with TypeScript and React that extr
 </details>
 
 ## Building for Distribution
-Currently, I've tried to build the app for MacOS by running `npm run build:mac`. However, I encountered an issue that the `sqlite3` module is not found. I'm still working on it ;(
+Currently, I've only built the app for MacOS. Windows and Linux are not supported yet. You can build the app by running:
+
+```bash
+# Build for MacOS
+npm run build:mac
+
+# Build for Windows
+npm run build:win
+
+# Build for Linux
+npm run build:linux
+```
 
 ## Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
 
+## Contact
+For questions or support, please open an issue on the GitHub repository.
+
 ## License
 This project is licensed under the [MIT License](LICENSE).
+
+## Buy me a coffee
+If you like this app, please consider buying me a coffee and save this poor guy ;(
 
 ## Acknowledgements
 - [mollykannn/kobo2notion](https://github.com/mollykannn/kobo2notion)
@@ -151,12 +186,6 @@ This project is licensed under the [MIT License](LICENSE).
 - [huybn5776/Kobo bookmark](https://github.com/huybn5776/kobo-bookmark) (for using corsproxy to avoid CORS issues)
 - Notion for their API
 - Google for the Gemini AI model
-
-## Contact
-For questions or support, please open an issue on the GitHub repository.
-
-## Buy me a coffee
-If you like this app, please consider buying me a coffee.
 
 <p align="left">
     <a href="https://www.buymeacoffee.com/tweizh" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
