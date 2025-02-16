@@ -3,6 +3,20 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .font-noto-sans {
+    font-family: "Noto Sans TC", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+  }
+
+  .font-noto-serif {
+    font-family: "Noto Serif TC", serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+  }
+}
+
 @layer base {
   :root {
     /* ... your existing root variables ... */
@@ -17,8 +31,7 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
-    font-family: 'JF Open Huninn', sans-serif;
-    color: #0E0E0E;
+    @apply bg-background text-foreground antialiased font-sans;
+    font-family: "Noto Sans TC", sans-serif;
   }
 } 

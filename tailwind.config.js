@@ -7,7 +7,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"JF Open Huninn"', ...fontFamily.sans],
+        sans: ['"JF Open Huninn"', '"Noto Sans TC"', ...fontFamily.sans],
+        serif: ['"Noto Serif TC"', ...fontFamily.serif],
       },
       colors: {
         border: "hsl(var(--border))",
