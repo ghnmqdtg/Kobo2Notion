@@ -6,11 +6,26 @@ import fs from 'fs/promises';
 import path from 'path';
 import dotenv from 'dotenv';
 
-const envPath = path.resolve(__dirname, '../../.env');
-const exampleEnvPath = path.resolve(__dirname, '../../.env.example');
+// Update path resolution to use app.getPath('userData')
+const getEnvPath = () => {
+  if (is.dev) {
+    return path.resolve(__dirname, '../../.env');
+  }
+  return path.join(app.getPath('userData'), '.env');
+};
+
+const getExampleEnvPath = () => {
+  if (is.dev) {
+    return path.resolve(__dirname, '../../.env.example');
+  }
+  return path.join(__dirname, '../../.env.example');
+};
+
+const envPath = getEnvPath();
+const exampleEnvPath = getExampleEnvPath();
 
 async function updateEnvFile(entries: { key: string, value: string }[]): Promise<void> {
-  const envPath = path.resolve(__dirname, '../../.env');
+  const envPath = getEnvPath();
   let content: string;
   
   try {
@@ -51,6 +66,9 @@ function cleanEnvKeys(): void {
 }
 
 async function ensureEnvFile(): Promise<void> {
+  const envPath = getEnvPath();
+  const exampleEnvPath = getExampleEnvPath();
+
   try {
     await fs.access(envPath);
   } catch {
