@@ -2,6 +2,7 @@ import { app, shell, BrowserWindow, ipcMain, globalShortcut, dialog, Menu, MenuI
 import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
+import iconIcns from '../../resources/icon.icns?asset';
 import fs from 'fs/promises';
 import path from 'path';
 import dotenv from 'dotenv';
@@ -164,7 +165,7 @@ function createWindow(): void {
     show: false,
     fullscreen: true,
     autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : {}),
+    icon: process.platform === 'darwin' ? iconIcns : icon,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
