@@ -9,7 +9,9 @@
 
 Kobo2Notion is an Electron application built with TypeScript and React that extracts bookmark data from Kobo e-readers and seamlessly uploads it into your Notion database. Additionally, it can summarize bookmarks using Google Gemini. This project offers a cost-free alternative to existing solutions like Readwise, providing users with greater control over their reading data.
 
-<img src="assets/demo_01.png" width="90%">
+<p align="center">
+    <img src="assets/demo_01.png" width="90%">
+</p>
 
 <!-- Table of Contents -->
 ## Table of Contents
