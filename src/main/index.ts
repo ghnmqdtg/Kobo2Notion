@@ -7,23 +7,22 @@ import fs from 'fs/promises';
 import path from 'path';
 import dotenv from 'dotenv';
 
-// Update path resolution to use app.getPath('userData')
+// Update path resolution to use app resources
 const getEnvPath = () => {
   if (is.dev) {
     return path.resolve(__dirname, '../../.env');
   }
-  return path.join(app.getPath('userData'), '.env');
+  // In production, use the app.getAppPath() to get the app.asar directory
+  return path.join(app.getAppPath(), '../.env');
 };
 
 const getExampleEnvPath = () => {
   if (is.dev) {
     return path.resolve(__dirname, '../../.env.example');
   }
-  return path.join(__dirname, '../../.env.example');
+  // In production, use the app.getAppPath() to get the app.asar directory
+  return path.join(app.getAppPath(), '../.env.example');
 };
-
-const envPath = getEnvPath();
-const exampleEnvPath = getExampleEnvPath();
 
 async function updateEnvFile(entries: { key: string, value: string }[]): Promise<void> {
   const envPath = getEnvPath();
@@ -217,7 +216,7 @@ function createWindow(): void {
     try {
       await updateEnvFile(entries);
       // Reload the env file
-      dotenv.config({ path: envPath, override: true });
+      dotenv.config({ path: getEnvPath(), override: true });
       // Send confirmation back to renderer
       event.reply('env-change', entries);
     } catch (error) {
@@ -284,7 +283,7 @@ ensureEnvFile().then(() => {
   cleanEnvKeys();
 
   // Load environment variables from .env file
-  dotenv.config({ path: envPath });
+  dotenv.config({ path: getEnvPath() });
   console.log('cleaned env keys: ', process.env.NOTION_API, process.env.NOTION_DB, process.env.GEMINI_API, process.env.GEMINI_MODEL, process.env.SUMMARIZE_ENABLED, process.env.SUMMARIZE_LANGUAGE);
 
   initializeApp();

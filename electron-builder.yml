@@ -13,6 +13,8 @@ files:
 extraResources:
   - from: ".env.example"
     to: ".env.example"
+  - from: ".env.example"
+    to: ".env"
 asarUnpack:
   - resources/**
 win:
