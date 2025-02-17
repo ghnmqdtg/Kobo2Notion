@@ -132,7 +132,7 @@ export function Settings() {
       <div className="flex justify-between items-center p-4 pb-0">
         <h1 className="text-2xl font-bold">Settings</h1>
       </div>
-      <div className="p-4 flex justify-center">
+      <div className="p-4 flex justify-center mt-4 md:mt-8 lg:mt-12 2xl:mt-24">
         <div className="grid gap-6 w-full lg:w-1/2 xl:w-2/5">
           <div className="space-y-2">
             <label className="text-md font-medium">
