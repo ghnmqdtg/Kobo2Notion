@@ -18,6 +18,7 @@ import {
 interface FooterProps {
   selectedCount: number;
   isExporting: boolean;
+  isCanceling: boolean;
   currentBook?: string;
   currentStep?: string;
   completed: number;
@@ -28,6 +29,7 @@ interface FooterProps {
 export function Footer({
   selectedCount,
   isExporting,
+  isCanceling,
   currentBook,
   currentStep,
   completed,
@@ -66,7 +68,11 @@ export function Footer({
               <>
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span className="font-bold">{currentBook}</span>
-                  <span className="font-bold">{currentStep}</span>
+                  {isCanceling ? (
+                    <span className="font-bold">Aborting the export...</span>
+                  ) : (
+                    <span className="font-bold">{currentStep}</span>
+                  )}
                 </div>
                 <Progress value={(completed / selectedCount) * 100} />
               </>
@@ -80,8 +86,8 @@ export function Footer({
           </div>
           <Button
             className={`text-md font-bold ${!isOnline.online ? "bg-destructive/60" : ""}`}
-            onClick={isExporting ? handleCancelClick : onExport}
-            disabled={selectedCount === 0 || !isOnline.online}
+            onClick={isExporting && !isCanceling ? handleCancelClick : onExport}
+            disabled={selectedCount === 0 || !isOnline.online || isCanceling}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
@@ -89,7 +95,12 @@ export function Footer({
               "No Network Connection ;("
             ) : isExporting ? (
               <div className="flex items-center space-x-2 justify-center">
-                {isHovered ? (
+                {isCanceling ? (
+                  <div className="flex items-center justify-center space-x-2 w-[120px]">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Canceling...</span>
+                  </div>
+                ) : isHovered ? (
                   <div className="flex items-center justify-center space-x-2 w-[120px]">
                     <XCircle className="h-4 w-4" />
                     <span>Cancel</span>

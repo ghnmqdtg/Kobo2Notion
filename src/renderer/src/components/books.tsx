@@ -35,7 +35,7 @@ export function Books() {
   const [selectAll, setSelectAll] = useState(false);
   const [isGridView, setIsGridView] = useState(true);
   const { toast } = useToast();
-  const [isCancelled, setIsCancelled] = useState(false);
+  const [isCanceling, setIsCanceling] = useState(false);
   const cancelRef = useRef(false);
 
   const maxRetries = 3;
@@ -111,13 +111,12 @@ export function Books() {
     if (selectedBooks.size === 0) return;
 
     setIsExporting(true);
-    setIsCancelled(false);
+    setIsCanceling(false);
     cancelRef.current = false;
     let completed = 0;
 
     try {
       for (const bookTitle of selectedBooks) {
-        // Check if export was cancelled
         if (cancelRef.current) {
           break;
         }
@@ -157,14 +156,15 @@ export function Books() {
         }));
       }
 
-      if (!cancelRef.current) {
-        setSelectedBooks(new Set());
+      if (cancelRef.current) {
         toast({
           title: "Export Cancelled",
           description: "The export process has been cancelled.",
           variant: "default",
         });
         // TODO: Delete the created page in Notion if user wants to.
+      } else {
+        setSelectedBooks(new Set());
       }
     } catch (error) {
       console.error("Error exporting books:", error);
@@ -179,6 +179,7 @@ export function Books() {
       });
     } finally {
       setIsExporting(false);
+      setIsCanceling(false);
       setExportProgress({
         currentBook: "",
         currentStep: "",
@@ -190,7 +191,7 @@ export function Books() {
 
   const handleCancel = () => {
     cancelRef.current = true;
-    setIsCancelled(true);
+    setIsCanceling(true);
   };
 
   if (error) {
@@ -287,6 +288,7 @@ export function Books() {
       <Footer
         selectedCount={selectedBooks.size}
         isExporting={isExporting}
+        isCanceling={isCanceling}
         currentBook={exportProgress.currentBook}
         currentStep={exportProgress.currentStep}
         completed={exportProgress.completed}
