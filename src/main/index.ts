@@ -190,7 +190,7 @@ function createWindow(): void {
     width: 1280,
     height: 900,
     show: false,
-    fullscreen: true,
+    fullscreen: process.platform === "darwin" ? true : false,
     autoHideMenuBar: true,
     icon: process.platform === "darwin" ? iconIcns : icon,
     webPreferences: {
@@ -199,11 +199,6 @@ function createWindow(): void {
       devTools: is.dev,
     },
   });
-
-  // Open DevTools by default
-  if (is.dev) {
-    mainWindow.webContents.openDevTools();
-  }
 
   mainWindow.on("ready-to-show", () => {
     mainWindow.show();
