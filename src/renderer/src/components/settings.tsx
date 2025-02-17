@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FolderOpen } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface SettingsValues {
   SQLITE_SOURCE: string;
@@ -129,144 +130,152 @@ export function Settings() {
 
   return (
     <>
-      <div className="flex justify-between items-center p-4 pb-0">
-        <h1 className="text-2xl font-bold">Settings</h1>
-      </div>
-      <div className="p-4 flex justify-center mt-4 md:mt-8 lg:mt-12 2xl:mt-24">
-        <div className="grid gap-6 w-full lg:w-1/2 xl:w-2/5">
-          <div className="space-y-2">
-            <label className="text-md font-medium">
-              Kobo Highlights File Path
-            </label>
-            <div className="flex space-x-2">
-              <Input
-                type="text"
-                value={values.SQLITE_SOURCE}
-                placeholder="/Volumes/KOBOeReader/.kobo/KoboReader.sqlite"
-                className={
-                  !validateSqlitePath(values.SQLITE_SOURCE) &&
-                  values.SQLITE_SOURCE
-                    ? "border-destructive"
-                    : ""
-                }
-                readOnly
-              />
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleFilePick}
-                title="Choose file"
-              >
-                <FolderOpen className="h-4 w-4" />
-              </Button>
+      <ScrollArea className="h-[calc(100vh-8rem)]">
+        <div className="flex justify-between items-center p-4 pb-0">
+          <h1 className="text-2xl font-bold">Settings</h1>
+        </div>
+        <div className="p-4 flex justify-center mt-4 md:mt-8 lg:mt-12 2xl:mt-24">
+          <div className="grid gap-6 w-full lg:w-1/2 xl:w-2/5">
+            <div className="space-y-2">
+              <label className="text-md font-medium">
+                Kobo Highlights File Path
+              </label>
+              <div className="flex space-x-2">
+                <Input
+                  type="text"
+                  value={values.SQLITE_SOURCE}
+                  placeholder="/Volumes/KOBOeReader/.kobo/KoboReader.sqlite"
+                  className={
+                    !validateSqlitePath(values.SQLITE_SOURCE) &&
+                    values.SQLITE_SOURCE
+                      ? "border-destructive"
+                      : ""
+                  }
+                  readOnly
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleFilePick}
+                  title="Choose file"
+                >
+                  <FolderOpen className="h-4 w-4" />
+                </Button>
+              </div>
+              {values.SQLITE_SOURCE &&
+                !validateSqlitePath(values.SQLITE_SOURCE) && (
+                  <p className="text-sm text-destructive">
+                    File must be KoboReader.sqlite
+                  </p>
+                )}
             </div>
-            {values.SQLITE_SOURCE &&
-              !validateSqlitePath(values.SQLITE_SOURCE) && (
-                <p className="text-sm text-destructive">
-                  File must be KoboReader.sqlite
-                </p>
+            <Separator />
+            <div className="space-y-2">
+              <label className="text-md font-medium">Notion API Key</label>
+              <PasswordInput
+                value={values.NOTION_API}
+                onChange={(e) => handleChange("NOTION_API", e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-md font-medium">Notion Database ID</label>
+              <PasswordInput
+                value={values.NOTION_DB}
+                onChange={(e) => handleChange("NOTION_DB", e.target.value)}
+              />
+            </div>
+            <Separator />
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <label className="text-md font-medium">
+                  Summarize Bookmarks
+                </label>
+                <Switch
+                  checked={values.SUMMARIZE_ENABLED}
+                  onCheckedChange={handleSummarizeToggle}
+                />
+              </div>
+
+              {values.SUMMARIZE_ENABLED && (
+                <>
+                  <div className="space-y-2">
+                    <label className="text-md font-medium">Model</label>
+                    <Select
+                      value={values.GEMINI_MODEL}
+                      onValueChange={(value) =>
+                        handleChange("GEMINI_MODEL", value)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="gemini-1.5-flash">
+                          Gemini-1.5-flash
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-md font-medium">
+                      Summary Language
+                    </label>
+                    <Select
+                      value={values.SUMMARIZE_LANGUAGE}
+                      onValueChange={(value) =>
+                        handleChange("SUMMARIZE_LANGUAGE", value)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="en">English</SelectItem>
+                        <SelectItem value="zh">
+                          繁體中文 Traditional Chinese
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-md font-medium">
+                      Gemini API Key
+                    </label>
+                    <PasswordInput
+                      value={values.GEMINI_API}
+                      onChange={(e) =>
+                        handleChange("GEMINI_API", e.target.value)
+                      }
+                    />
+                  </div>
+                </>
               )}
-          </div>
-          <Separator />
-          <div className="space-y-2">
-            <label className="text-md font-medium">Notion API Key</label>
-            <PasswordInput
-              value={values.NOTION_API}
-              onChange={(e) => handleChange("NOTION_API", e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-md font-medium">Notion Database ID</label>
-            <PasswordInput
-              value={values.NOTION_DB}
-              onChange={(e) => handleChange("NOTION_DB", e.target.value)}
-            />
-          </div>
-          <Separator />
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <label className="text-md font-medium">Summarize Bookmarks</label>
-              <Switch
-                checked={values.SUMMARIZE_ENABLED}
-                onCheckedChange={handleSummarizeToggle}
-              />
             </div>
 
-            {values.SUMMARIZE_ENABLED && (
-              <>
-                <div className="space-y-2">
-                  <label className="text-md font-medium">Model</label>
-                  <Select
-                    value={values.GEMINI_MODEL}
-                    onValueChange={(value) =>
-                      handleChange("GEMINI_MODEL", value)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="gemini-1.5-flash">
-                        Gemini-1.5-flash
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-md font-medium">
-                    Summary Language
-                  </label>
-                  <Select
-                    value={values.SUMMARIZE_LANGUAGE}
-                    onValueChange={(value) =>
-                      handleChange("SUMMARIZE_LANGUAGE", value)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="en">English</SelectItem>
-                      <SelectItem value="zh">
-                        繁體中文 Traditional Chinese
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-md font-medium">Gemini API Key</label>
-                  <PasswordInput
-                    value={values.GEMINI_API}
-                    onChange={(e) => handleChange("GEMINI_API", e.target.value)}
-                  />
-                </div>
-              </>
-            )}
-          </div>
-
-          <Separator />
-          <div className="flex justify-center space-x-2">
-            {!isFirstTime && (
+            <Separator />
+            <div className="flex justify-center space-x-2">
+              {!isFirstTime && (
+                <Button
+                  variant="outline"
+                  className="w-full text-md font-bold"
+                  onClick={() => window.location.reload()}
+                >
+                  Cancel
+                </Button>
+              )}
               <Button
-                variant="outline"
                 className="w-full text-md font-bold"
-                onClick={() => window.location.reload()}
+                onClick={handleSave}
+                disabled={!isValid() || isSaving}
               >
-                Cancel
+                {isSaving ? "Saving..." : "Save"}
               </Button>
-            )}
-            <Button
-              className="w-full text-md font-bold"
-              onClick={handleSave}
-              disabled={!isValid() || isSaving}
-            >
-              {isSaving ? "Saving..." : "Save"}
-            </Button>
+            </div>
           </div>
         </div>
-      </div>
+      </ScrollArea>
     </>
   );
 }
