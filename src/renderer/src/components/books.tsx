@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { BookGrid } from "@/components/book-grid";
 import { BookList } from "./book-list";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,8 @@ export function Books() {
   const [selectAll, setSelectAll] = useState(false);
   const [isGridView, setIsGridView] = useState(true);
   const { toast } = useToast();
+  const [isCancelled, setIsCancelled] = useState(false);
+  const cancelRef = useRef(false);
 
   const maxRetries = 3;
   const retryInterval = 5000;
@@ -109,10 +111,17 @@ export function Books() {
     if (selectedBooks.size === 0) return;
 
     setIsExporting(true);
+    setIsCancelled(false);
+    cancelRef.current = false;
     let completed = 0;
 
     try {
       for (const bookTitle of selectedBooks) {
+        // Check if export was cancelled
+        if (cancelRef.current) {
+          break;
+        }
+
         const book = books.find((b) => b.bookTitle === bookTitle);
         if (!book) continue;
 
@@ -123,8 +132,12 @@ export function Books() {
           completed,
         });
 
-        const { parentPageId, highlightPageId } =
-          await window.api.exportBook(book);
+        const { parentPageId, highlightPageId } = await window.api.exportBook(book);
+
+        // Check again for cancellation
+        if (cancelRef.current) {
+          break;
+        }
 
         // Second step: Summarizing (if enabled)
         if (window.env.SUMMARIZE_ENABLED) {
@@ -143,7 +156,16 @@ export function Books() {
           currentStep: "",
         }));
       }
-      setSelectedBooks(new Set());
+
+      if (!cancelRef.current) {
+        setSelectedBooks(new Set());
+        toast({
+          title: "Export Cancelled",
+          description: "The export process has been cancelled.",
+          variant: "default",
+        });
+        // TODO: Delete the created page in Notion if user wants to.
+      }
     } catch (error) {
       console.error("Error exporting books:", error);
       toast({
@@ -162,7 +184,13 @@ export function Books() {
         currentStep: "",
         completed: 0,
       });
+      cancelRef.current = false;
     }
+  };
+
+  const handleCancel = () => {
+    cancelRef.current = true;
+    setIsCancelled(true);
   };
 
   if (error) {
@@ -263,6 +291,7 @@ export function Books() {
         currentStep={exportProgress.currentStep}
         completed={exportProgress.completed}
         onExport={handleExport}
+        onCancel={handleCancel}
       />
     </div>
   );

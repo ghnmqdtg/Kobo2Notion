@@ -200,12 +200,16 @@ function createWindow(): void {
     },
   });
 
+  // Open dev tools
+  if (is.dev) {
+    globalShortcut.register("CommandOrControl+Option+I", function () {
+      mainWindow.webContents.openDevTools();
+    });
+  }
+
   mainWindow.on("ready-to-show", () => {
     mainWindow.show();
   });
-
-  // Dev tools
-  // mainWindow.webContents.openDevTools();
 
   app.on("browser-window-focus", () => {
     globalShortcut.register("f5", function () {
