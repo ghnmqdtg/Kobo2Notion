@@ -131,7 +131,7 @@ export function BookList({
 }: BookListProps) {
   return (
     <ScrollArea className="h-[calc(100vh-8rem)]">
-      <div className="space-y-2 p-4">
+      <div className="space-y-2 p-4 mb-12">
         {books.map((book) => (
           <BookListCard
             key={book.bookTitle}

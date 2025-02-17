@@ -33,7 +33,7 @@ function App(): JSX.Element {
           onSettingsClick={() => setShowSettings(!showSettings)}
           isFirstTime={isFirstTime}
         />
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1">
           <div className="container mx-auto h-full">
             {showSettings ? <Settings /> : <Books />}
           </div>

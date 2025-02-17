@@ -136,7 +136,7 @@ export function BookGrid({
 }: BookGridProps) {
   return (
     <ScrollArea className="h-[calc(100vh-8rem)]">
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 p-4 auto-rows-fr">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 p-4 auto-rows-fr mb-16">
         {books.map((book) => (
           <BookCard
             key={book.bookTitle}
