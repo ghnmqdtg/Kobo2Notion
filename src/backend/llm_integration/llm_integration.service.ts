@@ -1,40 +1,49 @@
 import {
-    GoogleGenerativeAI,
-    GenerateContentRequest,
-    GenerateContentResult,
-} from '@google/generative-ai';
-import { Bookmark } from '../models';
-import { env } from '../../config/env.config';
+  GoogleGenerativeAI,
+  GenerateContentRequest,
+  GenerateContentResult,
+} from "@google/generative-ai";
+import { Bookmark } from "../models";
+import { env } from "../../config/env.config";
 
 export class GeminiService {
-    private genAI: GoogleGenerativeAI;
-    private model: any;
-    // private summarizeEnabled: boolean;
-    // private summarizeLanguage: string;
+  private genAI: GoogleGenerativeAI;
+  private model: any;
+  // private summarizeEnabled: boolean;
+  // private summarizeLanguage: string;
 
-    constructor() {
-        this.genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
-        this.model = this.genAI.getGenerativeModel({ model: env.GEMINI_MODEL });
-        // We don't set these variables in the constructor because we want to pass them in the function call
-        // this.summarizeEnabled = env.SUMMARIZE_ENABLED;
-        // this.summarizeLanguage = env.SUMMARIZE_LANGUAGE;
-    }
+  constructor() {
+    this.genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
+    this.model = this.genAI.getGenerativeModel({ model: env.GEMINI_MODEL });
+    // We don't set these variables in the constructor because we want to pass them in the function call
+    // this.summarizeEnabled = env.SUMMARIZE_ENABLED;
+    // this.summarizeLanguage = env.SUMMARIZE_LANGUAGE;
+  }
 
-    async summarizeBookmarks(bookTitle: string, bookmarks: Bookmark[], summarizeLanguage: string): Promise<string> {
-        const content = bookmarks.map((b) => b.highlight).join('\n');
-        const prompt = this.generatePrompt(bookTitle, content, summarizeLanguage);
-        const request: GenerateContentRequest = {
-            contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        };
-        const result: GenerateContentResult = await this.model.generateContent(request);
-        const response = await result.response;
-        const text = response.text();
-        return text;
-    }
+  async summarizeBookmarks(
+    bookTitle: string,
+    bookmarks: Bookmark[],
+    summarizeLanguage: string,
+  ): Promise<string> {
+    const content = bookmarks.map((b) => b.highlight).join("\n");
+    const prompt = this.generatePrompt(bookTitle, content, summarizeLanguage);
+    const request: GenerateContentRequest = {
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+    };
+    const result: GenerateContentResult =
+      await this.model.generateContent(request);
+    const response = await result.response;
+    const text = response.text();
+    return text;
+  }
 
-    private generatePrompt(bookTitle: string, content: string, summarizeLanguage: string): string {
-        if (summarizeLanguage === 'en') {
-            return `
+  private generatePrompt(
+    bookTitle: string,
+    content: string,
+    summarizeLanguage: string,
+  ): string {
+    if (summarizeLanguage === "en") {
+      return `
         The following is a list of highlights from a book: ${bookTitle}.
         \`\`\`
         ${content}
@@ -47,8 +56,8 @@ export class GeminiService {
         4. If there are duplicate highlights, please remove them to keep the summary concise.
         5. Please add abstract at the beginning and conclusion at the end, both with heading.
         `;
-        } else {
-            return `
+    } else {
+      return `
         以下是從《${bookTitle}》節錄的重點：
         \`\`\`
         ${content}
@@ -63,6 +72,6 @@ export class GeminiService {
         7. 若重點有所重複，可以刪減以保持簡潔。
         8. 請於最開頭加上摘要，並於最後加上總結，兩段落皆使用 heading。
         `;
-        }
     }
+  }
 }

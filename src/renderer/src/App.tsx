@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
-import { Navbar } from '@/components/navbar';
-import { Books } from '@/components/books';
-import { Settings } from '@/components/settings';
+import { useState, useEffect } from "react";
+import { Navbar } from "@/components/navbar";
+import { Books } from "@/components/books";
+import { Settings } from "@/components/settings";
 import { Toaster } from "@/components/ui/toaster";
-import { ThemeProvider } from '@/components/theme-provider';
+import { ThemeProvider } from "@/components/theme-provider";
 
 function App(): JSX.Element {
   const [showSettings, setShowSettings] = useState(false);
@@ -12,12 +12,12 @@ function App(): JSX.Element {
   useEffect(() => {
     // Check if all required env values are set
     const requiredEnvs = [
-      'SQLITE_SOURCE',
-      'NOTION_API_KEY',
-      'NOTION_DATABASE_ID'
+      "SQLITE_SOURCE",
+      "NOTION_API_KEY",
+      "NOTION_DATABASE_ID",
     ];
 
-    const missingEnvs = requiredEnvs.filter(key => !window.env[key]);
+    const missingEnvs = requiredEnvs.filter((key) => !window.env[key]);
     const isFirstTimeSetup = missingEnvs.length > 0;
 
     setIsFirstTime(isFirstTimeSetup);

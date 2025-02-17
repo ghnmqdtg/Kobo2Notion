@@ -1,33 +1,33 @@
-import sqlite3 from 'sqlite3';
-import { open, Database } from 'sqlite';
-import { Book, Bookmark } from '../models'; // Create a models.ts to define types
-import { env } from '../../config/env.config';
+import sqlite3 from "sqlite3";
+import { open, Database } from "sqlite";
+import { Book, Bookmark } from "../models"; // Create a models.ts to define types
+import { env } from "../../config/env.config";
 
 export class KoboService {
-    private db: Database | null = null;
-    private sqlitePath: string;
+  private db: Database | null = null;
+  private sqlitePath: string;
 
-    constructor() {
-        this.sqlitePath = env.SQLITE_SOURCE;
+  constructor() {
+    this.sqlitePath = env.SQLITE_SOURCE;
+  }
+
+  async connect(): Promise<void> {
+    try {
+      this.db = await open({
+        filename: this.sqlitePath,
+        driver: sqlite3.Database,
+      });
+      console.info("Connected to Kobo SQLite database.");
+    } catch (error) {
+      console.error("Error connecting to Kobo database:", error);
+      throw error; // Re-throw to handle it in the main process
     }
+  }
 
-    async connect(): Promise<void> {
-        try {
-            this.db = await open({
-                filename: this.sqlitePath,
-                driver: sqlite3.Database,
-            });
-            console.info('Connected to Kobo SQLite database.');
-        } catch (error) {
-            console.error('Error connecting to Kobo database:', error);
-            throw error; // Re-throw to handle it in the main process
-        }
-    }
+  async getBooks(): Promise<Book[]> {
+    if (!this.db) throw new Error("Database not connected.");
 
-    async getBooks(): Promise<Book[]> {
-        if (!this.db) throw new Error('Database not connected.');
-
-        const query = `
+    const query = `
       SELECT DISTINCT
         c.Title AS bookTitle,
         c.Subtitle AS subtitle,
@@ -46,44 +46,44 @@ export class KoboService {
         c.DownloadUrl IS NOT NULL AND
         c.IsAbridged = 'false'
     `;
-        const books = await this.db.all<Book[]>(query);
-        console.info(`Retrieved data for ${books.length} books`);
-        return books;
+    const books = await this.db.all<Book[]>(query);
+    console.info(`Retrieved data for ${books.length} books`);
+    return books;
+  }
+
+  async getBookmarks(title: string): Promise<Bookmark[]> {
+    if (!this.db) throw new Error("Database not connected.");
+
+    const contentIdResult = await this.db.get<{ contentId: string }>(
+      `SELECT c.ContentId AS contentId FROM content AS c WHERE c.Title LIKE ?`,
+      [`%${title}%`],
+    );
+
+    if (!contentIdResult) {
+      throw new Error(`No content ID found for title: ${title}`);
     }
 
-    async getBookmarks(title: string): Promise<Bookmark[]> {
-        if (!this.db) throw new Error('Database not connected.');
+    const contentId = contentIdResult.contentId;
 
-        const contentIdResult = await this.db.get<{ contentId: string; }>(
-            `SELECT c.ContentId AS contentId FROM content AS c WHERE c.Title LIKE ?`,
-            [`%${title}%`]
-        );
+    // Clean the contentId: remove all the text after ! sign (including the ! sign)
+    const cleanedContentId = contentId.split("!")[0];
 
-        if (!contentIdResult) {
-            throw new Error(`No content ID found for title: ${title}`);
-        }
+    console.info(`Retrieving bookmarks for content ID: ${cleanedContentId}`);
 
-        const contentId = contentIdResult.contentId;
+    const bookmarks = await this.db.all<Bookmark[]>(
+      `SELECT VolumeID AS volumeId, Text AS highlight, Annotation AS annotation, DateCreated AS createdOn, Type AS type FROM Bookmark WHERE VolumeID = ? ORDER BY DateCreated ASC`,
+      [cleanedContentId],
+    );
 
-        // Clean the contentId: remove all the text after ! sign (including the ! sign)
-        const cleanedContentId = contentId.split('!')[0];
+    console.log(bookmarks);
+    return bookmarks;
+  }
 
-        console.info(`Retrieving bookmarks for content ID: ${cleanedContentId}`);
-
-        const bookmarks = await this.db.all<Bookmark[]>(
-            `SELECT VolumeID AS volumeId, Text AS highlight, Annotation AS annotation, DateCreated AS createdOn, Type AS type FROM Bookmark WHERE VolumeID = ? ORDER BY DateCreated ASC`,
-            [cleanedContentId]
-        );
-
-        console.log(bookmarks);
-        return bookmarks;
+  // Add close connection method
+  async close(): Promise<void> {
+    if (this.db) {
+      await this.db.close();
+      console.info("Kobo database connection closed.");
     }
-
-    // Add close connection method
-    async close(): Promise<void> {
-        if (this.db) {
-            await this.db.close();
-            console.info('Kobo database connection closed.');
-        }
-    }
+  }
 }

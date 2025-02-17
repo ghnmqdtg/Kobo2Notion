@@ -1,46 +1,57 @@
-import { app, shell, BrowserWindow, ipcMain, globalShortcut, dialog, Menu, MenuItemConstructorOptions } from 'electron';
-import { join } from 'path';
-import { electronApp, optimizer, is } from '@electron-toolkit/utils';
-import icon from '../../resources/icon.png?asset';
-import iconIcns from '../../resources/icon.icns?asset';
-import fs from 'fs/promises';
-import path from 'path';
-import dotenv from 'dotenv';
+import {
+  app,
+  shell,
+  BrowserWindow,
+  ipcMain,
+  globalShortcut,
+  dialog,
+  Menu,
+  MenuItemConstructorOptions,
+} from "electron";
+import { join } from "path";
+import { electronApp, optimizer, is } from "@electron-toolkit/utils";
+import icon from "../../resources/icon.png?asset";
+import iconIcns from "../../resources/icon.icns?asset";
+import fs from "fs/promises";
+import path from "path";
+import dotenv from "dotenv";
 
 // Update path resolution to use app resources
-const getEnvPath = () => {
+const getEnvPath = (): string => {
   if (is.dev) {
-    return path.resolve(__dirname, '../../.env');
+    return path.resolve(__dirname, "../../.env");
   }
   // In production, use the app.getAppPath() to get the app.asar directory
-  return path.join(app.getAppPath(), '../.env');
+  return path.join(app.getAppPath(), "../.env");
 };
 
-const getExampleEnvPath = () => {
+const getExampleEnvPath = (): string => {
   if (is.dev) {
-    return path.resolve(__dirname, '../../.env.example');
+    return path.resolve(__dirname, "../../.env.example");
   }
   // In production, use the app.getAppPath() to get the app.asar directory
-  return path.join(app.getAppPath(), '../.env.example');
+  return path.join(app.getAppPath(), "../.env.example");
 };
 
-async function updateEnvFile(entries: { key: string, value: string }[]): Promise<void> {
+async function updateEnvFile(
+  entries: { key: string; value: string }[],
+): Promise<void> {
   const envPath = getEnvPath();
   let content: string;
-  
+
   try {
-    content = await fs.readFile(envPath, 'utf-8')
+    content = await fs.readFile(envPath, "utf-8");
   } catch (error) {
-    content = '';
-    console.error('Failed to read .env file:', error);
+    content = "";
+    console.error("Failed to read .env file:", error);
   }
 
-  let lines = content.split('\n');
+  const lines = content.split("\n");
 
   // Process all entries and update corresponding lines
   entries.forEach((entry) => {
-    const matchingLineIndex = lines.findIndex((line) => 
-      line.match(new RegExp(entry.key))
+    const matchingLineIndex = lines.findIndex((line) =>
+      line.match(new RegExp(entry.key)),
     );
 
     if (matchingLineIndex !== -1) {
@@ -48,13 +59,21 @@ async function updateEnvFile(entries: { key: string, value: string }[]): Promise
     }
   });
 
-  await fs.writeFile(envPath, lines.join('\n'));
+  await fs.writeFile(envPath, lines.join("\n"));
 
-  console.log('Updated env file');
+  console.log("Updated env file");
 }
 
 function cleanEnvKeys(): void {
-  console.log('cleaning env keys: ', process.env.NOTION_API, process.env.NOTION_DB, process.env.GEMINI_API, process.env.GEMINI_MODEL, process.env.SUMMARIZE_ENABLED, process.env.SUMMARIZE_LANGUAGE);
+  console.log(
+    "cleaning env keys: ",
+    process.env.NOTION_API,
+    process.env.NOTION_DB,
+    process.env.GEMINI_API,
+    process.env.GEMINI_MODEL,
+    process.env.SUMMARIZE_ENABLED,
+    process.env.SUMMARIZE_LANGUAGE,
+  );
   delete process.env.SQLITE_SOURCE;
   delete process.env.NOTION_API;
   delete process.env.NOTION_DB;
@@ -62,7 +81,15 @@ function cleanEnvKeys(): void {
   delete process.env.GEMINI_MODEL;
   delete process.env.SUMMARIZE_ENABLED;
   delete process.env.SUMMARIZE_LANGUAGE;
-  console.log('cleaned env keys: ', process.env.NOTION_API, process.env.NOTION_DB, process.env.GEMINI_API, process.env.GEMINI_MODEL, process.env.SUMMARIZE_ENABLED, process.env.SUMMARIZE_LANGUAGE);
+  console.log(
+    "cleaned env keys: ",
+    process.env.NOTION_API,
+    process.env.NOTION_DB,
+    process.env.GEMINI_API,
+    process.env.GEMINI_MODEL,
+    process.env.SUMMARIZE_ENABLED,
+    process.env.SUMMARIZE_LANGUAGE,
+  );
 }
 
 async function ensureEnvFile(): Promise<void> {
@@ -74,102 +101,103 @@ async function ensureEnvFile(): Promise<void> {
   } catch {
     // If .env doesn't exist, copy from .env.example
     try {
-      const exampleContent = await fs.readFile(exampleEnvPath, 'utf-8');
+      const exampleContent = await fs.readFile(exampleEnvPath, "utf-8");
       await fs.writeFile(envPath, exampleContent);
     } catch (error) {
-      console.error('Failed to create .env file:', error);
+      console.error("Failed to create .env file:", error);
     }
   }
 }
 
 function createMenu(): void {
-    const isMac = process.platform === 'darwin';
+  const isMac = process.platform === "darwin";
 
-    const template = [
-        // App menu (macOS only)
-        ...(isMac ? [{
-            label: 'Kobo2Notion',
+  const template = [
+    // App menu (macOS only)
+    ...(isMac
+      ? [
+          {
+            label: "Kobo2Notion",
             submenu: [
-                { role: 'about' },
-                { type: 'separator' },
-                { role: 'services' },
-                { type: 'separator' },
-                { role: 'hide' },
-                { role: 'hideOthers' },
-                { role: 'unhide' },
-                { type: 'separator' },
-                { role: 'quit' }
-            ]
-        }] : []),
-        // Edit menu
+              { role: "about" },
+              { type: "separator" },
+              { role: "services" },
+              { type: "separator" },
+              { role: "hide" },
+              { role: "hideOthers" },
+              { role: "unhide" },
+              { type: "separator" },
+              { role: "quit" },
+            ],
+          },
+        ]
+      : []),
+    // Edit menu
+    {
+      label: "Edit",
+      submenu: [
+        { role: "undo" },
+        { role: "redo" },
+        { type: "separator" },
+        { role: "cut" },
+        { role: "copy" },
+        { role: "paste" },
+        { role: "pasteAndMatchStyle" },
+        { role: "selectAll" },
+        { type: "separator" },
+        // Speech menu in submenu
         {
-            label: 'Edit',
-            submenu: [
-                { role: 'undo' },
-                { role: 'redo' },
-                { type: 'separator' },  
-                { role: 'cut' },
-                { role: 'copy' },
-                { role: 'paste' },
-                { role: 'pasteAndMatchStyle' },
-                { role: 'selectAll' },
-                { type: 'separator' },
-                // Speech menu in submenu
-                {
-                    label: 'Speech',
-                    submenu: [
-                        { role: 'startSpeaking' },
-                        { role: 'stopSpeaking' },
-                        { type: 'separator' },
-                        { role: 'decreaseFontSize' },
-                        { role: 'increaseFontSize' },
-                    ]
-                },
-            ]
+          label: "Speech",
+          submenu: [
+            { role: "startSpeaking" },
+            { role: "stopSpeaking" },
+            { type: "separator" },
+            { role: "decreaseFontSize" },
+            { role: "increaseFontSize" },
+          ],
         },
-        // View menu
-        {
-            label: 'View',
-            submenu: [
-                { role: 'reload' },
-                { role: 'forceReload' },
-                { type: 'separator' },
-                { role: 'resetZoom' },
-                { role: 'zoomIn' },
-                { role: 'zoomOut' },
-                { type: 'separator' },
-                { role: 'togglefullscreen' }
-            ]
-        },
-        // Window menu
-        {
-            label: 'Window',
-            submenu: [
-                { role: 'minimize' },
-                { role: 'zoom' }
-            ]
-        }
-    ];
+      ],
+    },
+    // View menu
+    {
+      label: "View",
+      submenu: [
+        { role: "reload" },
+        { role: "forceReload" },
+        { type: "separator" },
+        { role: "resetZoom" },
+        { role: "zoomIn" },
+        { role: "zoomOut" },
+        { type: "separator" },
+        { role: "togglefullscreen" },
+      ],
+    },
+    // Window menu
+    {
+      label: "Window",
+      submenu: [{ role: "minimize" }, { role: "zoom" }],
+    },
+  ];
 
-    const menu = Menu.buildFromTemplate(template as MenuItemConstructorOptions[]);
-    Menu.setApplicationMenu(menu);
+  const menu = Menu.buildFromTemplate(template as MenuItemConstructorOptions[]);
+  Menu.setApplicationMenu(menu);
 }
 
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    title: 'Kobo2Notion',
+    title: "Kobo2Notion",
     width: 1280,
     height: 900,
     show: false,
     fullscreen: true,
     autoHideMenuBar: true,
-    icon: process.platform === 'darwin' ? iconIcns : icon,
+    icon: process.platform === "darwin" ? iconIcns : icon,
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
+      preload: join(__dirname, "../preload/index.js"),
       sandbox: false,
       devTools: is.dev,
-    }
+    },
   });
 
   // Open DevTools by default
@@ -177,64 +205,68 @@ function createWindow(): void {
     mainWindow.webContents.openDevTools();
   }
 
-  mainWindow.on('ready-to-show', () => {
+  mainWindow.on("ready-to-show", () => {
     mainWindow.show();
   });
 
   // Dev tools
   // mainWindow.webContents.openDevTools();
 
-  app.on('browser-window-focus', () => {
-    globalShortcut.register('f5', function () {
+  app.on("browser-window-focus", () => {
+    globalShortcut.register("f5", function () {
       mainWindow.reload();
     });
 
-    globalShortcut.register('CommandOrControl+R', function () {
+    globalShortcut.register("CommandOrControl+R", function () {
       mainWindow.reload();
     });
   });
 
-  app.on('browser-window-blur', () => {
+  app.on("browser-window-blur", () => {
     globalShortcut.unregisterAll();
   });
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url);
-    return { action: 'deny' };
+    return { action: "deny" };
   });
 
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']);
+  if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
+    mainWindow.loadURL(process.env["ELECTRON_RENDERER_URL"]);
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
+    mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
   }
 
   // Update IPC handler to send confirmation
-  ipcMain.on('update-env', async (event, entries: { key: string; value: string }[]) => {
-    try {
-      await updateEnvFile(entries);
-      // Reload the env file
-      dotenv.config({ path: getEnvPath(), override: true });
-      // Send confirmation back to renderer
-      event.reply('env-change', entries);
-    } catch (error) {
-      console.error('Error updating env:', error);
-      // Send detailed error back to renderer
-      event.reply('env-change-error', error instanceof Error ? error.message : 'Unknown error');
-    }
-  });
+  ipcMain.on(
+    "update-env",
+    async (event, entries: { key: string; value: string }[]) => {
+      try {
+        await updateEnvFile(entries);
+        // Reload the env file
+        dotenv.config({ path: getEnvPath(), override: true });
+        // Send confirmation back to renderer
+        event.reply("env-change", entries);
+      } catch (error) {
+        console.error("Error updating env:", error);
+        // Send detailed error back to renderer
+        event.reply(
+          "env-change-error",
+          error instanceof Error ? error.message : "Unknown error",
+        );
+      }
+    },
+  );
 
   // Add file dialog handler
-  ipcMain.handle('open-file-dialog', async () => {
+  ipcMain.handle("open-file-dialog", async () => {
     const result = await dialog.showOpenDialog({
-      properties: ['openFile'],
-      filters: [
-        { name: 'SQLite Database', extensions: ['sqlite'] }
-      ]
+      properties: ["openFile"],
+      filters: [{ name: "SQLite Database", extensions: ["sqlite"] }],
     });
-    
+
     if (!result.canceled && result.filePaths.length > 0) {
       return result.filePaths[0];
     }
@@ -248,7 +280,7 @@ function initializeApp(): void {
   // Some APIs can only be used after this event occurs.
   app.whenReady().then(async () => {
     // Set app user model id for windows
-    electronApp.setAppUserModelId('com.electron');
+    electronApp.setAppUserModelId("com.electron");
 
     // Create menu
     createMenu();
@@ -256,13 +288,13 @@ function initializeApp(): void {
     // Default open or close DevTools by F12 in development
     // and ignore CommandOrControl + R in production.
     // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
-    app.on('browser-window-created', (_, window) => {
+    app.on("browser-window-created", (_, window) => {
       optimizer.watchWindowShortcuts(window);
     });
 
     createWindow();
 
-    app.on('activate', function () {
+    app.on("activate", function () {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
       if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -272,8 +304,8 @@ function initializeApp(): void {
   // Quit when all windows are closed, except on macOS. There, it's common
   // for applications and their menu bar to stay active until the user quits
   // explicitly with Cmd + Q.
-  app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
+  app.on("window-all-closed", () => {
+    if (process.platform !== "darwin") {
       app.quit();
     }
   });
@@ -284,7 +316,15 @@ ensureEnvFile().then(() => {
 
   // Load environment variables from .env file
   dotenv.config({ path: getEnvPath() });
-  console.log('cleaned env keys: ', process.env.NOTION_API, process.env.NOTION_DB, process.env.GEMINI_API, process.env.GEMINI_MODEL, process.env.SUMMARIZE_ENABLED, process.env.SUMMARIZE_LANGUAGE);
+  console.log(
+    "cleaned env keys: ",
+    process.env.NOTION_API,
+    process.env.NOTION_DB,
+    process.env.GEMINI_API,
+    process.env.GEMINI_MODEL,
+    process.env.SUMMARIZE_ENABLED,
+    process.env.SUMMARIZE_LANGUAGE,
+  );
 
   initializeApp();
 });
