@@ -108,4 +108,4 @@ export type Block =
   | NumberedListItemBlock
   | QuoteBlock;
 
-export type NotionBlock = Block & { object: "block" };
+export type NotionBlock = Block & { object: "block"; };

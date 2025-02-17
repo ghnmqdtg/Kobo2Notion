@@ -34,7 +34,7 @@ const getExampleEnvPath = (): string => {
 };
 
 async function updateEnvFile(
-  entries: { key: string; value: string }[],
+  entries: { key: string; value: string; }[],
 ): Promise<void> {
   const envPath = getEnvPath();
   let content: string;
@@ -116,21 +116,21 @@ function createMenu(): void {
     // App menu (macOS only)
     ...(isMac
       ? [
-          {
-            label: "Kobo2Notion",
-            submenu: [
-              { role: "about" },
-              { type: "separator" },
-              { role: "services" },
-              { type: "separator" },
-              { role: "hide" },
-              { role: "hideOthers" },
-              { role: "unhide" },
-              { type: "separator" },
-              { role: "quit" },
-            ],
-          },
-        ]
+        {
+          label: "Kobo2Notion",
+          submenu: [
+            { role: "about" },
+            { type: "separator" },
+            { role: "services" },
+            { type: "separator" },
+            { role: "hide" },
+            { role: "hideOthers" },
+            { role: "unhide" },
+            { type: "separator" },
+            { role: "quit" },
+          ],
+        },
+      ]
       : []),
     // Edit menu
     {
@@ -237,7 +237,7 @@ function createWindow(): void {
   // Update IPC handler to send confirmation
   ipcMain.on(
     "update-env",
-    async (event, entries: { key: string; value: string }[]) => {
+    async (event, entries: { key: string; value: string; }[]) => {
       try {
         await updateEnvFile(entries);
         // Reload the env file

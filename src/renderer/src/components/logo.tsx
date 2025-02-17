@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import iconUrl from "@/assets/icon.png";
 
-interface LogoProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface LogoProps extends React.HTMLAttributes<HTMLDivElement> { }
 
 export function Logo({ className, ...props }: LogoProps) {
   return (

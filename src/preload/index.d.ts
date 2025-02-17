@@ -6,11 +6,11 @@ export interface IElectronAPI {
   getBooks: () => Promise<Book[]>;
   exportBook: (
     book: Book,
-  ) => Promise<{ parentPageId: string; highlightPageId: string }>;
+  ) => Promise<{ parentPageId: string; highlightPageId: string; }>;
   summarizeBook: (book: Book, parentPageId: string) => Promise<void>;
   fetchBookCover: (imageId: string) => Promise<string>;
   updateEnvValue: (
-    entries: { key: string; value: string }[],
+    entries: { key: string; value: string; }[],
   ) => Promise<boolean>;
   openFileDialog: () => Promise<string | null>;
 }

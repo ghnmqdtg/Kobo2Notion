@@ -147,7 +147,7 @@ export function Settings() {
                   placeholder="/Volumes/KOBOeReader/.kobo/KoboReader.sqlite"
                   className={
                     !validateSqlitePath(values.SQLITE_SOURCE) &&
-                    values.SQLITE_SOURCE
+                      values.SQLITE_SOURCE
                       ? "border-destructive"
                       : ""
                   }

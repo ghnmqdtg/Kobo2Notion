@@ -54,7 +54,7 @@ export class KoboService {
   async getBookmarks(title: string): Promise<Bookmark[]> {
     if (!this.db) throw new Error("Database not connected.");
 
-    const contentIdResult = await this.db.get<{ contentId: string }>(
+    const contentIdResult = await this.db.get<{ contentId: string; }>(
       `SELECT c.ContentId AS contentId FROM content AS c WHERE c.Title LIKE ?`,
       [`%${title}%`],
     );

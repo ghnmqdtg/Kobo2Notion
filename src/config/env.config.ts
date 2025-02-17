@@ -47,7 +47,7 @@ const initConfig = (): EnvironmentConfig => {
   if (missingKeys.length > 0) {
     console.warn(
       `Incomplete config. Missing values for: ${missingKeys.join(", ")}. ` +
-        "Display settings page to collect these values.",
+      "Display settings page to collect these values.",
     );
   }
 
