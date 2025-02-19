@@ -18,6 +18,16 @@ import { Footer } from "@/components/footer";
 import { Book } from "../../../backend/models";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 interface BooksProps {
   onExportStateChange?: (exporting: boolean, canceling: boolean) => void;
@@ -41,6 +51,11 @@ export function Books({ onExportStateChange }: BooksProps) {
   const { toast } = useToast();
   const [isCanceling, setIsCanceling] = useState(false);
   const cancelRef = useRef(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [uploadedPages, setUploadedPages] = useState<Array<{
+    pageId: string;
+    bookTitle: string;
+  }>>([]);
 
   const maxRetries = 3;
   const retryInterval = 5000;
@@ -118,7 +133,7 @@ export function Books({ onExportStateChange }: BooksProps) {
     setIsCanceling(false);
     cancelRef.current = false;
     onExportStateChange?.(true, false);
-
+    setUploadedPages([]);
     let completed = 0;
 
     try {
@@ -130,7 +145,6 @@ export function Books({ onExportStateChange }: BooksProps) {
         const book = books.find((b) => b.bookTitle === bookTitle);
         if (!book) continue;
 
-        // First step: Exporting highlights
         setExportProgress({
           currentBook: book.bookTitle,
           currentStep: "Exporting highlights...",
@@ -139,12 +153,16 @@ export function Books({ onExportStateChange }: BooksProps) {
 
         const { parentPageId, highlightPageId } = await window.api.exportBook(book);
 
-        // Check again for cancellation
+        setUploadedPages(prev => [...prev, {
+          pageId: parentPageId,
+          bookTitle: book.bookTitle
+        }]);
+
         if (cancelRef.current) {
+          setShowDeleteDialog(true);
           break;
         }
 
-        // Second step: Summarizing (if enabled)
         if (window.env.SUMMARIZE_ENABLED) {
           setExportProgress((prev) => ({
             ...prev,
@@ -152,6 +170,11 @@ export function Books({ onExportStateChange }: BooksProps) {
           }));
 
           await window.api.summarizeBook(book, parentPageId);
+
+          if (cancelRef.current) {
+            setShowDeleteDialog(true);
+            break;
+          }
         }
 
         completed++;
@@ -168,9 +191,9 @@ export function Books({ onExportStateChange }: BooksProps) {
           description: "The export process has been cancelled.",
           variant: "default",
         });
-        // TODO: Delete the created page in Notion if user wants to.
       } else {
         setSelectedBooks(new Set());
+        setUploadedPages([]);
       }
     } catch (error) {
       console.error("Error exporting books:", error);
@@ -184,6 +207,9 @@ export function Books({ onExportStateChange }: BooksProps) {
         ),
       });
     } finally {
+      if (!cancelRef.current) {
+        setUploadedPages([]);
+      }
       setIsExporting(false);
       setIsCanceling(false);
       onExportStateChange?.(false, false);
@@ -200,6 +226,39 @@ export function Books({ onExportStateChange }: BooksProps) {
     cancelRef.current = true;
     setIsCanceling(true);
     onExportStateChange?.(true, true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (uploadedPages.length > 0) {
+      try {
+        await Promise.all(
+          uploadedPages.map(async ({ pageId, bookTitle }) => {
+            try {
+              await window.api.deleteNotionPage(pageId);
+              console.log(`Deleted page for book: ${bookTitle}`);
+            } catch (error) {
+              console.error(`Failed to delete page for book: ${bookTitle}`, error);
+              throw error;
+            }
+          })
+        );
+
+        toast({
+          title: "Pages Deleted",
+          description: `Removed ${uploadedPages.length} page${uploadedPages.length > 1 ? 's' : ''} from Notion.`,
+          variant: "default",
+        });
+      } catch (error) {
+        console.error("Error deleting pages:", error);
+        toast({
+          title: "Error",
+          description: "Failed to delete some pages from Notion.",
+          variant: "destructive",
+        });
+      }
+    }
+    setShowDeleteDialog(false);
+    setUploadedPages([]);
   };
 
   if (error) {
@@ -244,68 +303,99 @@ export function Books({ onExportStateChange }: BooksProps) {
   }
 
   return (
-    <div className="pb-16 relative">
-      <div className="flex justify-between items-center p-4 pb-0">
-        <h1 className="text-2xl font-bold">Your Books</h1>
+    <>
+      <div className="pb-16 relative">
+        <div className="flex justify-between items-center p-4 pb-0">
+          <h1 className="text-2xl font-bold">Your Books</h1>
 
-        <div className="flex items-center gap-2">
-          <Toggle
-            pressed={selectAll}
-            onPressedChange={setSelectAll}
-            aria-label="Toggle select all"
-            disabled={isExporting || isCanceling}
-          >
-            <CheckSquare className="h-4 w-4" />
-            <span>Select all</span>
-          </Toggle>
+          <div className="flex items-center gap-2">
+            <Toggle
+              pressed={selectAll}
+              onPressedChange={setSelectAll}
+              aria-label="Toggle select all"
+              disabled={isExporting || isCanceling}
+            >
+              <CheckSquare className="h-4 w-4" />
+              <span>Select all</span>
+            </Toggle>
 
-          <Toggle
-            pressed={isGridView}
-            onPressedChange={setIsGridView}
-            aria-label="Toggle view"
-            className="w-[110px]"
-            disabled={isExporting || isCanceling}
-          >
-            {isGridView ? (
-              <>
-                <LayoutGrid className="h-4 w-4" />
-                <span>Grid view</span>
-              </>
-            ) : (
-              <>
-                <List className="h-4 w-4" />
-                <span>List view</span>
-              </>
-            )}
-          </Toggle>
+            <Toggle
+              pressed={isGridView}
+              onPressedChange={setIsGridView}
+              aria-label="Toggle view"
+              className="w-[110px]"
+              disabled={isExporting || isCanceling}
+            >
+              {isGridView ? (
+                <>
+                  <LayoutGrid className="h-4 w-4" />
+                  <span>Grid view</span>
+                </>
+              ) : (
+                <>
+                  <List className="h-4 w-4" />
+                  <span>List view</span>
+                </>
+              )}
+            </Toggle>
+          </div>
         </div>
+        <div className="relative">
+          {isGridView ? (
+            <BookGrid
+              books={books}
+              selectedBooks={selectedBooks}
+              onSelectBook={handleSelectBook}
+            />
+          ) : (
+            <BookList
+              books={books}
+              selectedBooks={selectedBooks}
+              onSelectBook={handleSelectBook}
+            />
+          )}
+          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+        </div>
+        <Footer
+          selectedCount={selectedBooks.size}
+          isExporting={isExporting}
+          isCanceling={isCanceling}
+          currentBook={exportProgress.currentBook}
+          currentStep={exportProgress.currentStep}
+          completed={exportProgress.completed}
+          onExport={handleExport}
+          onCancel={handleCancel}
+        />
       </div>
-      <div className="relative">
-        {isGridView ? (
-          <BookGrid
-            books={books}
-            selectedBooks={selectedBooks}
-            onSelectBook={handleSelectBook}
-          />
-        ) : (
-          <BookList
-            books={books}
-            selectedBooks={selectedBooks}
-            onSelectBook={handleSelectBook}
-          />
-        )}
-        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent pointer-events-none" />
-      </div>
-      <Footer
-        selectedCount={selectedBooks.size}
-        isExporting={isExporting}
-        isCanceling={isCanceling}
-        currentBook={exportProgress.currentBook}
-        currentStep={exportProgress.currentStep}
-        completed={exportProgress.completed}
-        onExport={handleExport}
-        onCancel={handleCancel}
-      />
-    </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Uploaded Pages?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Would you like to remove {uploadedPages.length} partially uploaded page{uploadedPages.length > 1 ? 's' : ''} from Notion?
+              {uploadedPages.length > 0 && (
+                <ul className="mt-2 space-y-1">
+                  {uploadedPages.map(({ bookTitle }) => (
+                    <li key={bookTitle} className="text-sm">• {bookTitle}</li>
+                  ))}
+                </ul>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setShowDeleteDialog(false);
+              setUploadedPages([]);
+            }}>
+              Keep Pages
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm}>
+              Delete Pages
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

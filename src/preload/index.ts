@@ -90,6 +90,9 @@ const api = {
   openFileDialog: async (): Promise<string> => {
     return ipcRenderer.invoke("open-file-dialog");
   },
+  deleteNotionPage: async (pageId: string): Promise<void> => {
+    await notionService.deletePage(pageId);
+  },
 };
 
 // Use `contextBridge` APIs to expose Electron APIs to

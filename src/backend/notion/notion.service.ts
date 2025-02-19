@@ -19,7 +19,7 @@ export class NotionService {
 
   async getOrCreatePage(
     book: Book,
-  ): Promise<{ parentPageId: string; highlightPageId: string }> {
+  ): Promise<{ parentPageId: string; highlightPageId: string; }> {
     console.log("book: ", book.imageId);
     const coverUrl = await fetchBookCover(book.imageId ?? "");
 
@@ -67,7 +67,7 @@ export class NotionService {
   private async _createNewPage(
     coverUrl: string,
     properties: any,
-  ): Promise<{ parentPageId: string; highlightPageId: string }> {
+  ): Promise<{ parentPageId: string; highlightPageId: string; }> {
     const parentPage = await this._createMainPage(coverUrl, properties);
     const highlightPage = await this._createHighlightPage(parentPage.id);
     return { parentPageId: parentPage.id, highlightPageId: highlightPage.id };
@@ -96,7 +96,7 @@ export class NotionService {
     pageId: string,
     coverUrl: string,
     properties: any,
-  ): Promise<{ parentPageId: string; highlightPageId: string }> {
+  ): Promise<{ parentPageId: string; highlightPageId: string; }> {
     const updatePageParams: UpdatePageParameters = {
       page_id: pageId,
       cover: { type: "external", external: { url: coverUrl } },
@@ -177,6 +177,19 @@ export class NotionService {
     if (env.SUMMARIZE_ENABLED) {
       const summaryBlocks = parseMarkdownToNotionBlocks(summary);
       await this.syncBlocks(pageId, summaryBlocks);
+    }
+  }
+
+  async deletePage(pageId: string): Promise<void> {
+    try {
+      await this.notion.pages.update({
+        page_id: pageId,
+        archived: true,
+      });
+      console.info(`Page ${pageId} archived successfully`);
+    } catch (error) {
+      console.error("Error archiving page:", error);
+      throw error;
     }
   }
 }
