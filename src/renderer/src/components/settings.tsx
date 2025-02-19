@@ -86,11 +86,17 @@ export function Settings() {
         key,
         value: typeof value === "boolean" ? value.toString() : value,
       }));
-      await window.api.updateEnvValue(entries);
-      toast({
-        title: "Settings saved successfully",
-        description: "Please restart the app to apply changes",
-        variant: "default",
+      await window.api.updateEnvValue(entries).then(() => {
+        toast({
+          title: "Settings saved successfully",
+          description: "Please restart the app to apply changes",
+          variant: "default",
+        });
+
+        setTimeout(() => {
+          // Reload the page after env values are updated
+          window.location.reload();
+        }, 500);
       });
     } catch (error) {
       toast({

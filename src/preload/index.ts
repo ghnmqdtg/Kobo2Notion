@@ -19,8 +19,6 @@ const reloadEnvValues = (entries: { key: string; value: string; }[]) => {
     // Update process.env
     process.env[key] = value;
   });
-  // Reload the page after env values are updated
-  setTimeout(() => window.location.reload(), 100);
 };
 
 // Custom APIs for renderer

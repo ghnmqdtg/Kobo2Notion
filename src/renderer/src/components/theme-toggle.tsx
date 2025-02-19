@@ -8,8 +8,9 @@ export function ThemeToggle() {
   const handleThemeChange = async () => {
     const newTheme = theme === "light" ? "dark" : "light";
     try {
-      await window.api.updateEnvValue([{ key: "THEME", value: newTheme }]);
-      setTheme(newTheme);
+      await window.api.updateEnvValue([{ key: "THEME", value: newTheme }]).then(() => {
+        setTheme(newTheme);
+      });
     } catch (error) {
       console.error("Failed to update theme:", error);
     }
