@@ -254,16 +254,17 @@ export function Books() {
             pressed={isGridView}
             onPressedChange={setIsGridView}
             aria-label="Toggle view"
+            className="w-[110px]"
           >
             {isGridView ? (
               <>
-                <List className="h-4 w-4" />
-                <span>List view</span>
+                <LayoutGrid className="h-4 w-4" />
+                <span>Grid view</span>
               </>
             ) : (
               <>
-                <LayoutGrid className="h-4 w-4" />
-                <span>Grid view</span>
+                <List className="h-4 w-4" />
+                <span>List view</span>
               </>
             )}
           </Toggle>
