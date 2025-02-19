@@ -19,7 +19,11 @@ import { Book } from "../../../backend/models";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 
-export function Books() {
+interface BooksProps {
+  onExportStateChange?: (exporting: boolean, canceling: boolean) => void;
+}
+
+export function Books({ onExportStateChange }: BooksProps) {
   const [books, setBooks] = useState<Book[]>([]);
   const [selectedBooks, setSelectedBooks] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
@@ -113,6 +117,8 @@ export function Books() {
     setIsExporting(true);
     setIsCanceling(false);
     cancelRef.current = false;
+    onExportStateChange?.(true, false);
+
     let completed = 0;
 
     try {
@@ -180,6 +186,7 @@ export function Books() {
     } finally {
       setIsExporting(false);
       setIsCanceling(false);
+      onExportStateChange?.(false, false);
       setExportProgress({
         currentBook: "",
         currentStep: "",
@@ -192,6 +199,7 @@ export function Books() {
   const handleCancel = () => {
     cancelRef.current = true;
     setIsCanceling(true);
+    onExportStateChange?.(true, true);
   };
 
   if (error) {
@@ -245,6 +253,7 @@ export function Books() {
             pressed={selectAll}
             onPressedChange={setSelectAll}
             aria-label="Toggle select all"
+            disabled={isExporting || isCanceling}
           >
             <CheckSquare className="h-4 w-4" />
             <span>Select all</span>
@@ -255,6 +264,7 @@ export function Books() {
             onPressedChange={setIsGridView}
             aria-label="Toggle view"
             className="w-[110px]"
+            disabled={isExporting || isCanceling}
           >
             {isGridView ? (
               <>

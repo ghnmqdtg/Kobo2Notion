@@ -8,6 +8,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 function App(): JSX.Element {
   const [showSettings, setShowSettings] = useState(false);
   const [isFirstTime, setIsFirstTime] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isCanceling, setIsCanceling] = useState(false);
 
   useEffect(() => {
     // Check if all required env values are set
@@ -32,10 +34,21 @@ function App(): JSX.Element {
         <Navbar
           onSettingsClick={() => setShowSettings(!showSettings)}
           isFirstTime={isFirstTime}
+          isExporting={isExporting}
+          isCanceling={isCanceling}
         />
         <main className="flex-1">
           <div className="container mx-auto h-full">
-            {showSettings ? <Settings /> : <Books />}
+            {showSettings ? (
+              <Settings />
+            ) : (
+              <Books
+                onExportStateChange={(exporting: boolean, canceling: boolean) => {
+                  setIsExporting(exporting);
+                  setIsCanceling(canceling);
+                }}
+              />
+            )}
           </div>
         </main>
         <Toaster />

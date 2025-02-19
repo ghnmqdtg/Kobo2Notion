@@ -6,24 +6,28 @@ import { Logo } from "./logo";
 interface NavbarProps {
   onSettingsClick: () => void;
   isFirstTime?: boolean;
+  isExporting?: boolean;
+  isCanceling?: boolean;
 }
 
-export function Navbar({ onSettingsClick, isFirstTime }: NavbarProps) {
+export function Navbar({ onSettingsClick, isFirstTime, isExporting, isCanceling }: NavbarProps) {
   return (
     <nav className="border-b">
       <div className="flex h-16 items-center px-4">
         <Logo />
         <div className="ml-auto flex items-center space-x-2">
-          <ThemeToggle />
+          <ThemeToggle disabled={isExporting || isCanceling || false} />
           <Button
             variant="ghost"
             size="icon"
             onClick={onSettingsClick}
-            disabled={isFirstTime}
+            disabled={isFirstTime || isExporting || isCanceling}
             title={
               isFirstTime
                 ? "Please complete the initial setup first"
-                : "Settings"
+                : isExporting || isCanceling
+                  ? "Please wait until the export is complete"
+                  : "Settings"
             }
           >
             <Settings className="h-5 w-5" />
