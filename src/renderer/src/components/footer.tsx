@@ -19,6 +19,7 @@ interface FooterProps {
   selectedCount: number;
   isExporting: boolean;
   isCanceling: boolean;
+  isChecking?: boolean;
   currentBook?: string;
   currentStep?: string;
   completed: number;
@@ -30,6 +31,7 @@ export function Footer({
   selectedCount,
   isExporting,
   isCanceling,
+  isChecking,
   currentBook,
   currentStep,
   completed,
@@ -64,35 +66,34 @@ export function Footer({
                   Network is not available. Please check your network settings.
                 </span>
               </div>
-            ) : isExporting ? (
-              currentBook ? (
-                <>
-                  <div className="flex justify-between text-sm text-muted-foreground">
-                    <span className="font-bold">{currentBook}</span>
-                    {isCanceling ? (
-                      <span className="font-bold">Aborting the export...</span>
-                    ) : (
-                      <span className="font-bold">{currentStep}</span>
-                    )}
-                  </div>
-                  <Progress value={(completed / selectedCount) * 100} />
-                </>) : (
-                <div className="text-md font-bold">
-                  Checking for existing pages...
-                </div>
-              )
-            ) : (
+            ) : isChecking ? (
               <div className="text-md font-bold">
-                {selectedCount > 0
-                  ? `${selectedCount} book${selectedCount > 1 ? "s" : ""} selected`
-                  : "Select books to export"}
+                Checking for existing pages...
               </div>
-            )}
+            ) : isExporting ? (
+              <>
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span className="font-bold">{currentBook}</span>
+                  {isCanceling ? (
+                    <span className="font-bold">Aborting the export...</span>
+                  ) : (
+                    <span className="font-bold">{currentStep}</span>
+                  )}
+                </div>
+                <Progress value={(completed / selectedCount) * 100} />
+              </>)
+              : (
+                <div className="text-md font-bold">
+                  {selectedCount > 0
+                    ? `${selectedCount} book${selectedCount > 1 ? "s" : ""} selected`
+                    : "Select books to export"}
+                </div>
+              )}
           </div>
           <Button
             className={`text-md font-bold ${!isOnline.online ? "bg-destructive/60" : ""}`}
             onClick={isExporting && !isCanceling ? handleCancelClick : onExport}
-            disabled={selectedCount === 0 || !isOnline.online || isCanceling}
+            disabled={selectedCount === 0 || !isOnline.online || isChecking || isCanceling}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
@@ -116,6 +117,11 @@ export function Footer({
                     <span>Exporting...</span>
                   </div>
                 )}
+              </div>
+            ) : isChecking ? (
+              <div className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Checking...</span>
               </div>
             ) : (
               "Export to Notion"

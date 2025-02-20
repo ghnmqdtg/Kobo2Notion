@@ -31,7 +31,7 @@ import {
 import { ConfirmOverwriteDialog } from "./confirm-overwrite-dialog";
 
 interface BooksProps {
-  onExportStateChange?: (exporting: boolean, canceling: boolean) => void;
+  onExportStateChange?: (exporting: boolean, canceling: boolean, checking: boolean) => void;
 }
 
 export function Books({ onExportStateChange }: BooksProps) {
@@ -59,6 +59,7 @@ export function Books({ onExportStateChange }: BooksProps) {
   }>>([]);
   const [showOverwriteDialog, setShowOverwriteDialog] = useState(false);
   const [existingPages, setExistingPages] = useState<ExistingPage[]>([]);
+  const [isChecking, setIsChecking] = useState(false);
 
   const maxRetries = 3;
   const retryInterval = 5000;
@@ -130,28 +131,38 @@ export function Books({ onExportStateChange }: BooksProps) {
   };
 
   const handleExport = async () => {
-    setIsExporting(true);
-    setIsCanceling(false);
-    cancelRef.current = false;
-    onExportStateChange?.(true, false);
-
     if (selectedBooks.size === 0) return;
 
+    setIsExporting(false);
+    setIsChecking(true);
+    setIsCanceling(false);
     // Check for existing pages first
-    const bookTitles = Array.from(selectedBooks);
-    const existing = await window.api.queryExistingPages(bookTitles);
+    try {
+      const bookTitles = Array.from(selectedBooks);
+      const existing = await window.api.queryExistingPages(bookTitles);
 
-    if (existing.length > 0) {
-      setExistingPages(existing);
-      setShowOverwriteDialog(true);
-      return;
+      if (existing.length > 0) {
+        setExistingPages(existing);
+        setShowOverwriteDialog(true);
+      } else {
+        // If no existing pages, proceed with export
+        cancelRef.current = false;
+        setIsExporting(true);
+        onExportStateChange?.(isExporting, isCanceling, isChecking);
+        await startExport();
+      }
+    } catch (error) {
+      console.error("Error checking existing pages:", error);
+      toast({
+        title: "Error",
+        description: "Failed to check existing pages in Notion",
+        variant: "destructive",
+      });
     }
-
-    // If no existing pages, proceed with export
-    await startExport();
   };
 
   const startExport = async () => {
+    setIsChecking(false);
     setUploadedPages([]);
     let completed = 0;
 
@@ -226,7 +237,7 @@ export function Books({ onExportStateChange }: BooksProps) {
       setIsExporting(false);
       setIsCanceling(false);
       setSelectAll(false);
-      onExportStateChange?.(false, false);
+      onExportStateChange?.(isExporting, isCanceling, isChecking);
       setExportProgress({
         currentBook: "",
         currentStep: "",
@@ -239,7 +250,7 @@ export function Books({ onExportStateChange }: BooksProps) {
   const handleCancel = () => {
     cancelRef.current = true;
     setIsCanceling(true);
-    onExportStateChange?.(true, true);
+    onExportStateChange?.(isExporting, isCanceling, isChecking);
   };
 
   const handleDeleteConfirm = async () => {
@@ -298,12 +309,12 @@ export function Books({ onExportStateChange }: BooksProps) {
         console.error(`Failed to delete page: ${pageId}`, error);
         throw error;
       }
-    })).then(() => {
+    })).then(async () => {
+      cancelRef.current = false;
       setIsExporting(true);
       setIsCanceling(false);
-      cancelRef.current = false;
-      onExportStateChange?.(true, false);
-      startExport();
+      onExportStateChange?.(isExporting, isCanceling, isChecking);
+      await startExport();
     });
   };
 
@@ -311,8 +322,9 @@ export function Books({ onExportStateChange }: BooksProps) {
     setShowOverwriteDialog(false);
     setExistingPages([]);
     setIsExporting(false);
-    onExportStateChange?.(false, false);
-    setSelectAll(false);
+    setIsCanceling(false);
+    setIsChecking(false);
+    onExportStateChange?.(isExporting, isCanceling, isChecking);
   };
 
   if (error) {
@@ -414,6 +426,7 @@ export function Books({ onExportStateChange }: BooksProps) {
           selectedCount={selectedBooks.size}
           isExporting={isExporting}
           isCanceling={isCanceling}
+          isChecking={isChecking}
           currentBook={exportProgress.currentBook}
           currentStep={exportProgress.currentStep}
           completed={exportProgress.completed}

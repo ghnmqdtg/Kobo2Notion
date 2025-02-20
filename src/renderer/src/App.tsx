@@ -10,7 +10,7 @@ function App(): JSX.Element {
   const [isFirstTime, setIsFirstTime] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
   const [isCanceling, setIsCanceling] = useState(false);
-
+  const [isChecking, setIsChecking] = useState(false);
   useEffect(() => {
     // Check if all required env values are set
     const requiredEnvs = [
@@ -43,9 +43,10 @@ function App(): JSX.Element {
               <Settings />
             ) : (
               <Books
-                onExportStateChange={(exporting: boolean, canceling: boolean) => {
+                onExportStateChange={(exporting: boolean, canceling: boolean, checking: boolean) => {
                   setIsExporting(exporting);
                   setIsCanceling(canceling);
+                  setIsChecking(checking);
                 }}
               />
             )}
