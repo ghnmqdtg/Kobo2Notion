@@ -184,17 +184,6 @@ export function Books({ onExportStateChange }: BooksProps) {
           currentStep: "",
         }));
       }
-
-      if (cancelRef.current) {
-        toast({
-          title: "Export Cancelled",
-          description: "The export process has been cancelled.",
-          variant: "default",
-        });
-      } else {
-        setSelectedBooks(new Set());
-        setUploadedPages([]);
-      }
     } catch (error) {
       console.error("Error exporting books:", error);
       toast({
@@ -208,6 +197,7 @@ export function Books({ onExportStateChange }: BooksProps) {
       });
     } finally {
       if (!cancelRef.current) {
+        setSelectedBooks(new Set());
         setUploadedPages([]);
       }
       setIsExporting(false);
@@ -245,14 +235,14 @@ export function Books({ onExportStateChange }: BooksProps) {
 
         toast({
           title: "Pages Deleted",
-          description: `Removed ${uploadedPages.length} page${uploadedPages.length > 1 ? 's' : ''} from Notion.`,
+          description: `Removed the following pages from Notion:\n${uploadedPages.map(page => `• ${page.bookTitle}`).join('\n')}`,
           variant: "default",
         });
       } catch (error) {
         console.error("Error deleting pages:", error);
         toast({
           title: "Error",
-          description: "Failed to delete some pages from Notion.",
+          description: `Failed to delete the page for ${uploadedPages[0].bookTitle} from Notion.`,
           variant: "destructive",
         });
       }
