@@ -36,6 +36,7 @@ function App(): JSX.Element {
           isFirstTime={isFirstTime}
           isExporting={isExporting}
           isCanceling={isCanceling}
+          isChecking={isChecking}
         />
         <main className="flex-1">
           <div className="container mx-auto h-full">

@@ -130,13 +130,19 @@ export function Books({ onExportStateChange }: BooksProps) {
     });
   };
 
+  // Helper function to update states and notify parent
+  const updateStates = (exporting: boolean, canceling: boolean, checking: boolean) => {
+    setIsExporting(exporting);
+    setIsCanceling(canceling);
+    setIsChecking(checking);
+    onExportStateChange?.(exporting, canceling, checking);
+  };
+
   const handleExport = async () => {
     if (selectedBooks.size === 0) return;
 
-    setIsExporting(false);
-    setIsChecking(true);
-    setIsCanceling(false);
-    // Check for existing pages first
+    updateStates(false, false, true); // Start checking
+
     try {
       const bookTitles = Array.from(selectedBooks);
       const existing = await window.api.queryExistingPages(bookTitles);
@@ -145,10 +151,7 @@ export function Books({ onExportStateChange }: BooksProps) {
         setExistingPages(existing);
         setShowOverwriteDialog(true);
       } else {
-        // If no existing pages, proceed with export
-        cancelRef.current = false;
-        setIsExporting(true);
-        onExportStateChange?.(isExporting, isCanceling, isChecking);
+        updateStates(true, false, false); // Start export
         await startExport();
       }
     } catch (error) {
@@ -158,11 +161,11 @@ export function Books({ onExportStateChange }: BooksProps) {
         description: "Failed to check existing pages in Notion",
         variant: "destructive",
       });
+      updateStates(false, false, false); // Reset states on error
     }
   };
 
   const startExport = async () => {
-    setIsChecking(false);
     setUploadedPages([]);
     let completed = 0;
 
@@ -214,18 +217,7 @@ export function Books({ onExportStateChange }: BooksProps) {
           currentStep: "",
         }));
       }
-    } catch (error) {
-      console.error("Error exporting books:", error);
-      toast({
-        title: "Error exporting books",
-        description: "Please delete Notion pages and try again.",
-        action: (
-          <ToastAction onClick={loadBooks} altText="Try reloading">
-            Try again
-          </ToastAction>
-        ),
-      });
-    } finally {
+
       if (!cancelRef.current) {
         setSelectedBooks(new Set());
         setUploadedPages([]);
@@ -234,10 +226,16 @@ export function Books({ onExportStateChange }: BooksProps) {
           description: "Your books have been exported to Notion.",
         });
       }
-      setIsExporting(false);
-      setIsCanceling(false);
+    } catch (error) {
+      console.error("Error exporting books:", error);
+      toast({
+        title: "Error exporting books",
+        description: "Please delete Notion pages and try again.",
+        variant: "destructive",
+      });
+    } finally {
+      updateStates(false, false, false); // Reset all states
       setSelectAll(false);
-      onExportStateChange?.(isExporting, isCanceling, isChecking);
       setExportProgress({
         currentBook: "",
         currentStep: "",
@@ -249,8 +247,7 @@ export function Books({ onExportStateChange }: BooksProps) {
 
   const handleCancel = () => {
     cancelRef.current = true;
-    setIsCanceling(true);
-    onExportStateChange?.(isExporting, isCanceling, isChecking);
+    updateStates(true, true, false); // Update to canceling state
   };
 
   const handleDeleteConfirm = async () => {
@@ -294,37 +291,33 @@ export function Books({ onExportStateChange }: BooksProps) {
 
   const handleOverwriteConfirm = async (selectedPageIds: string[]) => {
     setShowOverwriteDialog(false);
-    // Delete the old pages
-    await Promise.all(selectedPageIds.map(async (pageId) => {
-      try {
-        await window.api.deleteNotionPage(pageId).then(({ success, message }) => {
-          if (success) {
-            console.log(`Deleted page: ${pageId}`);
-          } else {
-            console.error(`Failed to delete page: ${pageId}`, message);
-            throw new Error(message);
-          }
-        });
-      } catch (error) {
-        console.error(`Failed to delete page: ${pageId}`, error);
-        throw error;
-      }
-    })).then(async () => {
-      cancelRef.current = false;
-      setIsExporting(true);
-      setIsCanceling(false);
-      onExportStateChange?.(isExporting, isCanceling, isChecking);
+
+    try {
+      // Delete the old pages
+      await Promise.all(selectedPageIds.map(async (pageId) => {
+        const result = await window.api.deleteNotionPage(pageId);
+        if (!result.success) {
+          throw new Error(result.message);
+        }
+      }));
+
+      updateStates(true, false, false); // Start export after deletion
       await startExport();
-    });
+    } catch (error) {
+      console.error("Error deleting pages:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete existing pages",
+        variant: "destructive",
+      });
+      updateStates(false, false, false); // Reset states on error
+    }
   };
 
   const handleOverwriteCancel = () => {
     setShowOverwriteDialog(false);
     setExistingPages([]);
-    setIsExporting(false);
-    setIsCanceling(false);
-    setIsChecking(false);
-    onExportStateChange?.(isExporting, isCanceling, isChecking);
+    updateStates(false, false, false); // Reset all states
   };
 
   if (error) {
@@ -379,7 +372,7 @@ export function Books({ onExportStateChange }: BooksProps) {
               pressed={selectAll}
               onPressedChange={setSelectAll}
               aria-label="Toggle select all"
-              disabled={isExporting || isCanceling}
+              disabled={isExporting || isCanceling || isChecking}
             >
               <CheckSquare className="h-4 w-4" />
               <span>Select all</span>
@@ -390,7 +383,6 @@ export function Books({ onExportStateChange }: BooksProps) {
               onPressedChange={setIsGridView}
               aria-label="Toggle view"
               className="w-[110px]"
-              disabled={isExporting || isCanceling}
             >
               {isGridView ? (
                 <>
