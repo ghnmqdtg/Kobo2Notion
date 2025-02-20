@@ -1,3 +1,4 @@
+import { CircleAlert } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogContent,
@@ -80,10 +81,10 @@ export function ConfirmOverwriteDialog({
                 <AlertDialogHeader>
                     <AlertDialogTitle>Overwrite Existing Pages?</AlertDialogTitle>
                     <div className="text-sm text-muted-foreground">
-                        The following books already exist in your Notion database.
-                        Select the ones you want to overwrite:
+                        <span>The following books already exist in your Notion database.</span>
+                        <span>Please select the ones you want to overwrite:</span>
                     </div>
-                    <ScrollArea className="max-h-[300px] rounded-md">
+                    <ScrollArea className="max-h-[270px] rounded-md">
                         <div className="mt-4 space-y-3">
                             {existingPages.map((page) => (
                                 <div key={page.id} className="flex items-start space-x-3 mt-2 p-2 rounded-md hover:bg-accent/50 cursor-pointer">
@@ -111,6 +112,10 @@ export function ConfirmOverwriteDialog({
                             ))}
                         </div>
                     </ScrollArea>
+                    <div className="flex items-center gap-2">
+                        <CircleAlert className="w-4 h-4" />
+                        <span className="text-sm text-muted-foreground">Remember, this will delete pages and cannot be undone.</span>
+                    </div>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel onClick={handleCancel}>
@@ -120,7 +125,7 @@ export function ConfirmOverwriteDialog({
                         onClick={handleConfirm}
                         disabled={selectedPages.size === 0}
                     >
-                        Overwrite Selected
+                        Overwrite Selected {selectedPages.size} book{selectedPages.size > 1 ? "s" : ""}
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
