@@ -29,9 +29,14 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { ConfirmOverwriteDialog } from "./confirm-overwrite-dialog";
+import { ExistingPage } from "../../../backend/notion/notion.service";
 
 interface BooksProps {
-  onExportStateChange?: (exporting: boolean, canceling: boolean, checking: boolean) => void;
+  onExportStateChange?: (
+    exporting: boolean,
+    canceling: boolean,
+    checking: boolean,
+  ) => void;
 }
 
 export function Books({ onExportStateChange }: BooksProps) {
@@ -53,10 +58,12 @@ export function Books({ onExportStateChange }: BooksProps) {
   const [isCanceling, setIsCanceling] = useState(false);
   const cancelRef = useRef(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [uploadedPages, setUploadedPages] = useState<Array<{
-    pageId: string;
-    bookTitle: string;
-  }>>([]);
+  const [uploadedPages, setUploadedPages] = useState<
+    Array<{
+      pageId: string;
+      bookTitle: string;
+    }>
+  >([]);
   const [showOverwriteDialog, setShowOverwriteDialog] = useState(false);
   const [existingPages, setExistingPages] = useState<ExistingPage[]>([]);
   const [isChecking, setIsChecking] = useState(false);
@@ -131,7 +138,11 @@ export function Books({ onExportStateChange }: BooksProps) {
   };
 
   // Helper function to update states and notify parent
-  const updateStates = (exporting: boolean, canceling: boolean, checking: boolean) => {
+  const updateStates = (
+    exporting: boolean,
+    canceling: boolean,
+    checking: boolean,
+  ) => {
     setIsExporting(exporting);
     setIsCanceling(canceling);
     setIsChecking(checking);
@@ -184,12 +195,16 @@ export function Books({ onExportStateChange }: BooksProps) {
           completed,
         });
 
-        const { parentPageId, highlightPageId } = await window.api.exportBook(book);
+        const { parentPageId, highlightPageId } =
+          await window.api.exportBook(book);
 
-        setUploadedPages(prev => [...prev, {
-          pageId: parentPageId,
-          bookTitle: book.bookTitle
-        }]);
+        setUploadedPages((prev) => [
+          ...prev,
+          {
+            pageId: parentPageId,
+            bookTitle: book.bookTitle,
+          },
+        ]);
 
         if (cancelRef.current) {
           setShowDeleteDialog(true);
@@ -256,24 +271,32 @@ export function Books({ onExportStateChange }: BooksProps) {
         await Promise.all(
           uploadedPages.map(async ({ pageId, bookTitle }) => {
             try {
-              await window.api.deleteNotionPage(pageId).then(({ success, message }) => {
-                if (success) {
-                  console.log(`Deleted page for book: ${bookTitle}`);
-                } else {
-                  console.error(`Failed to delete page for book: ${bookTitle}`, message);
-                  throw new Error(message);
-                }
-              });
+              await window.api
+                .deleteNotionPage(pageId)
+                .then(({ success, message }) => {
+                  if (success) {
+                    console.log(`Deleted page for book: ${bookTitle}`);
+                  } else {
+                    console.error(
+                      `Failed to delete page for book: ${bookTitle}`,
+                      message,
+                    );
+                    throw new Error(message);
+                  }
+                });
             } catch (error) {
-              console.error(`Failed to delete page for book: ${bookTitle}`, error);
+              console.error(
+                `Failed to delete page for book: ${bookTitle}`,
+                error,
+              );
               throw error;
             }
-          })
+          }),
         );
 
         toast({
           title: "Pages Deleted",
-          description: `Removed the following pages from Notion:\n${uploadedPages.map(page => `• ${page.bookTitle}`).join('\n')}`,
+          description: `Removed the following pages from Notion:\n${uploadedPages.map((page) => `• ${page.bookTitle}`).join("\n")}`,
           variant: "default",
         });
       } catch (error) {
@@ -294,12 +317,14 @@ export function Books({ onExportStateChange }: BooksProps) {
 
     try {
       // Delete the old pages
-      await Promise.all(selectedPageIds.map(async (pageId) => {
-        const result = await window.api.deleteNotionPage(pageId);
-        if (!result.success) {
-          throw new Error(result.message);
-        }
-      }));
+      await Promise.all(
+        selectedPageIds.map(async (pageId) => {
+          const result = await window.api.deleteNotionPage(pageId);
+          if (!result.success) {
+            throw new Error(result.message);
+          }
+        }),
+      );
 
       updateStates(true, false, false); // Start export after deletion
       await startExport();
@@ -432,21 +457,26 @@ export function Books({ onExportStateChange }: BooksProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Uploaded Pages?</AlertDialogTitle>
             <AlertDialogDescription>
-              Would you like to remove {uploadedPages.length} partially uploaded page{uploadedPages.length > 1 ? 's' : ''} from Notion?
+              Would you like to remove {uploadedPages.length} partially uploaded
+              page{uploadedPages.length > 1 ? "s" : ""} from Notion?
               {uploadedPages.length > 0 && (
                 <ul className="mt-2 space-y-1">
                   {uploadedPages.map(({ bookTitle }) => (
-                    <li key={bookTitle} className="text-sm">• {bookTitle}</li>
+                    <li key={bookTitle} className="text-sm">
+                      • {bookTitle}
+                    </li>
                   ))}
                 </ul>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => {
-              setShowDeleteDialog(false);
-              setUploadedPages([]);
-            }}>
+            <AlertDialogCancel
+              onClick={() => {
+                setShowDeleteDialog(false);
+                setUploadedPages([]);
+              }}
+            >
               Keep Pages
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteConfirm}>

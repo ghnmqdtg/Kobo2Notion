@@ -2,22 +2,29 @@ import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/theme-provider";
 
-export function ThemeToggle({ disabled }: { disabled: boolean; }) {
+export function ThemeToggle({ disabled }: { disabled: boolean }) {
   const { theme, setTheme } = useTheme();
 
   const handleThemeChange = async () => {
     const newTheme = theme === "light" ? "dark" : "light";
     try {
-      await window.api.updateEnvValue([{ key: "THEME", value: newTheme }]).then(() => {
-        setTheme(newTheme);
-      });
+      await window.api
+        .updateEnvValue([{ key: "THEME", value: newTheme }])
+        .then(() => {
+          setTheme(newTheme);
+        });
     } catch (error) {
       console.error("Failed to update theme:", error);
     }
   };
 
   return (
-    <Button variant="ghost" size="icon" onClick={handleThemeChange} disabled={disabled}>
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={handleThemeChange}
+      disabled={disabled}
+    >
       {theme === "light" ? (
         <Sun className="h-5 w-5" />
       ) : (

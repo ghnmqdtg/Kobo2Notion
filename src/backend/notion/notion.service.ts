@@ -8,7 +8,7 @@ import { Book, Bookmark, NotionBlock, Block } from "../models";
 import { fetchBookCover, parseMarkdownToNotionBlocks } from "../utils";
 import { env } from "../../config/env.config";
 
-interface ExistingPage {
+export interface ExistingPage {
   id: string;
   title: string;
   lastEditedTime: string;
@@ -25,7 +25,7 @@ export class NotionService {
 
   async getOrCreatePage(
     book: Book,
-  ): Promise<{ parentPageId: string; highlightPageId: string; }> {
+  ): Promise<{ parentPageId: string; highlightPageId: string }> {
     console.log("book: ", book.imageId);
     const coverUrl = await fetchBookCover(book.imageId ?? "");
 
@@ -47,7 +47,9 @@ export class NotionService {
     const existingPage = await this._queryExistingPage(book.bookTitle);
 
     if (existingPage) {
-      console.info(`Updating existing page for book: ${book.bookTitle} | ID: ${existingPage.id}`);
+      console.info(
+        `Updating existing page for book: ${book.bookTitle} | ID: ${existingPage.id}`,
+      );
       return this._updateExistingPage(existingPage.id, coverUrl, properties);
     } else {
       console.info(`Creating new page for book: ${book.bookTitle}`);
@@ -73,7 +75,7 @@ export class NotionService {
   private async _createNewPage(
     coverUrl: string,
     properties: any,
-  ): Promise<{ parentPageId: string; highlightPageId: string; }> {
+  ): Promise<{ parentPageId: string; highlightPageId: string }> {
     const parentPage = await this._createMainPage(coverUrl, properties);
     const highlightPage = await this._createHighlightPage(parentPage.id);
     return { parentPageId: parentPage.id, highlightPageId: highlightPage.id };
@@ -102,7 +104,7 @@ export class NotionService {
     pageId: string,
     coverUrl: string,
     properties: any,
-  ): Promise<{ parentPageId: string; highlightPageId: string; }> {
+  ): Promise<{ parentPageId: string; highlightPageId: string }> {
     const updatePageParams: UpdatePageParameters = {
       page_id: pageId,
       cover: { type: "external", external: { url: coverUrl } },
@@ -127,7 +129,7 @@ export class NotionService {
       });
 
       // Check if the page has a Highlights block
-      const highlightPage = originalHighlights.results.find(result => {
+      const highlightPage = originalHighlights.results.find((result) => {
         if (result.id === pageId) {
           return true;
         }
@@ -205,7 +207,9 @@ export class NotionService {
     }
   }
 
-  async deletePage(pageId: string): Promise<{ success: boolean; message: string; }> {
+  async deletePage(
+    pageId: string,
+  ): Promise<{ success: boolean; message: string }> {
     try {
       await this.notion.pages.update({
         page_id: pageId,
@@ -225,7 +229,7 @@ export class NotionService {
 
     for (const title of bookTitles) {
       const page = await this._queryExistingPage(title);
-      if (page) {
+      if (page && "last_edited_time" in page) {
         existingPages.push({
           id: page.id,
           title: title,
