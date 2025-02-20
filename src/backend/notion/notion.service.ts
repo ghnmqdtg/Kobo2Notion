@@ -205,13 +205,15 @@ export class NotionService {
     }
   }
 
-  async deletePage(pageId: string): Promise<void> {
+  async deletePage(pageId: string): Promise<{ success: boolean; message: string; }> {
     try {
       await this.notion.pages.update({
         page_id: pageId,
         archived: true,
       });
-      console.info(`Page ${pageId} archived successfully`);
+      const message = `Page ${pageId} archived successfully`;
+      console.info(message);
+      return { success: true, message };
     } catch (error) {
       console.error("Error archiving page:", error);
       throw error;

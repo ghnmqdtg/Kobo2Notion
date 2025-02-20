@@ -59,7 +59,6 @@ export function Books({ onExportStateChange }: BooksProps) {
   }>>([]);
   const [showOverwriteDialog, setShowOverwriteDialog] = useState(false);
   const [existingPages, setExistingPages] = useState<ExistingPage[]>([]);
-  const [pagesToOverwrite, setPagesToOverwrite] = useState<Set<string>>(new Set());
 
   const maxRetries = 3;
   const retryInterval = 5000;
@@ -249,8 +248,14 @@ export function Books({ onExportStateChange }: BooksProps) {
         await Promise.all(
           uploadedPages.map(async ({ pageId, bookTitle }) => {
             try {
-              await window.api.deleteNotionPage(pageId);
-              console.log(`Deleted page for book: ${bookTitle}`);
+              await window.api.deleteNotionPage(pageId).then(({ success, message }) => {
+                if (success) {
+                  console.log(`Deleted page for book: ${bookTitle}`);
+                } else {
+                  console.error(`Failed to delete page for book: ${bookTitle}`, message);
+                  throw new Error(message);
+                }
+              });
             } catch (error) {
               console.error(`Failed to delete page for book: ${bookTitle}`, error);
               throw error;
@@ -276,10 +281,30 @@ export function Books({ onExportStateChange }: BooksProps) {
     setUploadedPages([]);
   };
 
-  const handleOverwriteConfirm = (selectedPageIds: string[]) => {
-    setPagesToOverwrite(new Set(selectedPageIds));
+  const handleOverwriteConfirm = async (selectedPageIds: string[]) => {
     setShowOverwriteDialog(false);
-    startExport();
+    // Delete the old pages
+    await Promise.all(selectedPageIds.map(async (pageId) => {
+      try {
+        await window.api.deleteNotionPage(pageId).then(({ success, message }) => {
+          if (success) {
+            console.log(`Deleted page: ${pageId}`);
+          } else {
+            console.error(`Failed to delete page: ${pageId}`, message);
+            throw new Error(message);
+          }
+        });
+      } catch (error) {
+        console.error(`Failed to delete page: ${pageId}`, error);
+        throw error;
+      }
+    })).then(() => {
+      setIsExporting(true);
+      setIsCanceling(false);
+      cancelRef.current = false;
+      onExportStateChange?.(true, false);
+      startExport();
+    });
   };
 
   const handleOverwriteCancel = () => {

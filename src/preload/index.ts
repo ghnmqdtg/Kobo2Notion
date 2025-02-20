@@ -90,8 +90,8 @@ const api = {
   openFileDialog: async (): Promise<string> => {
     return ipcRenderer.invoke("open-file-dialog");
   },
-  deleteNotionPage: async (pageId: string): Promise<void> => {
-    await notionService.deletePage(pageId);
+  deleteNotionPage: async (pageId: string): Promise<{ success: boolean; message: string; }> => {
+    return notionService.deletePage(pageId);
   },
   queryExistingPages: async (bookTitles: string[]): Promise<ExistingPage[]> => {
     return notionService.queryExistingPages(bookTitles);

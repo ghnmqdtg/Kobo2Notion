@@ -13,7 +13,7 @@ export interface IElectronAPI {
     entries: { key: string; value: string; }[],
   ) => Promise<boolean>;
   openFileDialog: () => Promise<string | null>;
-  deleteNotionPage: (pageId: string) => Promise<void>;
+  deleteNotionPage: (pageId: string) => Promise<{ success: boolean; message: string; }>;
   queryExistingPages: (bookTitles: string[]) => Promise<ExistingPage[]>;
 }
 
