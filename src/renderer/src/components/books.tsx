@@ -219,6 +219,10 @@ export function Books({ onExportStateChange }: BooksProps) {
       if (!cancelRef.current) {
         setSelectedBooks(new Set());
         setUploadedPages([]);
+        toast({
+          title: "Export complete",
+          description: "Your books have been exported to Notion.",
+        });
       }
       setIsExporting(false);
       setIsCanceling(false);
@@ -276,6 +280,14 @@ export function Books({ onExportStateChange }: BooksProps) {
     setPagesToOverwrite(new Set(selectedPageIds));
     setShowOverwriteDialog(false);
     startExport();
+  };
+
+  const handleOverwriteCancel = () => {
+    setShowOverwriteDialog(false);
+    setExistingPages([]);
+    setIsExporting(false);
+    onExportStateChange?.(false, false);
+    setSelectAll(false);
   };
 
   if (error) {
@@ -419,6 +431,7 @@ export function Books({ onExportStateChange }: BooksProps) {
         open={showOverwriteDialog}
         onOpenChange={setShowOverwriteDialog}
         onConfirm={handleOverwriteConfirm}
+        onCancel={handleOverwriteCancel}
       />
     </>
   );

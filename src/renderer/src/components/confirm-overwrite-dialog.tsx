@@ -23,6 +23,7 @@ interface ConfirmOverwriteDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onConfirm: (selectedPages: string[]) => void;
+    onCancel: () => void;
 }
 
 export function ConfirmOverwriteDialog({
@@ -30,6 +31,7 @@ export function ConfirmOverwriteDialog({
     open,
     onOpenChange,
     onConfirm,
+    onCancel,
 }: ConfirmOverwriteDialogProps) {
     const [selectedPages, setSelectedPages] = useState<Set<string>>(
         new Set(existingPages.map(page => page.id))
@@ -58,8 +60,21 @@ export function ConfirmOverwriteDialog({
         setSelectedPages(new Set());
     };
 
+    const handleCancel = () => {
+        setSelectedPages(new Set());
+        onCancel();
+    };
+
     return (
-        <AlertDialog open={open} onOpenChange={onOpenChange}>
+        <AlertDialog
+            open={open}
+            onOpenChange={(open) => {
+                if (!open) {
+                    handleCancel();
+                }
+                onOpenChange(open);
+            }}
+        >
             <AlertDialogContent>
                 <AlertDialogDescription></AlertDialogDescription>
                 <AlertDialogHeader>
@@ -68,7 +83,7 @@ export function ConfirmOverwriteDialog({
                         The following books already exist in your Notion database.
                         Select the ones you want to overwrite:
                     </div>
-                    <ScrollArea className="h-[300px] rounded-md">
+                    <ScrollArea className="max-h-[300px] rounded-md">
                         <div className="mt-4 space-y-3">
                             {existingPages.map((page) => (
                                 <div key={page.id} className="flex items-start space-x-3 mt-2 p-2 rounded-md hover:bg-accent/50 cursor-pointer">
@@ -98,7 +113,7 @@ export function ConfirmOverwriteDialog({
                     </ScrollArea>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel onClick={() => setSelectedPages(new Set())}>
+                    <AlertDialogCancel onClick={handleCancel}>
                         Cancel
                     </AlertDialogCancel>
                     <AlertDialogAction
