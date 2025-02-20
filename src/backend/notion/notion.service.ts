@@ -8,6 +8,12 @@ import { Book, Bookmark, NotionBlock, Block } from "../models";
 import { fetchBookCover, parseMarkdownToNotionBlocks } from "../utils";
 import { env } from "../../config/env.config";
 
+interface ExistingPage {
+  id: string;
+  title: string;
+  lastEditedTime: string;
+}
+
 export class NotionService {
   private notion: Client;
   private databaseId: string;
@@ -191,5 +197,22 @@ export class NotionService {
       console.error("Error archiving page:", error);
       throw error;
     }
+  }
+
+  async queryExistingPages(bookTitles: string[]): Promise<ExistingPage[]> {
+    const existingPages: ExistingPage[] = [];
+
+    for (const title of bookTitles) {
+      const page = await this._queryExistingPage(title);
+      if (page) {
+        existingPages.push({
+          id: page.id,
+          title: title,
+          lastEditedTime: page.last_edited_time,
+        });
+      }
+    }
+
+    return existingPages;
   }
 }

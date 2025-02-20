@@ -65,17 +65,22 @@ export function Footer({
                 </span>
               </div>
             ) : isExporting ? (
-              <>
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span className="font-bold">{currentBook}</span>
-                  {isCanceling ? (
-                    <span className="font-bold">Aborting the export...</span>
-                  ) : (
-                    <span className="font-bold">{currentStep}</span>
-                  )}
+              currentBook ? (
+                <>
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span className="font-bold">{currentBook}</span>
+                    {isCanceling ? (
+                      <span className="font-bold">Aborting the export...</span>
+                    ) : (
+                      <span className="font-bold">{currentStep}</span>
+                    )}
+                  </div>
+                  <Progress value={(completed / selectedCount) * 100} />
+                </>) : (
+                <div className="text-md font-bold">
+                  Checking for existing pages...
                 </div>
-                <Progress value={(completed / selectedCount) * 100} />
-              </>
+              )
             ) : (
               <div className="text-md font-bold">
                 {selectedCount > 0

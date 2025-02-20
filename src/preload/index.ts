@@ -93,6 +93,9 @@ const api = {
   deleteNotionPage: async (pageId: string): Promise<void> => {
     await notionService.deletePage(pageId);
   },
+  queryExistingPages: async (bookTitles: string[]): Promise<ExistingPage[]> => {
+    return notionService.queryExistingPages(bookTitles);
+  },
 };
 
 // Use `contextBridge` APIs to expose Electron APIs to

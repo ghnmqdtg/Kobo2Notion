@@ -28,6 +28,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import { ConfirmOverwriteDialog } from "./confirm-overwrite-dialog";
 
 interface BooksProps {
   onExportStateChange?: (exporting: boolean, canceling: boolean) => void;
@@ -56,6 +57,9 @@ export function Books({ onExportStateChange }: BooksProps) {
     pageId: string;
     bookTitle: string;
   }>>([]);
+  const [showOverwriteDialog, setShowOverwriteDialog] = useState(false);
+  const [existingPages, setExistingPages] = useState<ExistingPage[]>([]);
+  const [pagesToOverwrite, setPagesToOverwrite] = useState<Set<string>>(new Set());
 
   const maxRetries = 3;
   const retryInterval = 5000;
@@ -127,12 +131,28 @@ export function Books({ onExportStateChange }: BooksProps) {
   };
 
   const handleExport = async () => {
-    if (selectedBooks.size === 0) return;
-
     setIsExporting(true);
     setIsCanceling(false);
     cancelRef.current = false;
     onExportStateChange?.(true, false);
+
+    if (selectedBooks.size === 0) return;
+
+    // Check for existing pages first
+    const bookTitles = Array.from(selectedBooks);
+    const existing = await window.api.queryExistingPages(bookTitles);
+
+    if (existing.length > 0) {
+      setExistingPages(existing);
+      setShowOverwriteDialog(true);
+      return;
+    }
+
+    // If no existing pages, proceed with export
+    await startExport();
+  };
+
+  const startExport = async () => {
     setUploadedPages([]);
     let completed = 0;
 
@@ -188,7 +208,7 @@ export function Books({ onExportStateChange }: BooksProps) {
       console.error("Error exporting books:", error);
       toast({
         title: "Error exporting books",
-        description: "Please check the Kobo is connected.",
+        description: "Please delete Notion pages and try again.",
         action: (
           <ToastAction onClick={loadBooks} altText="Try reloading">
             Try again
@@ -202,6 +222,7 @@ export function Books({ onExportStateChange }: BooksProps) {
       }
       setIsExporting(false);
       setIsCanceling(false);
+      setSelectAll(false);
       onExportStateChange?.(false, false);
       setExportProgress({
         currentBook: "",
@@ -249,6 +270,12 @@ export function Books({ onExportStateChange }: BooksProps) {
     }
     setShowDeleteDialog(false);
     setUploadedPages([]);
+  };
+
+  const handleOverwriteConfirm = (selectedPageIds: string[]) => {
+    setPagesToOverwrite(new Set(selectedPageIds));
+    setShowOverwriteDialog(false);
+    startExport();
   };
 
   if (error) {
@@ -386,6 +413,13 @@ export function Books({ onExportStateChange }: BooksProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ConfirmOverwriteDialog
+        existingPages={existingPages}
+        open={showOverwriteDialog}
+        onOpenChange={setShowOverwriteDialog}
+        onConfirm={handleOverwriteConfirm}
+      />
     </>
   );
 }
