@@ -47,7 +47,7 @@ export class NotionService {
     const existingPage = await this._queryExistingPage(book.bookTitle);
 
     if (existingPage) {
-      console.info(`Updating existing page for book: ${book.bookTitle}`);
+      console.info(`Updating existing page for book: ${book.bookTitle} | ID: ${existingPage.id}`);
       return this._updateExistingPage(existingPage.id, coverUrl, properties);
     } else {
       console.info(`Creating new page for book: ${book.bookTitle}`);
@@ -117,14 +117,33 @@ export class NotionService {
   }
 
   private async _archiveOldHighlights(pageId: string) {
-    const originalHighlights = await this.notion.blocks.children.list({
-      block_id: pageId,
-    });
-    if (originalHighlights.results.length > 0) {
+    if (!pageId) {
+      return;
+    }
+
+    try {
+      const originalHighlights = await this.notion.blocks.children.list({
+        block_id: pageId,
+      });
+
+      // Check if the page has a Highlights block
+      const highlightPage = originalHighlights.results.find(result => {
+        if (result.id === pageId) {
+          return true;
+        }
+        return false;
+      });
+
+      if (!highlightPage?.id) {
+        return;
+      }
+
       await this.notion.pages.update({
-        page_id: originalHighlights.results[0].id,
+        page_id: highlightPage.id,
         archived: true,
       });
+    } catch (error) {
+      console.error("Error archiving old highlights:", error);
     }
   }
 
