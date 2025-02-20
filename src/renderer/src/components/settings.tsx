@@ -61,7 +61,7 @@ export function Settings() {
       SUMMARIZE_ENABLED: enabled,
       GEMINI_MODEL: enabled ? "gemini-1.5-flash" : "",
       // Reset API key if disabled
-      GEMINI_API: enabled ? prev.GEMINI_API : "",
+      // GEMINI_API: enabled ? prev.GEMINI_API : "",
     }));
   };
 
