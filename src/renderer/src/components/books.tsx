@@ -35,31 +35,41 @@ interface BooksProps {
 }
 
 export function Books({ onExportStateChange }: BooksProps) {
+  // Book data
   const [books, setBooks] = useState<Book[]>([]);
   const [selectedBooks, setSelectedBooks] = useState<Set<string>>(new Set());
+  const [exportedBooks, setExportedBooks] = useState<Set<string>>(new Set());
+
+  // UI states
+  const [isGridView, setIsGridView] = useState(true);
+  const [selectAll, setSelectAll] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isExporting, setIsExporting] = useState(false);
   const [minLoadingTime] = useState(300); // 0.3 second minimum loading time
   const [retryCount, setRetryCount] = useState(0);
+
+  // Export states
+  const [isExporting, setIsExporting] = useState(false);
+  const [isCanceling, setIsCanceling] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
   const [exportProgress, setExportProgress] = useState({
     currentBook: "",
     currentStep: "",
     completed: 0,
   });
-  const [selectAll, setSelectAll] = useState(false);
-  const [isGridView, setIsGridView] = useState(true);
-  const { toast } = useToast();
-  const [isCanceling, setIsCanceling] = useState(false);
   const cancelRef = useRef(false);
+
+  // Dialog states
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showOverwriteDialog, setShowOverwriteDialog] = useState(false);
+  const [existingPages, setExistingPages] = useState<ExistingPage[]>([]);
   const [uploadedPages, setUploadedPages] = useState<Array<{
     pageId: string;
     bookTitle: string;
   }>>([]);
-  const [showOverwriteDialog, setShowOverwriteDialog] = useState(false);
-  const [existingPages, setExistingPages] = useState<ExistingPage[]>([]);
-  const [isChecking, setIsChecking] = useState(false);
+
+  // Toast
+  const { toast } = useToast();
 
   const maxRetries = 3;
   const retryInterval = 5000;
@@ -167,6 +177,7 @@ export function Books({ onExportStateChange }: BooksProps) {
 
   const startExport = async () => {
     setUploadedPages([]);
+    setExportedBooks(new Set());
     let completed = 0;
 
     try {
@@ -185,6 +196,8 @@ export function Books({ onExportStateChange }: BooksProps) {
         });
 
         const { parentPageId, highlightPageId } = await window.api.exportBook(book);
+
+        setExportedBooks(prev => new Set([...prev, book.bookTitle]));
 
         setUploadedPages(prev => [...prev, {
           pageId: parentPageId,
@@ -220,6 +233,7 @@ export function Books({ onExportStateChange }: BooksProps) {
 
       if (!cancelRef.current) {
         setSelectedBooks(new Set());
+        setExportedBooks(new Set());
         setUploadedPages([]);
         toast({
           title: "Export complete",
@@ -242,6 +256,9 @@ export function Books({ onExportStateChange }: BooksProps) {
         completed: 0,
       });
       cancelRef.current = false;
+      if (!cancelRef.current) {
+        setExportedBooks(new Set());
+      }
     }
   };
 
@@ -404,12 +421,18 @@ export function Books({ onExportStateChange }: BooksProps) {
               books={books}
               selectedBooks={selectedBooks}
               onSelectBook={handleSelectBook}
+              isProcessing={isExporting || isCanceling || isChecking}
+              currentBook={exportProgress.currentBook}
+              exportedBooks={exportedBooks}
             />
           ) : (
             <BookList
               books={books}
               selectedBooks={selectedBooks}
               onSelectBook={handleSelectBook}
+              isProcessing={isExporting || isCanceling || isChecking}
+              currentBook={exportProgress.currentBook}
+              exportedBooks={exportedBooks}
             />
           )}
           <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent pointer-events-none" />

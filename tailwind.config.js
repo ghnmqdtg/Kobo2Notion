@@ -50,6 +50,21 @@ module.exports = {
         md: `calc(var(--radius) - 2px)`,
         sm: "calc(var(--radius) - 4px)",
       },
+      keyframes: {
+        'border-breathing': {
+          '0%, 100%': { 
+            borderColor: 'hsl(var(--primary))',
+            borderWidth: '2px',
+          },
+          '50%': { 
+            borderColor: 'hsl(var(--primary) / 0.1)',
+            borderWidth: '2px',
+          },
+        },
+      },
+      animation: {
+        'border-breathing': 'border-breathing 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

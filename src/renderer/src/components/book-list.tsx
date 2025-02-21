@@ -11,11 +11,17 @@ interface BookListProps {
   books: Book[];
   selectedBooks: Set<string>;
   onSelectBook: (bookTitle: string) => void;
+  isProcessing: boolean;
+  currentBook: string;
+  exportedBooks: Set<string>;
 }
 
 interface BookListCardProps extends Book {
   isSelected: boolean;
   onSelect: () => void;
+  isProcessing: boolean;
+  isExporting: boolean;
+  isExported: boolean;
 }
 
 export function BookListCard({
@@ -25,6 +31,9 @@ export function BookListCard({
   imageId,
   isSelected,
   onSelect,
+  isProcessing,
+  isExporting,
+  isExported,
 }: BookListCardProps) {
   const [coverUrl, setCoverUrl] = useState<string>("");
   const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
@@ -80,14 +89,19 @@ export function BookListCard({
         "relative rounded-lg",
         "before:absolute before:inset-0 before:rounded-lg before:transition-all",
         "before:pointer-events-none",
-        isSelected
+        isSelected && !isExporting
           ? "before:border-2 before:border-primary before:-m-[2px]"
           : "before:border before:border-border hover:before:border-primary",
+        isExporting && "before:animate-border-breathing before:-m-[2px]",
+        isExported && !isExporting && "before:border-2 before:border-green-500 before:-m-[2px]",
       )}
     >
       <Card
-        className="flex overflow-hidden cursor-pointer rounded-lg"
-        onClick={onSelect}
+        className={cn(
+          "flex overflow-hidden rounded-lg",
+          isProcessing ? "cursor-not-allowed" : "cursor-pointer"
+        )}
+        onClick={isProcessing ? undefined : onSelect}
       >
         <div className="aspect-[3/4] h-20 p-2">{renderCover()}</div>
         <CardContent className="flex items-center w-full pl-2 pr-4">
@@ -128,6 +142,9 @@ export function BookList({
   books,
   selectedBooks,
   onSelectBook,
+  isProcessing,
+  currentBook,
+  exportedBooks,
 }: BookListProps) {
   return (
     <ScrollArea className="h-[calc(100vh-8rem)]">
@@ -138,6 +155,9 @@ export function BookList({
             {...book}
             isSelected={selectedBooks.has(book.bookTitle)}
             onSelect={() => onSelectBook(book.bookTitle)}
+            isProcessing={isProcessing}
+            isExporting={currentBook === book.bookTitle}
+            isExported={exportedBooks.has(book.bookTitle)}
           />
         ))}
       </div>

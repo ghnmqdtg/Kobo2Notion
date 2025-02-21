@@ -11,11 +11,17 @@ interface BookGridProps {
   books: Book[];
   selectedBooks: Set<string>;
   onSelectBook: (bookTitle: string) => void;
+  isProcessing: boolean;
+  currentBook: string;
+  exportedBooks: Set<string>;
 }
 
 interface BookCardProps extends Book {
   isSelected: boolean;
   onSelect: () => void;
+  isProcessing: boolean;
+  isExporting: boolean;
+  isExported: boolean;
 }
 
 function BookCard({
@@ -27,6 +33,9 @@ function BookCard({
   imageId,
   isSelected,
   onSelect,
+  isProcessing,
+  isExporting,
+  isExported,
 }: BookCardProps) {
   const [coverUrl, setCoverUrl] = useState<string>("");
   const [progress, setProgress] = useState<number>(Math.round(readPercent));
@@ -83,14 +92,19 @@ function BookCard({
         "relative rounded-lg h-full",
         "before:absolute before:inset-0 before:rounded-lg before:transition-all",
         "before:pointer-events-none",
-        isSelected
+        isSelected && !isExporting
           ? "before:border-2 before:border-primary before:-m-[2px]"
           : "before:border before:border-border hover:before:border-primary",
+        isExporting && "before:animate-border-breathing before:-m-[2px]",
+        isExported && !isExporting && "before:border-2 before:border-green-500 before:-m-[2px]",
       )}
     >
       <Card
-        className="flex flex-col overflow-hidden cursor-pointer rounded-lg h-full"
-        onClick={onSelect}
+        className={cn(
+          "flex flex-col overflow-hidden rounded-lg h-full",
+          isProcessing ? "cursor-not-allowed" : "cursor-pointer"
+        )}
+        onClick={isProcessing ? undefined : onSelect}
       >
         <div className="relative aspect-[3/4] w-full p-4">{renderCover()}</div>
         <CardContent className="flex-1 p-4 pt-0 pb-4">
@@ -133,6 +147,9 @@ export function BookGrid({
   books,
   selectedBooks,
   onSelectBook,
+  isProcessing,
+  currentBook,
+  exportedBooks,
 }: BookGridProps) {
   return (
     <ScrollArea className="h-[calc(100vh-8rem)]">
@@ -143,6 +160,9 @@ export function BookGrid({
             {...book}
             isSelected={selectedBooks.has(book.bookTitle)}
             onSelect={() => onSelectBook(book.bookTitle)}
+            isProcessing={isProcessing}
+            isExporting={currentBook === book.bookTitle}
+            isExported={exportedBooks.has(book.bookTitle)}
           />
         ))}
       </div>
