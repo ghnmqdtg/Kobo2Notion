@@ -6,13 +6,14 @@ import { GeminiService } from "../backend/llm_integration/llm_integration.servic
 import { env } from "../config/env.config";
 import { fetchBookCover } from "../backend/utils";
 import { Book } from "../backend/models";
+import { ExistingPage } from "../backend/notion/notion.service";
 
 const koboService = new KoboService();
 const notionService = new NotionService();
 const geminiService = new GeminiService();
 
 // Reload env values once the env file is updated
-const reloadEnvValues = (entries: { key: string; value: string; }[]) => {
+const reloadEnvValues = (entries: { key: string; value: string }[]) => {
   entries.forEach(({ key, value }) => {
     // Update the env object
     env[key] = value;
@@ -32,7 +33,7 @@ const api = {
   },
   exportBook: async (
     book: Book,
-  ): Promise<{ parentPageId: string; highlightPageId: string; }> => {
+  ): Promise<{ parentPageId: string; highlightPageId: string }> => {
     await koboService.connect();
     const bookmarks = await koboService.getBookmarks(book.bookTitle);
 
@@ -57,7 +58,7 @@ const api = {
     return fetchBookCover(imageId);
   },
   updateEnvValue: async (
-    entries: { key: string; value: string; }[],
+    entries: { key: string; value: string }[],
   ): Promise<boolean> => {
     try {
       return new Promise((resolve, reject) => {
@@ -90,7 +91,9 @@ const api = {
   openFileDialog: async (): Promise<string> => {
     return ipcRenderer.invoke("open-file-dialog");
   },
-  deleteNotionPage: async (pageId: string): Promise<{ success: boolean; message: string; }> => {
+  deleteNotionPage: async (
+    pageId: string,
+  ): Promise<{ success: boolean; message: string }> => {
     return notionService.deletePage(pageId);
   },
   queryExistingPages: async (bookTitles: string[]): Promise<ExistingPage[]> => {
