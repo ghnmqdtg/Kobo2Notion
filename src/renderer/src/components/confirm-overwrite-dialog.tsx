@@ -1,4 +1,4 @@
-import { CircleAlert } from "lucide-react";
+import { CircleAlert, CircleSlash } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogContent,
@@ -57,27 +57,18 @@ export function ConfirmOverwriteDialog({
     };
 
     const handleConfirm = () => {
-        onConfirm(Array.from(selectedPages), existingPages.filter(page => !selectedPages.has(page.id)).map(page => page.title));
-        setSelectedPages(new Set());
-    };
+        const selectedPageIds = Array.from(selectedPages);
+        const skippedBooks = existingPages
+            .filter(page => !selectedPages.has(page.id))
+            .map(page => page.title);
 
-    const handleCancel = () => {
+        onConfirm(selectedPageIds, skippedBooks);
         setSelectedPages(new Set());
-        onCancel();
     };
 
     return (
-        <AlertDialog
-            open={open}
-            onOpenChange={(open) => {
-                if (!open) {
-                    handleCancel();
-                }
-                onOpenChange(open);
-            }}
-        >
+        <AlertDialog open={open} onOpenChange={onOpenChange}>
             <AlertDialogContent>
-                <AlertDialogDescription></AlertDialogDescription>
                 <AlertDialogHeader>
                     <AlertDialogTitle>Overwrite Existing Pages?</AlertDialogTitle>
                     <div className="text-sm text-muted-foreground">
@@ -112,15 +103,23 @@ export function ConfirmOverwriteDialog({
                             ))}
                         </div>
                     </ScrollArea>
-                    <div className="flex items-center gap-2">
-                        <CircleAlert className="w-4 h-4" />
-                        <span className="text-sm text-muted-foreground">Remember, this will delete pages and cannot be undone.</span>
+                    <div className="flex flex-col gap-2 mt-2">
+                        <div className="flex items-center gap-2 text-destructive">
+                            <CircleAlert className="w-4 h-4" />
+                            <span className="text-sm">Selected pages will be overwritten and cannot be undone.</span>
+                        </div>
+                        {existingPages.length - selectedPages.size > 0 && (
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                                <CircleSlash className="w-4 h-4" />
+                                <span className="text-sm">
+                                    {existingPages.length - selectedPages.size} book(s) will be skipped and remain unchanged.
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel onClick={handleCancel}>
-                        Cancel
-                    </AlertDialogCancel>
+                    <AlertDialogCancel onClick={onCancel}>Cancel</AlertDialogCancel>
                     <AlertDialogAction
                         onClick={handleConfirm}
                         disabled={selectedPages.size === 0}
