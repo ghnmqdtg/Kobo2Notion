@@ -23,7 +23,7 @@ interface ConfirmOverwriteDialogProps {
     existingPages: ExistingPage[];
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    onConfirm: (selectedPages: string[]) => void;
+    onConfirm: (selectedPages: string[], skippedBooks: string[]) => void;
     onCancel: () => void;
 }
 
@@ -57,7 +57,7 @@ export function ConfirmOverwriteDialog({
     };
 
     const handleConfirm = () => {
-        onConfirm(Array.from(selectedPages));
+        onConfirm(Array.from(selectedPages), existingPages.filter(page => !selectedPages.has(page.id)).map(page => page.title));
         setSelectedPages(new Set());
     };
 

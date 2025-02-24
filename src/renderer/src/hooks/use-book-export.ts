@@ -90,13 +90,22 @@ export function useBookExport({
         }
     };
 
-    const startExport = async () => {
+    const startExport = async (skippedBooks: string[]) => {
         setUploadedPages([]);
         setExportedBooks(new Set());
         let completed = 0;
+        let remainingBooks: string[] = [];
+
+        // Copy the selectedBooks because we failed update the state here
+        const currentSelected = Array.from(selectedBooks);
+        // Check if there are any books to skip
+        if (skippedBooks.length > 0) {
+            remainingBooks = currentSelected.filter(book => !skippedBooks.includes(book));
+            setSelectedBooks(new Set(remainingBooks));
+        }
 
         try {
-            for (const bookTitle of selectedBooks) {
+            for (const bookTitle of remainingBooks) {
                 if (cancelRef.current) break;
 
                 const book = books.find((b) => b.bookTitle === bookTitle);
@@ -175,8 +184,10 @@ export function useBookExport({
         updateStates(true, true, false);
     };
 
-    const handleOverwriteConfirm = async (selectedPageIds: string[]) => {
+    const handleOverwriteConfirm = async (selectedPageIds: string[], skippedBooks: string[]) => {
         setShowOverwriteDialog(false);
+
+        console.log(selectedPageIds, skippedBooks);
 
         try {
             // Delete the old pages
@@ -188,7 +199,7 @@ export function useBookExport({
             }));
 
             updateStates(true, false, false); // Start export after deletion
-            await startExport();
+            await startExport(skippedBooks);
         } catch (error) {
             console.error("Error deleting pages:", error);
             toast({
