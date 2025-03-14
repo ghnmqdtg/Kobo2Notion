@@ -18,7 +18,7 @@ const defaultConfig: EnvironmentConfig = {
   NOTION_API_KEY: "",
   NOTION_DATABASE_ID: "",
   GEMINI_API_KEY: "",
-  GEMINI_MODEL: "gemini-1.5-flash",
+  GEMINI_MODEL: "gemini-2.0-flash",
   SUMMARIZE_ENABLED: false,
   SUMMARIZE_LANGUAGE: "zh",
   THEME: "light",

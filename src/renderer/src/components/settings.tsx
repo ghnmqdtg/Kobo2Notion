@@ -33,7 +33,7 @@ export function Settings() {
     NOTION_DB: window.env.NOTION_DATABASE_ID || "",
     GEMINI_API: window.env.GEMINI_API_KEY || "",
     SUMMARIZE_ENABLED: window.env.SUMMARIZE_ENABLED || false,
-    GEMINI_MODEL: window.env.GEMINI_MODEL || "gemini-1.5-flash",
+    GEMINI_MODEL: window.env.GEMINI_MODEL || "gemini-2.0-flash",
     SUMMARIZE_LANGUAGE: window.env.SUMMARIZE_LANGUAGE || "en",
   });
   const [isSaving, setIsSaving] = useState(false);
@@ -59,7 +59,7 @@ export function Settings() {
     setValues((prev) => ({
       ...prev,
       SUMMARIZE_ENABLED: enabled,
-      GEMINI_MODEL: enabled ? "gemini-1.5-flash" : "",
+      GEMINI_MODEL: enabled ? "gemini-2.0-flash" : "",
       // Reset API key if disabled
       // GEMINI_API: enabled ? prev.GEMINI_API : "",
     }));
@@ -216,8 +216,8 @@ export function Settings() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="gemini-1.5-flash">
-                          Gemini-1.5-flash
+                        <SelectItem value="gemini-2.0-flash">
+                          gemini-2.0-flash
                         </SelectItem>
                       </SelectContent>
                     </Select>

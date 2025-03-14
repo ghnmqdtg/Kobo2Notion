@@ -150,7 +150,7 @@ Kobo2Notion is an Electron application built with TypeScript and React that extr
 
 5. Google Gemini API key [here](https://aistudio.google.com/app/apikey) (optional)
 
-    > This is an optional feature if you want to summarize your bookmarks. The API for `gemini-1.5-flash` is free on Google AI Studio.
+    > This is an optional feature if you want to summarize your bookmarks. The API for `gemini-2.0-flash` is free on Google AI Studio.
 
     <p align="left">
         <img src="assets/gemini_key_01.png" width="70%">
