@@ -111,12 +111,15 @@ export function useBookExport({
 
     // Copy the selectedBooks because we failed update the state here
     const currentSelected = Array.from(selectedBooks);
+
     // Check if there are any books to skip
     if (skippedBooks.length > 0) {
       remainingBooks = currentSelected.filter(
         (book) => !skippedBooks.includes(book),
       );
       setSelectedBooks(new Set(remainingBooks));
+    } else {
+      remainingBooks = currentSelected;
     }
 
     try {
