@@ -55,15 +55,18 @@ export class KoboService {
     if (!this.db) throw new Error("Database not connected.");
 
     const contentIdResult = await this.db.get<{ contentId: string; }>(
-      `SELECT c.ContentId AS contentId FROM content AS c WHERE c.Title LIKE ?`,
-      [`%${title}%`],
+      `SELECT c.ContentId AS contentId FROM content AS c WHERE c.Title = ?`,
+      [title],
     );
 
     if (!contentIdResult) {
       throw new Error(`No content ID found for title: ${title}`);
     }
 
+    console.log("contentIdResult", contentIdResult);
+
     const contentId = contentIdResult.contentId;
+    console.log("contentId", contentId);
 
     // Clean the contentId: remove all the text after ! sign (including the ! sign)
     const cleanedContentId = contentId.split("!")[0];
@@ -75,7 +78,7 @@ export class KoboService {
       [cleanedContentId],
     );
 
-    console.log(bookmarks);
+    console.log("bookmarks", bookmarks);
     return bookmarks;
   }
 
