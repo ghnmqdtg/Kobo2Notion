@@ -183,7 +183,7 @@ export function BookListCard({
                     "font-bold line-clamp-1",
                     hasNoProgress && "text-muted-foreground"
                   )}>{bookTitle}</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <p title={author} className="text-sm text-muted-foreground">
                     {(() => {
                       const authorsArray = author.split(", ");
                       const firstThreeAuthors = authorsArray
