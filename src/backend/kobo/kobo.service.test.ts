@@ -146,6 +146,21 @@ describe("KoboService", () => {
     });
   });
 
+  describe("getBooks", () => {
+    it("should retrieve all books with their bookmark counts", async () => {
+      const books = await service.getBooks();
+      expect(books).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ ...mockBooks[0], bookmarkCount: 2 }),
+          expect.objectContaining({ ...mockBooks[1], bookmarkCount: 0 }),
+        ]),
+      );
+      expect(books.length).toBe(2);
+      expect(books[0].bookmarkCount).toBeDefined();
+      expect(books[1].bookmarkCount).toBeDefined();
+    });
+  });
+
   describe("getBookmarks", () => {
     it("should retrieve bookmarks for a given book title", async () => {
       const bookmarks = await service.getBookmarks("Test Book 1");

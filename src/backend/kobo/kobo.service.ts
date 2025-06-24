@@ -37,7 +37,8 @@ export class KoboService {
         c.Series AS series,
         c.SeriesNumber AS seriesNumber,
         c.___PercentRead AS readPercent,
-        c.ImageId AS imageId
+        c.ImageId AS imageId,
+        c.ContentId AS contentId
       FROM content AS c
       WHERE
         c.isDownloaded = 'true' AND
@@ -46,9 +47,47 @@ export class KoboService {
         c.DownloadUrl IS NOT NULL AND
         c.IsAbridged = 'false'
     `;
-    const books = await this.db.all<Book[]>(query);
-    console.info(`Retrieved data for ${books.length} books`);
-    return books;
+
+    const books = await this.db.all<(Book & { contentId: string; })[]>(query);
+
+    // Get bookmark counts in a single query for efficiency
+    const bookmarkCounts = await this.db.all<{ volumeId: string; count: number; }[]>(`
+      SELECT 
+        CASE 
+          WHEN INSTR(VolumeID, '!') > 0 
+          THEN SUBSTR(VolumeID, 1, INSTR(VolumeID, '!') - 1)
+          ELSE VolumeID
+        END as volumeId, 
+        COUNT(*) as count
+      FROM Bookmark 
+      GROUP BY 
+        CASE 
+          WHEN INSTR(VolumeID, '!') > 0 
+          THEN SUBSTR(VolumeID, 1, INSTR(VolumeID, '!') - 1)
+          ELSE VolumeID
+        END
+    `);
+
+    const countMap = new Map(bookmarkCounts.map(b => [b.volumeId, b.count]));
+
+    const booksWithCounts = books.map(book => {
+      const cleanedContentId = book.contentId.split('!')[0];
+      return {
+        bookTitle: book.bookTitle,
+        subtitle: book.subtitle,
+        author: book.author,
+        publisher: book.publisher,
+        isbn: book.isbn,
+        series: book.series,
+        seriesNumber: book.seriesNumber,
+        readPercent: book.readPercent,
+        imageId: book.imageId,
+        bookmarkCount: countMap.get(cleanedContentId) || 0
+      };
+    });
+
+    console.info(`Retrieved data for ${booksWithCounts.length} books with bookmark counts`);
+    return booksWithCounts;
   }
 
   async getBookmarks(title: string): Promise<Bookmark[]> {

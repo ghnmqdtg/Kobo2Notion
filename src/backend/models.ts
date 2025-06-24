@@ -11,6 +11,7 @@ export interface Book {
   seriesNumber: number | null;
   readPercent: number;
   imageId: string | null;
+  bookmarkCount?: number; // Optional for backward compatibility
 }
 
 export interface Bookmark {
