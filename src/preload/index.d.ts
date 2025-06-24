@@ -15,6 +15,7 @@ export interface IElectronAPI {
   openFileDialog: () => Promise<string | null>;
   deleteNotionPage: (pageId: string) => Promise<{ success: boolean; message: string; }>;
   queryExistingPages: (bookTitles: string[]) => Promise<ExistingPage[]>;
+  getBookmarks: (bookTitle: string) => Promise<Bookmark[]>;
 }
 
 declare global {

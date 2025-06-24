@@ -9,6 +9,7 @@ import { ErrorDisplay } from "./books/error-display";
 import { LoadingDisplay } from "./books/loading-display";
 import { Header } from "./books/header";
 import { BookDisplay } from "./books/book-display";
+import { BookmarksPreviewDialog } from "./bookmarks-preview-dialog";
 
 interface BooksProps {
   onExportStateChange?: (exporting: boolean, canceling: boolean, checking: boolean) => void;
@@ -26,6 +27,10 @@ export function Books({ onExportStateChange }: BooksProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+
+  // Preview dialog states
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [previewBookTitle, setPreviewBookTitle] = useState<string | null>(null);
 
   // Export states and handlers
   const {
@@ -117,6 +122,11 @@ export function Books({ onExportStateChange }: BooksProps) {
     });
   };
 
+  const handlePreviewBookmarks = (bookTitle: string) => {
+    setPreviewBookTitle(bookTitle);
+    setIsPreviewOpen(true);
+  };
+
   if (error) {
     return <ErrorDisplay error={error} onRetry={loadBooks} retryCount={retryCount} maxRetries={maxRetries} />;
   }
@@ -140,6 +150,7 @@ export function Books({ onExportStateChange }: BooksProps) {
           books={books}
           selectedBooks={selectedBooks}
           onSelectBook={handleSelectBook}
+          onPreviewBookmarks={handlePreviewBookmarks}
           isProcessing={isExporting || isCanceling || isChecking}
           currentBook={exportProgress.currentBook}
           exportedBooks={exportedBooks}
@@ -171,6 +182,12 @@ export function Books({ onExportStateChange }: BooksProps) {
         onOpenChange={setShowOverwriteDialog}
         onConfirm={handleOverwriteConfirm}
         onCancel={handleOverwriteCancel}
+      />
+
+      <BookmarksPreviewDialog
+        open={isPreviewOpen}
+        onOpenChange={setIsPreviewOpen}
+        bookTitle={previewBookTitle}
       />
     </>
   );

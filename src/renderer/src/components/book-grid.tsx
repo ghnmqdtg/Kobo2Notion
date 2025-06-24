@@ -7,11 +7,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useNetworkState } from "@uidotdev/usehooks";
+import { Button } from "./ui/button";
+import { Separator } from "./ui/separator";
 
 interface BookGridProps {
   books: Book[];
   selectedBooks: Set<string>;
   onSelectBook: (bookTitle: string) => void;
+  onPreviewBookmarks: (bookTitle: string) => void;
   isProcessing: boolean;
   currentBook: string;
   exportedBooks: Set<string>;
@@ -20,6 +23,7 @@ interface BookGridProps {
 interface BookCardProps extends Book {
   isSelected: boolean;
   onSelect: () => void;
+  onPreview: () => void;
   isProcessing: boolean;
   isExporting: boolean;
   isExported: boolean;
@@ -32,8 +36,10 @@ function BookCard({
   readPercent,
   isbn,
   imageId,
+  bookmarkCount,
   isSelected,
   onSelect,
+  onPreview,
   isProcessing,
   isExporting,
   isExported,
@@ -143,20 +149,20 @@ function BookCard({
                   </p>
                 </div>
               </CardContent>
-              <CardFooter className="p-4 pt-0 mt-auto shrink-0">
-                <div className="w-full flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Read</span>
-                  <Progress
-                    value={progress}
-                    className={cn(
-                      "h-1",
-                      hasNoProgress && "opacity-50"
-                    )}
-                  />
-                  <span className="text-sm text-muted-foreground">
-                    {Math.round(progress)}%
-                  </span>
-                </div>
+              <CardFooter className="flex items-center p-4 pt-0 mt-auto text-sm text-muted-foreground">
+                <Button
+                  variant="ghost"
+                  className="flex items-center w-full h-auto p-0 text-sm font-normal text-muted-foreground hover:text-foreground disabled:opacity-50"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onPreview();
+                  }}
+                  disabled={!bookmarkCount || bookmarkCount <= 0}
+                >
+                  <div className="flex-1 text-center">{bookmarkCount ?? 0} notes</div>
+                  <Separator orientation="vertical" className="h-4 mx-2" />
+                  <div className="flex-1 text-center">{Math.round(progress)}%</div>
+                </Button>
               </CardFooter>
             </Card>
           </TooltipTrigger>
@@ -199,20 +205,20 @@ function BookCard({
               </p>
             </div>
           </CardContent>
-          <CardFooter className="p-4 pt-0 mt-auto shrink-0">
-            <div className="w-full flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Read</span>
-              <Progress
-                value={progress}
-                className={cn(
-                  "h-1",
-                  hasNoProgress && "opacity-50"
-                )}
-              />
-              <span className="text-sm text-muted-foreground">
-                {Math.round(progress)}%
-              </span>
-            </div>
+          <CardFooter className="flex items-center p-4 pt-0 mt-auto text-sm text-muted-foreground">
+            <Button
+              variant="ghost"
+              className="flex items-center w-full h-auto p-0 text-sm font-normal text-muted-foreground hover:text-foreground disabled:opacity-50"
+              onClick={(e) => {
+                e.stopPropagation();
+                onPreview();
+              }}
+              disabled={!bookmarkCount || bookmarkCount <= 0}
+            >
+              <div className="flex-1 text-center">{bookmarkCount ?? 0} notes</div>
+              <Separator orientation="vertical" className="h-4 mx-2" />
+              <div className="flex-1 text-center">{Math.round(progress)}%</div>
+            </Button>
           </CardFooter>
         </Card>
       )}
@@ -224,6 +230,7 @@ export function BookGrid({
   books,
   selectedBooks,
   onSelectBook,
+  onPreviewBookmarks,
   isProcessing,
   currentBook,
   exportedBooks,
@@ -238,6 +245,7 @@ export function BookGrid({
               {...book}
               isSelected={selectedBooks.has(book.bookTitle)}
               onSelect={() => onSelectBook(book.bookTitle)}
+              onPreview={() => onPreviewBookmarks(book.bookTitle)}
               isProcessing={isProcessing}
               isExporting={currentBook === book.bookTitle}
               isExported={exportedBooks.has(book.bookTitle)}

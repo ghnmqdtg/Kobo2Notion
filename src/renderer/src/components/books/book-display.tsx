@@ -7,6 +7,7 @@ interface BookDisplayProps {
     books: Book[];
     selectedBooks: Set<string>;
     onSelectBook: (bookTitle: string) => void;
+    onPreviewBookmarks: (bookTitle: string) => void;
     isProcessing: boolean;
     currentBook: string;
     exportedBooks: Set<string>;
@@ -17,6 +18,7 @@ export function BookDisplay({
     books,
     selectedBooks,
     onSelectBook,
+    onPreviewBookmarks,
     isProcessing,
     currentBook,
     exportedBooks,
@@ -28,6 +30,7 @@ export function BookDisplay({
                     books={books}
                     selectedBooks={selectedBooks}
                     onSelectBook={onSelectBook}
+                    onPreviewBookmarks={onPreviewBookmarks}
                     isProcessing={isProcessing}
                     currentBook={currentBook}
                     exportedBooks={exportedBooks}
@@ -37,6 +40,7 @@ export function BookDisplay({
                     books={books}
                     selectedBooks={selectedBooks}
                     onSelectBook={onSelectBook}
+                    onPreviewBookmarks={onPreviewBookmarks}
                     isProcessing={isProcessing}
                     currentBook={currentBook}
                     exportedBooks={exportedBooks}

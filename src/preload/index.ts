@@ -7,6 +7,7 @@ import { env } from "../config/env.config";
 import { fetchBookCover } from "../backend/utils";
 import { Book } from "../backend/models";
 import { ExistingPage } from "../backend/notion/notion.service";
+import { Bookmark } from "../backend/models";
 
 const koboService = new KoboService();
 const notionService = new NotionService();
@@ -98,6 +99,9 @@ const api = {
   },
   queryExistingPages: async (bookTitles: string[]): Promise<ExistingPage[]> => {
     return notionService.queryExistingPages(bookTitles);
+  },
+  getBookmarks: async (bookTitle: string): Promise<Bookmark[]> => {
+    return koboService.getBookmarks(bookTitle);
   },
 };
 
