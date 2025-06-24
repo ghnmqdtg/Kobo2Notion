@@ -7,11 +7,14 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { cn } from "@/lib/utils";
 import { useNetworkState } from "@uidotdev/usehooks";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "./ui/button";
+import { Separator } from "./ui/separator";
 
 interface BookListProps {
   books: Book[];
   selectedBooks: Set<string>;
   onSelectBook: (bookTitle: string) => void;
+  onPreviewBookmarks: (bookTitle: string) => void;
   isProcessing: boolean;
   currentBook: string;
   exportedBooks: Set<string>;
@@ -20,6 +23,7 @@ interface BookListProps {
 interface BookListCardProps extends Book {
   isSelected: boolean;
   onSelect: () => void;
+  onPreview: () => void;
   isProcessing: boolean;
   isExporting: boolean;
   isExported: boolean;
@@ -30,8 +34,10 @@ export function BookListCard({
   author,
   readPercent,
   imageId,
+  bookmarkCount,
   isSelected,
   onSelect,
+  onPreview,
   isProcessing,
   isExporting,
   isExported,
@@ -121,20 +127,22 @@ export function BookListCard({
               onClick={isDisabled ? undefined : onSelect}
             >
               <div className="aspect-[3/4] h-20 p-2">{renderCover()}</div>
-              <CardContent className="flex items-center w-full pl-2 pr-4">
+              <CardContent className="flex items-center justify-between w-full pl-2 pr-4">
                 <div className="flex-1">
                   <div className="space-y-1">
                     <div className="flex items-center space-x-2">
-                      <h3 className={cn(
-                        "font-bold line-clamp-1",
-                        hasNoProgress && "text-muted-foreground"
-                      )}>{bookTitle}</h3>
-                      <p className="text-sm text-muted-foreground">
+                      <h3
+                        className={cn(
+                          "font-bold line-clamp-1",
+                          hasNoProgress && "text-muted-foreground"
+                        )}
+                      >
+                        {bookTitle}
+                      </h3>
+                      <p title={author} className="text-sm text-muted-foreground">
                         {(() => {
                           const authorsArray = author.split(", ");
-                          const firstThreeAuthors = authorsArray
-                            .slice(0, 3)
-                            .join(", ");
+                          const firstThreeAuthors = authorsArray.slice(0, 3).join(", ");
                           const remainingAuthors =
                             authorsArray.slice(3).length > 0
                               ? `, ${authorsArray.slice(3).length} more`
@@ -145,19 +153,28 @@ export function BookListCard({
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 w-1/4 ml-4">
-                  <span className="text-sm text-muted-foreground">Read</span>
-                  <Progress
-                    value={Math.round(readPercent)}
-                    className={cn(
-                      "h-1",
-                      hasNoProgress && "opacity-50"
-                    )}
-                  />
-                  <span className="text-sm text-muted-foreground w-12 text-right">
-                    {Math.round(readPercent)}%
-                  </span>
-                </div>
+                <Button
+                  variant="ghost"
+                  className="flex items-center w-[35%] h-auto p-0 text-sm font-normal text-muted-foreground hover:text-foreground disabled:opacity-50"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onPreview();
+                  }}
+                  disabled={!bookmarkCount || bookmarkCount <= 0}
+                >
+                  <div className="w-20 text-right">{bookmarkCount ?? 0} notes</div>
+                  <Separator orientation="vertical" className="h-4 mx-2" />
+                  <div className="flex-1 flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Read</span>
+                    <Progress
+                      value={Math.round(readPercent)}
+                      className={cn("h-1 flex-1", hasNoProgress && "opacity-50")}
+                    />
+                    <span className="w-12 text-right text-sm text-muted-foreground">
+                      {Math.round(readPercent)}%
+                    </span>
+                  </div>
+                </Button>
               </CardContent>
             </Card>
           </TooltipTrigger>
@@ -175,20 +192,22 @@ export function BookListCard({
           onClick={isDisabled ? undefined : onSelect}
         >
           <div className="aspect-[3/4] h-20 p-2">{renderCover()}</div>
-          <CardContent className="flex items-center w-full pl-2 pr-4">
+          <CardContent className="flex items-center justify-between w-full pl-2 pr-4">
             <div className="flex-1">
               <div className="space-y-1">
                 <div className="flex items-center space-x-2">
-                  <h3 className={cn(
-                    "font-bold line-clamp-1",
-                    hasNoProgress && "text-muted-foreground"
-                  )}>{bookTitle}</h3>
+                  <h3
+                    className={cn(
+                      "font-bold line-clamp-1",
+                      hasNoProgress && "text-muted-foreground"
+                    )}
+                  >
+                    {bookTitle}
+                  </h3>
                   <p title={author} className="text-sm text-muted-foreground">
                     {(() => {
                       const authorsArray = author.split(", ");
-                      const firstThreeAuthors = authorsArray
-                        .slice(0, 3)
-                        .join(", ");
+                      const firstThreeAuthors = authorsArray.slice(0, 3).join(", ");
                       const remainingAuthors =
                         authorsArray.slice(3).length > 0
                           ? `, ${authorsArray.slice(3).length} more`
@@ -199,19 +218,28 @@ export function BookListCard({
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2 w-1/4 ml-4">
-              <span className="text-sm text-muted-foreground">Read</span>
-              <Progress
-                value={Math.round(readPercent)}
-                className={cn(
-                  "h-1",
-                  hasNoProgress && "opacity-50"
-                )}
-              />
-              <span className="text-sm text-muted-foreground w-12 text-right">
-                {Math.round(readPercent)}%
-              </span>
-            </div>
+            <Button
+              variant="ghost"
+              className="flex items-center w-[35%] h-auto p-0 text-sm font-normal text-muted-foreground hover:text-foreground disabled:opacity-50"
+              onClick={(e) => {
+                e.stopPropagation();
+                onPreview();
+              }}
+              disabled={!bookmarkCount || bookmarkCount <= 0}
+            >
+              <div className="w-20 text-right">{bookmarkCount ?? 0} notes</div>
+              <Separator orientation="vertical" className="h-4 mx-2" />
+              <div className="flex-1 flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Read</span>
+                <Progress
+                  value={Math.round(readPercent)}
+                  className={cn("h-1 flex-1", hasNoProgress && "opacity-50")}
+                />
+                <span className="w-12 text-right text-sm text-muted-foreground">
+                  {Math.round(readPercent)}%
+                </span>
+              </div>
+            </Button>
           </CardContent>
         </Card>
       )}
@@ -223,6 +251,7 @@ export function BookList({
   books,
   selectedBooks,
   onSelectBook,
+  onPreviewBookmarks,
   isProcessing,
   currentBook,
   exportedBooks,
@@ -237,6 +266,7 @@ export function BookList({
               {...book}
               isSelected={selectedBooks.has(book.bookTitle)}
               onSelect={() => onSelectBook(book.bookTitle)}
+              onPreview={() => onPreviewBookmarks(book.bookTitle)}
               isProcessing={isProcessing}
               isExporting={currentBook === book.bookTitle}
               isExported={exportedBooks.has(book.bookTitle)}
