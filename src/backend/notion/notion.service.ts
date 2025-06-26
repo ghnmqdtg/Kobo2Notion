@@ -25,7 +25,7 @@ export class NotionService {
 
   async getOrCreatePage(
     book: Book,
-  ): Promise<{ parentPageId: string; highlightPageId: string }> {
+  ): Promise<{ parentPageId: string; highlightPageId: string; }> {
     console.log("book: ", book.imageId);
     const coverUrl = await fetchBookCover(book.imageId ?? "");
 
@@ -75,7 +75,7 @@ export class NotionService {
   private async _createNewPage(
     coverUrl: string,
     properties: any,
-  ): Promise<{ parentPageId: string; highlightPageId: string }> {
+  ): Promise<{ parentPageId: string; highlightPageId: string; }> {
     const parentPage = await this._createMainPage(coverUrl, properties);
     const highlightPage = await this._createHighlightPage(parentPage.id);
     return { parentPageId: parentPage.id, highlightPageId: highlightPage.id };
@@ -104,7 +104,7 @@ export class NotionService {
     pageId: string,
     coverUrl: string,
     properties: any,
-  ): Promise<{ parentPageId: string; highlightPageId: string }> {
+  ): Promise<{ parentPageId: string; highlightPageId: string; }> {
     const updatePageParams: UpdatePageParameters = {
       page_id: pageId,
       cover: { type: "external", external: { url: coverUrl } },
@@ -209,7 +209,7 @@ export class NotionService {
 
   async deletePage(
     pageId: string,
-  ): Promise<{ success: boolean; message: string }> {
+  ): Promise<{ success: boolean; message: string; }> {
     try {
       await this.notion.pages.update({
         page_id: pageId,

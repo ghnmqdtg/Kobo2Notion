@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { useNetworkState } from "@uidotdev/usehooks";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
+import { useBookCover } from "@/hooks/use-book-cover";
 
 interface BookGridProps {
   books: Book[];
@@ -44,60 +45,38 @@ function BookCard({
   isExporting,
   isExported,
 }: BookCardProps) {
-  const [coverUrl, setCoverUrl] = useState<string>("");
-  const [progress, setProgress] = useState<number>(Math.round(readPercent));
-  const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
-  const networkState = useNetworkState();
+  const { coverDataUrl, isLoading: isCoverLoading } = useBookCover(imageId);
 
   // Check if book has no progress
   const hasNoProgress = readPercent === 0;
   const isDisabled = hasNoProgress || isProcessing;
 
-  useEffect(() => {
-    const loadCover = async () => {
-      try {
-        if (!imageId) {
-          console.warn(`No image ID found for book: ${bookTitle}`);
-          return;
-        }
-        const url = await window.api.fetchBookCover(imageId);
-        setCoverUrl(url);
-      } catch (error) {
-        console.error("Error loading book cover:", error);
-      } finally {
-        setHasAttemptedLoad(true);
-      }
-    };
-
-    if (networkState.online && !hasAttemptedLoad) {
-      loadCover();
-    }
-  }, [bookTitle, isbn, networkState.online, hasAttemptedLoad]);
-
   const renderCover = () => {
-    if (coverUrl) {
+    if (isCoverLoading) {
+      return <Skeleton className="w-full h-full" />;
+    }
+
+    if (coverDataUrl) {
       return (
         <img
-          src={coverUrl}
+          src={coverDataUrl}
           alt={`${bookTitle} cover`}
           className={cn(
             "object-cover w-full h-full select-none",
-            hasNoProgress && "opacity-50 grayscale"
+            hasNoProgress && "opacity-50 grayscale",
           )}
           draggable="false"
         />
       );
     }
 
-    if (!networkState.online && !hasAttemptedLoad) {
-      return <Skeleton className="w-full h-full" />;
-    }
-
     return (
-      <div className={cn(
-        "w-full h-full bg-muted flex items-center justify-center",
-        hasNoProgress && "opacity-50"
-      )}>
+      <div
+        className={cn(
+          "w-full h-full bg-muted flex items-center justify-center",
+          hasNoProgress && "opacity-50",
+        )}
+      >
         <span className="text-muted-foreground">No cover</span>
       </div>
     );
@@ -161,7 +140,7 @@ function BookCard({
                 >
                   <div className="flex-1 text-center">{bookmarkCount ?? 0} notes</div>
                   <Separator orientation="vertical" className="h-4 mx-2" />
-                  <div className="flex-1 text-center">{Math.round(progress)}%</div>
+                  <div className="flex-1 text-center">{Math.round(readPercent)}%</div>
                 </Button>
               </CardFooter>
             </Card>
@@ -217,7 +196,7 @@ function BookCard({
             >
               <div className="flex-1 text-center">{bookmarkCount ?? 0} notes</div>
               <Separator orientation="vertical" className="h-4 mx-2" />
-              <div className="flex-1 text-center">{Math.round(progress)}%</div>
+              <div className="flex-1 text-center">{Math.round(readPercent)}%</div>
             </Button>
           </CardFooter>
         </Card>

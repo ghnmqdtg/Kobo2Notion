@@ -9,6 +9,7 @@ import { useNetworkState } from "@uidotdev/usehooks";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
+import { useBookCover } from "@/hooks/use-book-cover";
 
 interface BookListProps {
   books: Book[];
@@ -42,59 +43,38 @@ export function BookListCard({
   isExporting,
   isExported,
 }: BookListCardProps) {
-  const [coverUrl, setCoverUrl] = useState<string>("");
-  const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
-  const networkState = useNetworkState();
+  const { coverDataUrl, isLoading: isCoverLoading } = useBookCover(imageId);
 
   // Check if book has no progress
   const hasNoProgress = readPercent === 0;
   const isDisabled = hasNoProgress || isProcessing;
 
-  useEffect(() => {
-    const loadCover = async () => {
-      try {
-        if (!imageId) {
-          console.warn(`No image ID found for book: ${bookTitle}`);
-          return;
-        }
-        const url = await window.api.fetchBookCover(imageId);
-        setCoverUrl(url);
-      } catch (error) {
-        console.error("Error loading book cover:", error);
-      } finally {
-        setHasAttemptedLoad(true);
-      }
-    };
-
-    if (networkState.online && !hasAttemptedLoad) {
-      loadCover();
-    }
-  }, [bookTitle, imageId, networkState.online, hasAttemptedLoad]);
-
   const renderCover = () => {
-    if (coverUrl) {
+    if (isCoverLoading) {
+      return <Skeleton className="w-full h-full" />;
+    }
+
+    if (coverDataUrl) {
       return (
         <img
-          src={coverUrl}
+          src={coverDataUrl}
           alt={`${bookTitle} cover`}
           className={cn(
             "object-cover w-full h-full select-none",
-            hasNoProgress && "opacity-50 grayscale"
+            hasNoProgress && "opacity-50 grayscale",
           )}
           draggable="false"
         />
       );
     }
 
-    if (!networkState.online && !hasAttemptedLoad) {
-      return <Skeleton className="w-full h-full" />;
-    }
-
     return (
-      <div className={cn(
-        "w-full h-full bg-muted flex items-center justify-center",
-        hasNoProgress && "opacity-50"
-      )}>
+      <div
+        className={cn(
+          "w-full h-full bg-muted flex items-center justify-center",
+          hasNoProgress && "opacity-50",
+        )}
+      >
         <span className="text-muted-foreground">No cover</span>
       </div>
     );
