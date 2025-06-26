@@ -82,11 +82,12 @@ export function Books({ onExportStateChange }: BooksProps) {
   }, [error, retryCount]);
 
   useEffect(() => {
+    const selectableBooks = books.filter((book) => book.readPercent > 0);
     if (selectAll) {
-      const allBookTitles = books.map((book) => book.bookTitle);
+      const allBookTitles = selectableBooks.map((book) => book.bookTitle);
       setSelectedBooks(new Set(allBookTitles));
     } else {
-      if (selectedBooks.size === books.length) {
+      if (selectedBooks.size === selectableBooks.length && selectableBooks.length > 0) {
         setSelectedBooks(new Set());
       }
     }
@@ -109,14 +110,15 @@ export function Books({ onExportStateChange }: BooksProps) {
   };
 
   const handleSelectBook = (bookTitle: string) => {
+    const selectableBookCount = books.filter((book) => book.readPercent > 0).length;
     setSelectedBooks((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(bookTitle)) {
         newSet.delete(bookTitle);
-        if (newSet.size < books.length) setSelectAll(false);
+        if (newSet.size < selectableBookCount) setSelectAll(false);
       } else {
         newSet.add(bookTitle);
-        if (newSet.size === books.length) setSelectAll(true);
+        if (newSet.size === selectableBookCount) setSelectAll(true);
       }
       return newSet;
     });
