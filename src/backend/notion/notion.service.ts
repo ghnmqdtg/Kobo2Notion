@@ -31,17 +31,21 @@ export class NotionService {
 
     const properties: any = {
       Title: { title: [{ text: { content: book.bookTitle } }] },
-      Category: { select: { name: "Books" } },
-      Author: { rich_text: [{ text: { content: book.author } }] },
-      Publisher: { rich_text: [{ text: { content: book.publisher } }] },
-      ISBN: { rich_text: [{ text: { content: book.isbn } }] },
+      Category: { select: { name: book.source === 'instapaper' ? 'Articles' : 'Books' } },
       "Read Percent": { number: book.readPercent },
     };
 
+    if (book.author) {
+      properties.Author = { rich_text: [{ text: { content: book.author } }] };
+    }
+    if (book.publisher) {
+      properties.Publisher = { rich_text: [{ text: { content: book.publisher } }] };
+    }
+    if (book.isbn) {
+      properties.ISBN = { rich_text: [{ text: { content: book.isbn } }] };
+    }
     if (book.subtitle) {
-      properties.Subtitle = {
-        rich_text: [{ text: { content: book.subtitle } }],
-      };
+      properties.Subtitle = { rich_text: [{ text: { content: book.subtitle } }] };
     }
 
     const existingPage = await this._queryExistingPage(book.bookTitle);
