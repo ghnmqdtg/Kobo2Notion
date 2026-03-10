@@ -31,7 +31,7 @@ export class NotionService {
 
     const properties: any = {
       Title: { title: [{ text: { content: book.bookTitle } }] },
-      Category: { select: { name: book.source === 'instapaper' ? 'Articles' : 'Books' } },
+      Category: { select: { name: "Books" } },
       "Read Percent": { number: book.readPercent },
     };
 

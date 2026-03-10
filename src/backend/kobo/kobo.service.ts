@@ -81,7 +81,7 @@ export class KoboService {
         c.IsAbridged = 'false'
     `;
 
-    // Instapaper articles and external sideloads (EPUBs, PDFs)
+    // External sideloads (EPUBs, PDFs) — excludes Instapaper articles (no user notes support)
     const nonStoreQuery = `
       SELECT DISTINCT
         c.Title AS bookTitle,
@@ -99,7 +99,7 @@ export class KoboService {
       WHERE
         c.ContentType = 6 AND
         c.BookTitle IS NULL AND
-        c.MimeType IN ('application/x-kobo-html+instapaper', 'application/epub+zip', 'application/pdf')
+        c.MimeType IN ('application/epub+zip', 'application/pdf')
     `;
 
     const [storeBooks, nonStoreBooks] = await Promise.all([
@@ -128,7 +128,7 @@ export class KoboService {
       };
     });
 
-    console.info(`Retrieved ${booksWithCounts.length} items (${storeBooks.length} store, ${nonStoreBooks.length} instapaper/external)`);
+    console.info(`Retrieved ${booksWithCounts.length} items (${storeBooks.length} store, ${nonStoreBooks.length} external)`);
     return booksWithCounts;
   }
 

@@ -25,7 +25,7 @@ export function Books({ onExportStateChange }: BooksProps) {
   const [isGridView, setIsGridView] = useState(true);
   const [selectAll, setSelectAll] = useState(false);
   const [sourceFilter, setSourceFilter] = useState<Set<BookSource>>(
-    new Set(['kobo-store', 'instapaper', 'external'])
+    new Set(['kobo-store', 'external'])
   );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

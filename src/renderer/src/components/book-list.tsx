@@ -32,13 +32,11 @@ interface BookListCardProps extends Book {
 
 const sourceLabel: Record<string, string> = {
   'kobo-store': 'Kobo',
-  'instapaper': 'Instapaper',
   'external': 'External',
 };
 
 const sourceColor: Record<string, string> = {
   'kobo-store': 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-  'instapaper': 'bg-orange-500/10 text-orange-600 dark:text-orange-400',
   'external': 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
 };
 

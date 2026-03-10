@@ -23,7 +23,6 @@ interface HeaderProps {
 
 const sources: { value: BookSource; label: string }[] = [
     { value: "kobo-store", label: "Kobo" },
-    { value: "instapaper", label: "Instapaper" },
     { value: "external", label: "External" },
 ];
 
