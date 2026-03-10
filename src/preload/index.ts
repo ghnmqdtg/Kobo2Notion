@@ -101,6 +101,7 @@ const api = {
     return notionService.queryExistingPages(bookTitles);
   },
   getBookmarks: async (bookTitle: string): Promise<Bookmark[]> => {
+    await koboService.connect();
     return koboService.getBookmarks(bookTitle);
   },
 };

@@ -136,7 +136,7 @@ export class KoboService {
     if (!this.db) throw new Error("Database not connected.");
 
     const contentIdResult = await this.db.get<{ contentId: string; }>(
-      `SELECT c.ContentId AS contentId FROM content AS c WHERE c.Title = ?`,
+      `SELECT c.ContentId AS contentId FROM content AS c WHERE c.Title = ? AND c.ContentType = 6 AND c.BookTitle IS NULL`,
       [title],
     );
 
@@ -144,22 +144,18 @@ export class KoboService {
       throw new Error(`No content ID found for title: ${title}`);
     }
 
-    console.log("contentIdResult", contentIdResult);
-
     const contentId = contentIdResult.contentId;
-    console.log("contentId", contentId);
 
-    // Clean the contentId: remove all the text after ! sign (including the ! sign)
-    const cleanedContentId = contentId.split("!")[0];
+    // Clean the contentId: strip both ! suffixes (store books) and # suffixes (sideloads)
+    const cleanedContentId = contentId.split("!")[0].split("#")[0];
 
     console.info(`Retrieving bookmarks for content ID: ${cleanedContentId}`);
 
     const bookmarks = await this.db.all<Bookmark[]>(
-      `SELECT VolumeID AS volumeId, Text AS highlight, Annotation AS annotation, DateCreated AS createdOn, Type AS type FROM Bookmark WHERE VolumeID = ? ORDER BY DateCreated ASC`,
+      `SELECT VolumeID AS volumeId, Text AS highlight, Annotation AS annotation, DateCreated AS createdOn, Type AS type FROM Bookmark WHERE VolumeID LIKE ? || '%' ORDER BY DateCreated ASC`,
       [cleanedContentId],
     );
 
-    console.log("bookmarks", bookmarks);
     return bookmarks;
   }
 
