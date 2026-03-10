@@ -30,12 +30,25 @@ interface BookListCardProps extends Book {
   isExported: boolean;
 }
 
+const sourceLabel: Record<string, string> = {
+  'kobo-store': 'Kobo',
+  'instapaper': 'Instapaper',
+  'external': 'External',
+};
+
+const sourceColor: Record<string, string> = {
+  'kobo-store': 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+  'instapaper': 'bg-orange-500/10 text-orange-600 dark:text-orange-400',
+  'external': 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
+};
+
 export function BookListCard({
   bookTitle,
   author,
   readPercent,
   imageId,
   bookmarkCount,
+  source,
   isSelected,
   onSelect,
   onPreview,
@@ -119,6 +132,11 @@ export function BookListCard({
                       >
                         {bookTitle}
                       </h3>
+                      {source !== 'kobo-store' && (
+                        <span className={cn("shrink-0 px-1.5 py-0.5 rounded text-xs font-medium", sourceColor[source])}>
+                          {sourceLabel[source]}
+                        </span>
+                      )}
                       <p title={author} className="text-sm text-muted-foreground">
                         {(() => {
                           const authorsArray = (author || "").split(", ");

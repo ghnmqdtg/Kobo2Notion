@@ -30,6 +30,18 @@ interface BookCardProps extends Book {
   isExported: boolean;
 }
 
+const sourceLabel: Record<string, string> = {
+  'kobo-store': 'Kobo',
+  'instapaper': 'Instapaper',
+  'external': 'External',
+};
+
+const sourceColor: Record<string, string> = {
+  'kobo-store': 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+  'instapaper': 'bg-orange-500/10 text-orange-600 dark:text-orange-400',
+  'external': 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
+};
+
 function BookCard({
   bookTitle,
   subtitle,
@@ -38,6 +50,7 @@ function BookCard({
   isbn,
   imageId,
   bookmarkCount,
+  source,
   isSelected,
   onSelect,
   onPreview,
@@ -126,6 +139,11 @@ function BookCard({
                       return `${firstThreeAuthors}${remainingAuthors}`;
                     })()}
                   </p>
+                  {source !== 'kobo-store' && (
+                    <span className={cn("inline-block px-1.5 py-0.5 rounded text-xs font-medium", sourceColor[source])}>
+                      {sourceLabel[source]}
+                    </span>
+                  )}
                 </div>
               </CardContent>
               <CardFooter className="flex items-center p-4 pt-0 mt-auto text-sm text-muted-foreground">
@@ -165,12 +183,6 @@ function BookCard({
                 "font-bold line-clamp-2",
                 hasNoProgress && "text-muted-foreground"
               )}>{bookTitle}</h3>
-              {/* {subtitle && (
-                            <p className="text-sm text-muted-foreground line-clamp-2">
-                                {subtitle}
-                            </p>
-                        )} */}
-              {/* Hide the authors after the third person with "..." */}
               <p title={author} className="text-sm text-muted-foreground">
                 {(() => {
                   const authorsArray = (author || "").split(", ");
@@ -182,6 +194,11 @@ function BookCard({
                   return `${firstThreeAuthors}${remainingAuthors}`;
                 })()}
               </p>
+              {source !== 'kobo-store' && (
+                <span className={cn("inline-block px-1.5 py-0.5 rounded text-xs font-medium", sourceColor[source])}>
+                  {sourceLabel[source]}
+                </span>
+              )}
             </div>
           </CardContent>
           <CardFooter className="flex items-center p-4 pt-0 mt-auto text-sm text-muted-foreground">
