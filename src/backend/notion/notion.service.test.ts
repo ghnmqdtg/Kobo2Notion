@@ -19,6 +19,7 @@ describe("NotionService Integration Tests", () => {
     seriesNumber: null,
     readPercent: 0.5,
     imageId: null,
+    source: "kobo-store",
   };
 
   const testBookmarks: Bookmark[] = [

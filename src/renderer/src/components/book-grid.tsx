@@ -117,7 +117,7 @@ function BookCard({
                   )}>{bookTitle}</h3>
                   <p title={author} className="text-sm text-muted-foreground">
                     {(() => {
-                      const authorsArray = author.split(", ");
+                      const authorsArray = (author || "").split(", ");
                       const firstThreeAuthors = authorsArray.slice(0, 3).join(", ");
                       const remainingAuthors =
                         authorsArray.slice(3).length > 0
@@ -173,7 +173,7 @@ function BookCard({
               {/* Hide the authors after the third person with "..." */}
               <p title={author} className="text-sm text-muted-foreground">
                 {(() => {
-                  const authorsArray = author.split(", ");
+                  const authorsArray = (author || "").split(", ");
                   const firstThreeAuthors = authorsArray.slice(0, 3).join(", ");
                   const remainingAuthors =
                     authorsArray.slice(3).length > 0

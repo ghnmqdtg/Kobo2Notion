@@ -1,6 +1,8 @@
 // This file serves as a central location to define the data structures (or data models) that our application works with.
 
 // Kobo Models
+export type BookSource = 'kobo-store' | 'instapaper' | 'external';
+
 export interface Book {
   bookTitle: string;
   subtitle: string | null;
@@ -12,6 +14,7 @@ export interface Book {
   readPercent: number;
   imageId: string | null;
   bookmarkCount?: number; // Optional for backward compatibility
+  source: BookSource;
 }
 
 export interface Bookmark {

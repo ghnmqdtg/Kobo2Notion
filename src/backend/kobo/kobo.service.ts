@@ -1,6 +1,6 @@
 import sqlite3 from "sqlite3";
 import { open, Database } from "sqlite";
-import { Book, Bookmark } from "../models"; // Create a models.ts to define types
+import { Book, BookSource, Bookmark } from "../models"; // Create a models.ts to define types
 import { env } from "../../config/env.config";
 
 export class KoboService {
@@ -24,10 +24,40 @@ export class KoboService {
     }
   }
 
+  private async getBookmarkCountMap(): Promise<Map<string, number>> {
+    if (!this.db) throw new Error("Database not connected.");
+
+    const bookmarkCounts = await this.db.all<{ volumeId: string; count: number; }[]>(`
+      SELECT
+        CASE
+          WHEN INSTR(VolumeID, '!') > 0
+          THEN SUBSTR(VolumeID, 1, INSTR(VolumeID, '!') - 1)
+          ELSE VolumeID
+        END as volumeId,
+        COUNT(*) as count
+      FROM Bookmark
+      GROUP BY
+        CASE
+          WHEN INSTR(VolumeID, '!') > 0
+          THEN SUBSTR(VolumeID, 1, INSTR(VolumeID, '!') - 1)
+          ELSE VolumeID
+        END
+    `);
+
+    return new Map(bookmarkCounts.map(b => [b.volumeId, b.count]));
+  }
+
+  private mimeTypeToSource(mimeType: string): BookSource {
+    if (mimeType === 'application/x-kobo-html+instapaper') return 'instapaper';
+    if (mimeType === 'application/epub+zip' || mimeType === 'application/pdf') return 'external';
+    return 'kobo-store';
+  }
+
   async getBooks(): Promise<Book[]> {
     if (!this.db) throw new Error("Database not connected.");
 
-    const query = `
+    // Kobo store books: purchased and downloaded
+    const storeQuery = `
       SELECT DISTINCT
         c.Title AS bookTitle,
         c.Subtitle AS subtitle,
@@ -38,9 +68,12 @@ export class KoboService {
         c.SeriesNumber AS seriesNumber,
         c.___PercentRead AS readPercent,
         c.ImageId AS imageId,
-        c.ContentId AS contentId
+        c.ContentId AS contentId,
+        c.MimeType AS mimeType
       FROM content AS c
       WHERE
+        c.ContentType = 6 AND
+        c.BookTitle IS NULL AND
         c.isDownloaded = 'true' AND
         c.Accessibility = 1 AND
         c.EntitlementId IS NOT NULL AND
@@ -48,29 +81,37 @@ export class KoboService {
         c.IsAbridged = 'false'
     `;
 
-    const books = await this.db.all<(Book & { contentId: string; })[]>(query);
+    // Instapaper articles and external sideloads (EPUBs, PDFs)
+    const nonStoreQuery = `
+      SELECT DISTINCT
+        c.Title AS bookTitle,
+        c.Subtitle AS subtitle,
+        c.Attribution AS author,
+        c.Publisher AS publisher,
+        c.ISBN AS isbn,
+        c.Series AS series,
+        c.SeriesNumber AS seriesNumber,
+        c.___PercentRead AS readPercent,
+        c.ImageId AS imageId,
+        c.ContentId AS contentId,
+        c.MimeType AS mimeType
+      FROM content AS c
+      WHERE
+        c.ContentType = 6 AND
+        c.BookTitle IS NULL AND
+        c.MimeType IN ('application/x-kobo-html+instapaper', 'application/epub+zip', 'application/pdf')
+    `;
 
-    // Get bookmark counts in a single query for efficiency
-    const bookmarkCounts = await this.db.all<{ volumeId: string; count: number; }[]>(`
-      SELECT 
-        CASE 
-          WHEN INSTR(VolumeID, '!') > 0 
-          THEN SUBSTR(VolumeID, 1, INSTR(VolumeID, '!') - 1)
-          ELSE VolumeID
-        END as volumeId, 
-        COUNT(*) as count
-      FROM Bookmark 
-      GROUP BY 
-        CASE 
-          WHEN INSTR(VolumeID, '!') > 0 
-          THEN SUBSTR(VolumeID, 1, INSTR(VolumeID, '!') - 1)
-          ELSE VolumeID
-        END
-    `);
+    const [storeBooks, nonStoreBooks] = await Promise.all([
+      this.db.all<(Book & { contentId: string; mimeType: string; })[]>(storeQuery),
+      this.db.all<(Book & { contentId: string; mimeType: string; })[]>(nonStoreQuery),
+    ]);
 
-    const countMap = new Map(bookmarkCounts.map(b => [b.volumeId, b.count]));
+    const countMap = await this.getBookmarkCountMap();
 
-    const booksWithCounts = books.map(book => {
+    const allBooks = [...storeBooks, ...nonStoreBooks];
+
+    const booksWithCounts = allBooks.map(book => {
       const cleanedContentId = book.contentId.split('!')[0];
       return {
         bookTitle: book.bookTitle,
@@ -82,11 +123,12 @@ export class KoboService {
         seriesNumber: book.seriesNumber,
         readPercent: book.readPercent,
         imageId: book.imageId,
-        bookmarkCount: countMap.get(cleanedContentId) || 0
+        bookmarkCount: countMap.get(cleanedContentId) || 0,
+        source: this.mimeTypeToSource(book.mimeType),
       };
     });
 
-    console.info(`Retrieved data for ${booksWithCounts.length} books with bookmark counts`);
+    console.info(`Retrieved ${booksWithCounts.length} items (${storeBooks.length} store, ${nonStoreBooks.length} instapaper/external)`);
     return booksWithCounts;
   }
 
