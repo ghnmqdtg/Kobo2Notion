@@ -5,6 +5,71 @@ import { createAnthropic } from "@ai-sdk/anthropic";
 import { Bookmark } from "../models";
 import { env } from "../../config/env.config";
 
+const fallbackModels: Record<string, string[]> = {
+  google: ["gemini-2.5-flash", "gemini-2.5-pro"],
+  openai: ["gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-4.1-mini"],
+  anthropic: ["claude-sonnet-4-5-20250514", "claude-haiku-4-5-20251001"],
+};
+
+export async function fetchAvailableModels(
+  provider: string,
+  apiKey: string,
+): Promise<string[]> {
+  try {
+    switch (provider) {
+      case "google":
+        return await fetchGoogleModels(apiKey);
+      case "openai":
+        return await fetchOpenAIModels(apiKey);
+      case "anthropic":
+        return await fetchAnthropicModels(apiKey);
+      default:
+        return [];
+    }
+  } catch (error) {
+    console.warn(`Failed to fetch models for ${provider}, using fallbacks:`, error);
+    return fallbackModels[provider] || [];
+  }
+}
+
+async function fetchGoogleModels(apiKey: string): Promise<string[]> {
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`,
+  );
+  if (!res.ok) throw new Error(`Google API error: ${res.status}`);
+  const data = await res.json();
+  return (data.models || [])
+    .filter((m: any) => m.supportedGenerationMethods?.includes("generateContent"))
+    .map((m: any) => m.name.replace("models/", ""))
+    .sort();
+}
+
+async function fetchOpenAIModels(apiKey: string): Promise<string[]> {
+  const res = await fetch("https://api.openai.com/v1/models", {
+    headers: { Authorization: `Bearer ${apiKey}` },
+  });
+  if (!res.ok) throw new Error(`OpenAI API error: ${res.status}`);
+  const data = await res.json();
+  return (data.data || [])
+    .map((m: any) => m.id)
+    .filter((id: string) => /^(gpt-|o[0-9])/.test(id))
+    .sort();
+}
+
+async function fetchAnthropicModels(apiKey: string): Promise<string[]> {
+  const res = await fetch("https://api.anthropic.com/v1/models", {
+    headers: {
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+    },
+  });
+  if (!res.ok) throw new Error(`Anthropic API error: ${res.status}`);
+  const data = await res.json();
+  return (data.data || [])
+    .map((m: any) => m.id)
+    .sort();
+}
+
 export class LLMService {
   private getModel() {
     const { LLM_PROVIDER, LLM_API_KEY, LLM_MODEL } = env;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Separator } from "@/components/ui/separator";
@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FolderOpen } from "lucide-react";
+import { FolderOpen, RefreshCw } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface SettingsValues {
@@ -21,22 +21,24 @@ interface SettingsValues {
   NOTION_API: string;
   NOTION_DB: string;
   LLM_PROVIDER: string;
-  LLM_API_KEY: string;
+  LLM_API_KEY_GOOGLE: string;
+  LLM_API_KEY_OPENAI: string;
+  LLM_API_KEY_ANTHROPIC: string;
   LLM_MODEL: string;
   SUMMARIZE_ENABLED: boolean;
   SUMMARIZE_LANGUAGE: string;
 }
 
-const modelsByProvider: Record<string, string[]> = {
-  google: ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"],
-  openai: ["gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-4.1-mini"],
-  anthropic: ["claude-sonnet-4-5-20250514", "claude-haiku-4-5-20251001"],
-};
-
 const providerLabels: Record<string, string> = {
   google: "Google Gemini",
   openai: "OpenAI",
   anthropic: "Anthropic Claude",
+};
+
+const providerKeyField: Record<string, keyof SettingsValues> = {
+  google: "LLM_API_KEY_GOOGLE",
+  openai: "LLM_API_KEY_OPENAI",
+  anthropic: "LLM_API_KEY_ANTHROPIC",
 };
 
 export function Settings() {
@@ -45,21 +47,67 @@ export function Settings() {
     NOTION_API: window.env.NOTION_API_KEY || "",
     NOTION_DB: window.env.NOTION_DATABASE_ID || "",
     LLM_PROVIDER: window.env.LLM_PROVIDER || "",
-    LLM_API_KEY: window.env.LLM_API_KEY || "",
+    LLM_API_KEY_GOOGLE: window.env.LLM_API_KEY_GOOGLE || "",
+    LLM_API_KEY_OPENAI: window.env.LLM_API_KEY_OPENAI || "",
+    LLM_API_KEY_ANTHROPIC: window.env.LLM_API_KEY_ANTHROPIC || "",
     LLM_MODEL: window.env.LLM_MODEL || "",
     SUMMARIZE_ENABLED: window.env.SUMMARIZE_ENABLED || false,
     SUMMARIZE_LANGUAGE: window.env.SUMMARIZE_LANGUAGE || "en",
   });
   const [isSaving, setIsSaving] = useState(false);
   const [isFirstTime, setIsFirstTime] = useState(true);
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [isLoadingModels, setIsLoadingModels] = useState(false);
+  const [modelsFetchError, setModelsFetchError] = useState(false);
   const { toast } = useToast();
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Derive the active API key for the current provider
+  const activeApiKeyField = providerKeyField[values.LLM_PROVIDER];
+  const activeApiKey = activeApiKeyField ? (values[activeApiKeyField] as string) : "";
 
   useEffect(() => {
-    // Check if it's first time setup
     setIsFirstTime(
       !values.SQLITE_SOURCE && !values.NOTION_API && !values.NOTION_DB,
     );
   }, []);
+
+  // Fetch models when provider or its API key changes
+  useEffect(() => {
+    if (!values.LLM_PROVIDER || !activeApiKey) {
+      setAvailableModels([]);
+      return;
+    }
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      loadModels(values.LLM_PROVIDER, activeApiKey);
+    }, 500);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [values.LLM_PROVIDER, activeApiKey]);
+
+  const loadModels = async (provider: string, apiKey: string) => {
+    setIsLoadingModels(true);
+    setModelsFetchError(false);
+    try {
+      const models = await window.api.fetchAvailableModels(provider, apiKey);
+      setAvailableModels(models);
+      if (models.length > 0) {
+        setValues((prev) => ({
+          ...prev,
+          LLM_MODEL: models.includes(prev.LLM_MODEL) ? prev.LLM_MODEL : models[0],
+        }));
+      }
+    } catch {
+      setModelsFetchError(true);
+      setAvailableModels([]);
+    } finally {
+      setIsLoadingModels(false);
+    }
+  };
 
   const validateSqlitePath = (path: string): boolean => {
     return path.toLowerCase().includes("koboreader.sqlite");
@@ -70,12 +118,13 @@ export function Settings() {
   };
 
   const handleProviderChange = (provider: string) => {
-    const models = modelsByProvider[provider] || [];
     setValues((prev) => ({
       ...prev,
       LLM_PROVIDER: provider,
-      LLM_MODEL: models[0] || "",
+      LLM_MODEL: "",
     }));
+    setAvailableModels([]);
+    setModelsFetchError(false);
   };
 
   const handleSummarizeToggle = (enabled: boolean) => {
@@ -83,9 +132,6 @@ export function Settings() {
       ...prev,
       SUMMARIZE_ENABLED: enabled,
       LLM_PROVIDER: enabled ? prev.LLM_PROVIDER || "google" : prev.LLM_PROVIDER,
-      LLM_MODEL: enabled
-        ? prev.LLM_MODEL || modelsByProvider[prev.LLM_PROVIDER || "google"]?.[0] || ""
-        : prev.LLM_MODEL,
     }));
   };
 
@@ -97,7 +143,7 @@ export function Settings() {
     ];
 
     if (values.SUMMARIZE_ENABLED) {
-      requiredFields.push(values.LLM_API_KEY);
+      requiredFields.push(activeApiKey);
     }
 
     return requiredFields.every((field) => field.trim() !== "");
@@ -106,7 +152,12 @@ export function Settings() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const entries = Object.entries(values).map(([key, value]) => ({
+      // Build entries with LLM_API_KEY derived from the active provider's key
+      const saveValues = {
+        ...values,
+        LLM_API_KEY: activeApiKey,
+      };
+      const entries = Object.entries(saveValues).map(([key, value]) => ({
         key,
         value: typeof value === "boolean" ? value.toString() : value,
       }));
@@ -118,7 +169,6 @@ export function Settings() {
         });
 
         setTimeout(() => {
-          // Reload the page after env values are updated
           window.location.reload();
         }, 500);
       });
@@ -157,8 +207,6 @@ export function Settings() {
       });
     }
   };
-
-  const availableModels = modelsByProvider[values.LLM_PROVIDER] || [];
 
   return (
     <>
@@ -249,25 +297,65 @@ export function Settings() {
                     </Select>
                   </div>
 
+                  {activeApiKeyField && (
+                    <div className="space-y-2">
+                      <label className="text-md font-medium">
+                        {providerLabels[values.LLM_PROVIDER]} API Key
+                      </label>
+                      <PasswordInput
+                        value={activeApiKey}
+                        onChange={(e) =>
+                          handleChange(activeApiKeyField, e.target.value)
+                        }
+                      />
+                    </div>
+                  )}
+
                   <div className="space-y-2">
-                    <label className="text-md font-medium">Model</label>
-                    <Select
-                      value={values.LLM_MODEL}
-                      onValueChange={(value) =>
-                        handleChange("LLM_MODEL", value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableModels.map((model) => (
-                          <SelectItem key={model} value={model}>
-                            {model}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="flex items-center justify-between">
+                      <label className="text-md font-medium">Model</label>
+                      {values.LLM_PROVIDER && activeApiKey && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-xs text-muted-foreground"
+                          onClick={() => loadModels(values.LLM_PROVIDER, activeApiKey)}
+                          disabled={isLoadingModels}
+                        >
+                          <RefreshCw className={`h-3 w-3 mr-1 ${isLoadingModels ? "animate-spin" : ""}`} />
+                          Refresh
+                        </Button>
+                      )}
+                    </div>
+                    {isLoadingModels ? (
+                      <div className="flex items-center h-10 px-3 border rounded-md text-sm text-muted-foreground">
+                        Fetching models...
+                      </div>
+                    ) : availableModels.length > 0 ? (
+                      <Select
+                        value={values.LLM_MODEL}
+                        onValueChange={(value) =>
+                          handleChange("LLM_MODEL", value)
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableModels.map((model) => (
+                            <SelectItem key={model} value={model}>
+                              {model}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <div className="flex items-center h-10 px-3 border rounded-md text-sm text-muted-foreground">
+                        {modelsFetchError
+                          ? "Failed to fetch models — check your API key"
+                          : "Enter an API key to load available models"}
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -290,18 +378,6 @@ export function Settings() {
                         </SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-md font-medium">
-                      API Key
-                    </label>
-                    <PasswordInput
-                      value={values.LLM_API_KEY}
-                      onChange={(e) =>
-                        handleChange("LLM_API_KEY", e.target.value)
-                      }
-                    />
                   </div>
                 </>
               )}

@@ -16,6 +16,7 @@ export interface IElectronAPI {
   deleteNotionPage: (pageId: string) => Promise<{ success: boolean; message: string; }>;
   queryExistingPages: (bookTitles: string[]) => Promise<ExistingPage[]>;
   getBookmarks: (bookTitle: string) => Promise<Bookmark[]>;
+  fetchAvailableModels: (provider: string, apiKey: string) => Promise<string[]>;
 }
 
 declare global {

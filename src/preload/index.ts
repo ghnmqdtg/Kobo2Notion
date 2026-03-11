@@ -2,7 +2,7 @@ import { contextBridge, ipcRenderer } from "electron";
 import { electronAPI } from "@electron-toolkit/preload";
 import { KoboService } from "../backend/kobo/kobo.service";
 import { NotionService } from "../backend/notion/notion.service";
-import { LLMService } from "../backend/llm_integration/llm_integration.service";
+import { LLMService, fetchAvailableModels } from "../backend/llm_integration/llm_integration.service";
 import { env } from "../config/env.config";
 import { fetchBookCover } from "../backend/utils";
 import { Book } from "../backend/models";
@@ -103,6 +103,9 @@ const api = {
   getBookmarks: async (bookTitle: string): Promise<Bookmark[]> => {
     await koboService.connect();
     return koboService.getBookmarks(bookTitle);
+  },
+  fetchAvailableModels: async (provider: string, apiKey: string): Promise<string[]> => {
+    return fetchAvailableModels(provider, apiKey);
   },
 };
 
