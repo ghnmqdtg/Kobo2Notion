@@ -5,7 +5,7 @@ import { Settings } from "@/components/settings";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
 
-function App(): JSX.Element {
+function App(): React.JSX.Element {
   const [showSettings, setShowSettings] = useState(false);
   const [isFirstTime, setIsFirstTime] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
