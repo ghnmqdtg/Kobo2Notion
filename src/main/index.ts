@@ -65,31 +65,25 @@ async function updateEnvFile(
 }
 
 function cleanEnvKeys(): void {
-  console.log(
-    "cleaning env keys: ",
-    process.env.NOTION_API,
-    process.env.NOTION_DB,
-    process.env.GEMINI_API,
-    process.env.GEMINI_MODEL,
-    process.env.SUMMARIZE_ENABLED,
-    process.env.SUMMARIZE_LANGUAGE,
-  );
-  delete process.env.SQLITE_SOURCE;
-  delete process.env.NOTION_API;
-  delete process.env.NOTION_DB;
-  delete process.env.GEMINI_API;
-  delete process.env.GEMINI_MODEL;
-  delete process.env.SUMMARIZE_ENABLED;
-  delete process.env.SUMMARIZE_LANGUAGE;
-  console.log(
-    "cleaned env keys: ",
-    process.env.NOTION_API,
-    process.env.NOTION_DB,
-    process.env.GEMINI_API,
-    process.env.GEMINI_MODEL,
-    process.env.SUMMARIZE_ENABLED,
-    process.env.SUMMARIZE_LANGUAGE,
-  );
+  const keys = [
+    "SQLITE_SOURCE",
+    "NOTION_API",
+    "NOTION_DB",
+    "LLM_PROVIDER",
+    "LLM_API_KEY",
+    "LLM_API_KEY_GOOGLE",
+    "LLM_API_KEY_OPENAI",
+    "LLM_API_KEY_ANTHROPIC",
+    "LLM_MODEL",
+    "SUMMARIZE_ENABLED",
+    "SUMMARIZE_LANGUAGE",
+    // Legacy keys
+    "GEMINI_API",
+    "GEMINI_MODEL",
+  ];
+  for (const key of keys) {
+    delete process.env[key];
+  }
 }
 
 async function ensureEnvFile(): Promise<void> {
@@ -164,6 +158,7 @@ function createMenu(): void {
       submenu: [
         { role: "reload" },
         { role: "forceReload" },
+        ...(is.dev ? [{ role: "toggleDevTools" }] : []),
         { type: "separator" },
         { role: "resetZoom" },
         { role: "zoomIn" },
@@ -197,6 +192,7 @@ function createWindow(): void {
       preload: join(__dirname, "../preload/index.js"),
       sandbox: false,
       devTools: is.dev,
+      webSecurity: false,
     },
   });
 
@@ -219,6 +215,12 @@ function createWindow(): void {
     globalShortcut.register("CommandOrControl+R", function () {
       mainWindow.reload();
     });
+
+    if (is.dev) {
+      globalShortcut.register("CommandOrControl+Option+I", function () {
+        mainWindow.webContents.openDevTools();
+      });
+    }
   });
 
   app.on("browser-window-blur", () => {
@@ -315,15 +317,6 @@ ensureEnvFile().then(() => {
 
   // Load environment variables from .env file
   dotenv.config({ path: getEnvPath() });
-  console.log(
-    "cleaned env keys: ",
-    process.env.NOTION_API,
-    process.env.NOTION_DB,
-    process.env.GEMINI_API,
-    process.env.GEMINI_MODEL,
-    process.env.SUMMARIZE_ENABLED,
-    process.env.SUMMARIZE_LANGUAGE,
-  );
 
   initializeApp();
 });
