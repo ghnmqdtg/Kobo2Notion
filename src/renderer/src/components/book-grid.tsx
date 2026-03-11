@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Book } from "../../../backend/models";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
+import { cn, formatAuthors } from "@/lib/utils";
 import { useNetworkState } from "@uidotdev/usehooks";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
@@ -35,7 +35,7 @@ const sourceLabel: Record<string, string> = {
   'external': 'External',
 };
 
-function BookCard({
+const BookCard = React.memo(function BookCard({
   bookTitle,
   subtitle,
   author,
@@ -138,15 +138,7 @@ function BookCard({
                     (hasNoProgress || isPdfNoBookmarks) && "text-muted-foreground"
                   )}>{bookTitle}</h3>
                   <p title={author} className="text-sm text-muted-foreground">
-                    {(() => {
-                      const authorsArray = (author || "").split(", ");
-                      const firstThreeAuthors = authorsArray.slice(0, 3).join(", ");
-                      const remainingAuthors =
-                        authorsArray.slice(3).length > 0
-                          ? `, ${authorsArray.slice(3).length} more`
-                          : "";
-                      return `${firstThreeAuthors}${remainingAuthors}`;
-                    })()}
+    {formatAuthors(author)}
                   </p>
                 </div>
               </CardContent>
@@ -231,7 +223,7 @@ function BookCard({
       )}
     </div>
   );
-}
+});
 
 export function BookGrid({
   books,

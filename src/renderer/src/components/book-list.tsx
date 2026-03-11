@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Book } from "../../../backend/models";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
+import { cn, formatAuthors } from "@/lib/utils";
 import { useNetworkState } from "@uidotdev/usehooks";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "./ui/button";
@@ -35,7 +35,7 @@ const sourceLabel: Record<string, string> = {
   'external': 'External',
 };
 
-export function BookListCard({
+export const BookListCard = React.memo(function BookListCard({
   bookTitle,
   author,
   readPercent,
@@ -142,15 +142,7 @@ export function BookListCard({
                         {bookTitle}
                       </h3>
                       <p title={author} className="text-sm text-muted-foreground">
-                        {(() => {
-                          const authorsArray = (author || "").split(", ");
-                          const firstThreeAuthors = authorsArray.slice(0, 3).join(", ");
-                          const remainingAuthors =
-                            authorsArray.slice(3).length > 0
-                              ? `, ${authorsArray.slice(3).length} more`
-                              : "";
-                          return `${firstThreeAuthors}${remainingAuthors}`;
-                        })()}
+    {formatAuthors(author)}
                       </p>
                     </div>
                   </div>
@@ -260,7 +252,7 @@ export function BookListCard({
       )}
     </div>
   );
-}
+});
 
 export function BookList({
   books,
