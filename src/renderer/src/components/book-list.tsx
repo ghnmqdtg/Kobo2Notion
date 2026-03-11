@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn, formatAuthors } from '@/lib/utils'
+import { BookOpen } from 'lucide-react'
 import { useNetworkState } from '@uidotdev/usehooks'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from './ui/button'
@@ -79,11 +80,11 @@ export const BookListCard = React.memo(function BookListCard({
     return (
       <div
         className={cn(
-          'w-full h-full bg-muted flex items-center justify-center',
+          'w-full h-full bg-muted flex items-center justify-center rounded',
           hasNoProgress && 'opacity-50'
         )}
       >
-        <span className="text-muted-foreground">No cover</span>
+        <BookOpen className="w-5 h-5 text-muted-foreground/60" />
       </div>
     )
   }
@@ -114,21 +115,7 @@ export const BookListCard = React.memo(function BookListCard({
               )}
               onClick={isDisabled ? undefined : onSelect}
             >
-              <div className="relative aspect-[3/4] h-20 p-2">
-                {renderCover()}
-                <div className="absolute top-1 right-1 flex items-center gap-0.5">
-                  {source !== 'kobo-store' && (
-                    <span className="px-1 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wide bg-black/60 backdrop-blur-sm text-white">
-                      {sourceLabel[source]}
-                    </span>
-                  )}
-                  {contentType && (
-                    <span className="px-1 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wide bg-black/60 backdrop-blur-sm text-white">
-                      {contentType}
-                    </span>
-                  )}
-                </div>
-              </div>
+              <div className="relative aspect-[3/4] h-20 p-2">{renderCover()}</div>
               <CardContent className="flex items-center justify-between w-full pl-2 pr-4">
                 <div className="flex-1">
                   <div className="space-y-1">
@@ -141,6 +128,16 @@ export const BookListCard = React.memo(function BookListCard({
                       >
                         {bookTitle}
                       </h3>
+                      {source !== 'kobo-store' && (
+                        <span className="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wide bg-muted text-muted-foreground">
+                          {sourceLabel[source]}
+                        </span>
+                      )}
+                      {contentType && (
+                        <span className="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wide bg-muted text-muted-foreground">
+                          {contentType}
+                        </span>
+                      )}
                       <p title={author} className="text-sm text-muted-foreground">
                         {formatAuthors(author)}
                       </p>
@@ -188,21 +185,7 @@ export const BookListCard = React.memo(function BookListCard({
           )}
           onClick={isDisabled ? undefined : onSelect}
         >
-          <div className="relative aspect-[3/4] h-20 p-2">
-            {renderCover()}
-            <div className="absolute top-1 right-1 flex items-center gap-0.5">
-              {source !== 'kobo-store' && (
-                <span className="px-1 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wide bg-black/60 backdrop-blur-sm text-white">
-                  {sourceLabel[source]}
-                </span>
-              )}
-              {contentType && (
-                <span className="px-1 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wide bg-black/60 backdrop-blur-sm text-white">
-                  {contentType}
-                </span>
-              )}
-            </div>
-          </div>
+          <div className="relative aspect-[3/4] h-20 p-2">{renderCover()}</div>
           <CardContent className="flex items-center justify-between w-full pl-2 pr-4">
             <div className="flex-1">
               <div className="space-y-1">
@@ -215,6 +198,16 @@ export const BookListCard = React.memo(function BookListCard({
                   >
                     {bookTitle}
                   </h3>
+                  {source !== 'kobo-store' && (
+                    <span className="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wide bg-muted text-muted-foreground">
+                      {sourceLabel[source]}
+                    </span>
+                  )}
+                  {contentType && (
+                    <span className="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wide bg-muted text-muted-foreground">
+                      {contentType}
+                    </span>
+                  )}
                   <p title={author} className="text-sm text-muted-foreground">
                     {(() => {
                       const authorsArray = (author || '').split(', ')
