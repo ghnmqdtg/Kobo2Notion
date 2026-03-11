@@ -1,15 +1,7 @@
-import { CheckSquare, Filter, LayoutGrid, List } from "lucide-react";
+import { CheckSquare, LayoutGrid, List } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
-import { Button } from "@/components/ui/button";
 import { BookSource } from "../../../../backend/models";
-import {
-    DropdownMenu,
-    DropdownMenuCheckboxItem,
-    DropdownMenuContent,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface HeaderProps {
     selectAll: boolean;
@@ -18,7 +10,7 @@ interface HeaderProps {
     setIsGridView: (isGrid: boolean) => void;
     isDisabled: boolean;
     sourceFilter: Set<BookSource>;
-    onSourceFilterChange: (source: BookSource) => void;
+    setSourceFilter: (filter: Set<BookSource>) => void;
 }
 
 const sources: { value: BookSource; label: string }[] = [
@@ -33,37 +25,30 @@ export function Header({
     setIsGridView,
     isDisabled,
     sourceFilter,
-    onSourceFilterChange,
+    setSourceFilter,
 }: HeaderProps) {
-    const allSelected = sourceFilter.size === sources.length;
-
     return (
         <div className="flex justify-between items-center p-4 pb-0">
             <h1 className="text-2xl font-bold">Your Books</h1>
 
             <div className="flex items-center gap-2">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="gap-1.5" disabled={isDisabled}>
-                            <Filter className="h-4 w-4" />
-                            <span>Source{!allSelected && ` (${sourceFilter.size})`}</span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Filter by source</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {sources.map(({ value, label }) => (
-                            <DropdownMenuCheckboxItem
-                                key={value}
-                                checked={sourceFilter.has(value)}
-                                onCheckedChange={() => onSourceFilterChange(value)}
-                                onSelect={(e) => e.preventDefault()}
-                            >
-                                {label}
-                            </DropdownMenuCheckboxItem>
-                        ))}
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                <ToggleGroup
+                    type="multiple"
+                    value={Array.from(sourceFilter)}
+                    onValueChange={(value: string[]) => {
+                        if (value.length === 0) return;
+                        setSourceFilter(new Set(value as BookSource[]));
+                    }}
+                    variant="outline"
+                    size="sm"
+                    disabled={isDisabled}
+                >
+                    {sources.map(({ value, label }) => (
+                        <ToggleGroupItem key={value} value={value}>
+                            {label}
+                        </ToggleGroupItem>
+                    ))}
+                </ToggleGroup>
 
                 <Toggle
                     pressed={selectAll}

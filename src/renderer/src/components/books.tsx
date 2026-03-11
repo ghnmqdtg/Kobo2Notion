@@ -74,17 +74,6 @@ export function Books({ onExportStateChange }: BooksProps) {
     [books, sourceFilter]
   );
 
-  const handleSourceFilterChange = (source: BookSource) => {
-    setSourceFilter(prev => {
-      const next = new Set(prev);
-      if (next.has(source)) {
-        if (next.size > 1) next.delete(source);
-      } else {
-        next.add(source);
-      }
-      return next;
-    });
-  };
 
   useEffect(() => {
     loadBooks();
@@ -167,7 +156,7 @@ export function Books({ onExportStateChange }: BooksProps) {
           setIsGridView={setIsGridView}
           isDisabled={isExporting || isCanceling || isChecking}
           sourceFilter={sourceFilter}
-          onSourceFilterChange={handleSourceFilterChange}
+          setSourceFilter={setSourceFilter}
         />
         <BookDisplay
           isGridView={isGridView}
