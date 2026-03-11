@@ -20,20 +20,34 @@ interface SettingsValues {
   SQLITE_SOURCE: string;
   NOTION_API: string;
   NOTION_DB: string;
-  GEMINI_API: string;
+  LLM_PROVIDER: string;
+  LLM_API_KEY: string;
+  LLM_MODEL: string;
   SUMMARIZE_ENABLED: boolean;
-  GEMINI_MODEL: string;
   SUMMARIZE_LANGUAGE: string;
 }
+
+const modelsByProvider: Record<string, string[]> = {
+  google: ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"],
+  openai: ["gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-4.1-mini"],
+  anthropic: ["claude-sonnet-4-5-20250514", "claude-haiku-4-5-20251001"],
+};
+
+const providerLabels: Record<string, string> = {
+  google: "Google Gemini",
+  openai: "OpenAI",
+  anthropic: "Anthropic Claude",
+};
 
 export function Settings() {
   const [values, setValues] = useState<SettingsValues>({
     SQLITE_SOURCE: window.env.SQLITE_SOURCE || "",
     NOTION_API: window.env.NOTION_API_KEY || "",
     NOTION_DB: window.env.NOTION_DATABASE_ID || "",
-    GEMINI_API: window.env.GEMINI_API_KEY || "",
+    LLM_PROVIDER: window.env.LLM_PROVIDER || "",
+    LLM_API_KEY: window.env.LLM_API_KEY || "",
+    LLM_MODEL: window.env.LLM_MODEL || "",
     SUMMARIZE_ENABLED: window.env.SUMMARIZE_ENABLED || false,
-    GEMINI_MODEL: window.env.GEMINI_MODEL || "gemini-2.5-flash",
     SUMMARIZE_LANGUAGE: window.env.SUMMARIZE_LANGUAGE || "en",
   });
   const [isSaving, setIsSaving] = useState(false);
@@ -55,13 +69,23 @@ export function Settings() {
     setValues((prev) => ({ ...prev, [key]: value }));
   };
 
+  const handleProviderChange = (provider: string) => {
+    const models = modelsByProvider[provider] || [];
+    setValues((prev) => ({
+      ...prev,
+      LLM_PROVIDER: provider,
+      LLM_MODEL: models[0] || "",
+    }));
+  };
+
   const handleSummarizeToggle = (enabled: boolean) => {
     setValues((prev) => ({
       ...prev,
       SUMMARIZE_ENABLED: enabled,
-      GEMINI_MODEL: enabled ? "gemini-2.5-flash" : "",
-      // Reset API key if disabled
-      // GEMINI_API: enabled ? prev.GEMINI_API : "",
+      LLM_PROVIDER: enabled ? prev.LLM_PROVIDER || "google" : prev.LLM_PROVIDER,
+      LLM_MODEL: enabled
+        ? prev.LLM_MODEL || modelsByProvider[prev.LLM_PROVIDER || "google"]?.[0] || ""
+        : prev.LLM_MODEL,
     }));
   };
 
@@ -73,7 +97,7 @@ export function Settings() {
     ];
 
     if (values.SUMMARIZE_ENABLED) {
-      requiredFields.push(values.GEMINI_API);
+      requiredFields.push(values.LLM_API_KEY);
     }
 
     return requiredFields.every((field) => field.trim() !== "");
@@ -133,6 +157,8 @@ export function Settings() {
       });
     }
   };
+
+  const availableModels = modelsByProvider[values.LLM_PROVIDER] || [];
 
   return (
     <>
@@ -205,20 +231,41 @@ export function Settings() {
               {values.SUMMARIZE_ENABLED && (
                 <>
                   <div className="space-y-2">
+                    <label className="text-md font-medium">Provider</label>
+                    <Select
+                      value={values.LLM_PROVIDER}
+                      onValueChange={handleProviderChange}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(providerLabels).map(([value, label]) => (
+                          <SelectItem key={value} value={value}>
+                            {label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
                     <label className="text-md font-medium">Model</label>
                     <Select
-                      value={values.GEMINI_MODEL}
+                      value={values.LLM_MODEL}
                       onValueChange={(value) =>
-                        handleChange("GEMINI_MODEL", value)
+                        handleChange("LLM_MODEL", value)
                       }
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="gemini-2.5-flash">
-                          gemini-2.5-flash
-                        </SelectItem>
+                        {availableModels.map((model) => (
+                          <SelectItem key={model} value={model}>
+                            {model}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -247,12 +294,12 @@ export function Settings() {
 
                   <div className="space-y-2">
                     <label className="text-md font-medium">
-                      Gemini API Key
+                      API Key
                     </label>
                     <PasswordInput
-                      value={values.GEMINI_API}
+                      value={values.LLM_API_KEY}
                       onChange={(e) =>
-                        handleChange("GEMINI_API", e.target.value)
+                        handleChange("LLM_API_KEY", e.target.value)
                       }
                     />
                   </div>

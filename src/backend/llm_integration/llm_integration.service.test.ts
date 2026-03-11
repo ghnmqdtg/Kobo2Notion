@@ -1,19 +1,19 @@
 import { describe, expect, beforeAll, it } from "@jest/globals";
-import { GeminiService } from "./llm_integration.service";
+import { LLMService } from "./llm_integration.service";
 import { Bookmark } from "../models";
 import { env } from "../../config/env.config";
 
 // **Important:**
-// 1. Set your GEMINI_API_KEY in your environment variables (e.g., in a .env file).
+// 1. Set your LLM_PROVIDER, LLM_API_KEY, and LLM_MODEL in your environment variables (e.g., in a .env file).
 // 2. Be mindful of the API usage limits and costs when running tests that make real API calls.
 // 3. Consider using a separate test API key with restricted permissions or usage limits.
 
-describe("GeminiService (Integration Tests)", () => {
-  let service: GeminiService;
+describe("LLMService (Integration Tests)", () => {
+  let service: LLMService;
 
   beforeAll(() => {
     // Initialize the service before running any tests
-    service = new GeminiService();
+    service = new LLMService();
   });
 
   describe("summarizeBookmarks", () => {

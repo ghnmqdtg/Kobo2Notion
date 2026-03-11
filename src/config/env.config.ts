@@ -2,8 +2,9 @@ export interface EnvironmentConfig {
   SQLITE_SOURCE: string;
   NOTION_API_KEY: string;
   NOTION_DATABASE_ID: string;
-  GEMINI_API_KEY: string;
-  GEMINI_MODEL: string;
+  LLM_PROVIDER: string;
+  LLM_API_KEY: string;
+  LLM_MODEL: string;
   SUMMARIZE_ENABLED: boolean;
   SUMMARIZE_LANGUAGE: string;
   THEME: string;
@@ -17,21 +18,31 @@ const defaultConfig: EnvironmentConfig = {
       : "",
   NOTION_API_KEY: "",
   NOTION_DATABASE_ID: "",
-  GEMINI_API_KEY: "",
-  GEMINI_MODEL: "gemini-2.5-flash",
+  LLM_PROVIDER: "",
+  LLM_API_KEY: "",
+  LLM_MODEL: "",
   SUMMARIZE_ENABLED: false,
   SUMMARIZE_LANGUAGE: "zh",
   THEME: "light",
 };
 
 const initConfig = (): EnvironmentConfig => {
+  // Backwards compat: map legacy GEMINI_API / GEMINI_MODEL env vars
+  const legacyProvider = process.env.GEMINI_API ? "google" : "";
+  const legacyApiKey = process.env.GEMINI_API || "";
+  const legacyModel = process.env.GEMINI_MODEL || "";
+
   const config: EnvironmentConfig = {
     SQLITE_SOURCE: process.env.SQLITE_SOURCE || defaultConfig.SQLITE_SOURCE,
     NOTION_API_KEY: process.env.NOTION_API || defaultConfig.NOTION_API_KEY,
     NOTION_DATABASE_ID:
       process.env.NOTION_DB || defaultConfig.NOTION_DATABASE_ID,
-    GEMINI_API_KEY: process.env.GEMINI_API || defaultConfig.GEMINI_API_KEY,
-    GEMINI_MODEL: process.env.GEMINI_MODEL || defaultConfig.GEMINI_MODEL,
+    LLM_PROVIDER:
+      process.env.LLM_PROVIDER || legacyProvider || defaultConfig.LLM_PROVIDER,
+    LLM_API_KEY:
+      process.env.LLM_API_KEY || legacyApiKey || defaultConfig.LLM_API_KEY,
+    LLM_MODEL:
+      process.env.LLM_MODEL || legacyModel || defaultConfig.LLM_MODEL,
     SUMMARIZE_ENABLED:
       process.env.SUMMARIZE_ENABLED === "true" ||
       defaultConfig.SUMMARIZE_ENABLED,

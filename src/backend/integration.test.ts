@@ -1,20 +1,20 @@
 import { describe, expect, beforeAll, afterAll, it } from "@jest/globals";
 import { KoboService } from "./kobo/kobo.service";
 import { NotionService } from "./notion/notion.service";
-import { GeminiService } from "./llm_integration/llm_integration.service";
+import { LLMService } from "./llm_integration/llm_integration.service";
 import { env } from "../config/env.config";
 import { Book, Bookmark } from "./models";
 
 describe("Kobo to Notion Workflow Integration", () => {
   let koboService: KoboService;
   let notionService: NotionService;
-  let geminiService: GeminiService;
+  let llmService: LLMService;
 
   beforeAll(async () => {
     // Initialize all services
     koboService = new KoboService();
     notionService = new NotionService();
-    geminiService = new GeminiService();
+    llmService = new LLMService();
 
     // Connect to Kobo database
     await koboService.connect();
@@ -53,7 +53,7 @@ describe("Kobo to Notion Workflow Integration", () => {
     // 5. Generate and sync summary if enabled
     if (env.SUMMARIZE_ENABLED) {
       console.log("Generating summary...");
-      const summary = await geminiService.summarizeBookmarks(
+      const summary = await llmService.summarizeBookmarks(
         testBook.bookTitle,
         bookmarks,
         env.SUMMARIZE_LANGUAGE,
@@ -94,7 +94,7 @@ describe("Kobo to Notion Workflow Integration", () => {
   //         await notionService.syncBookmarks(highlightPageId, bookmarks);
 
   //         if (env.SUMMARIZE_ENABLED) {
-  //             const summary = await geminiService.summarizeBookmarks(
+  //             const summary = await llmService.summarizeBookmarks(
   //                 book.bookTitle,
   //                 bookmarks,
   //                 env.SUMMARIZE_LANGUAGE

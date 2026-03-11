@@ -2,7 +2,7 @@ import { contextBridge, ipcRenderer } from "electron";
 import { electronAPI } from "@electron-toolkit/preload";
 import { KoboService } from "../backend/kobo/kobo.service";
 import { NotionService } from "../backend/notion/notion.service";
-import { GeminiService } from "../backend/llm_integration/llm_integration.service";
+import { LLMService } from "../backend/llm_integration/llm_integration.service";
 import { env } from "../config/env.config";
 import { fetchBookCover } from "../backend/utils";
 import { Book } from "../backend/models";
@@ -11,7 +11,7 @@ import { Bookmark } from "../backend/models";
 
 const koboService = new KoboService();
 const notionService = new NotionService();
-const geminiService = new GeminiService();
+const llmService = new LLMService();
 
 // Reload env values once the env file is updated
 const reloadEnvValues = (entries: { key: string; value: string; }[]) => {
@@ -48,7 +48,7 @@ const api = {
     await koboService.connect();
     const bookmarks = await koboService.getBookmarks(book.bookTitle);
 
-    const summary = await geminiService.summarizeBookmarks(
+    const summary = await llmService.summarizeBookmarks(
       book.bookTitle,
       bookmarks,
       env.SUMMARIZE_LANGUAGE,

@@ -1,23 +1,23 @@
-import {
-  GoogleGenerativeAI,
-  GenerateContentRequest,
-  GenerateContentResult,
-} from "@google/generative-ai";
+import { generateText } from "ai";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createOpenAI } from "@ai-sdk/openai";
+import { createAnthropic } from "@ai-sdk/anthropic";
 import { Bookmark } from "../models";
 import { env } from "../../config/env.config";
 
-export class GeminiService {
-  private genAI: GoogleGenerativeAI;
-  private model: any;
-  // private summarizeEnabled: boolean;
-  // private summarizeLanguage: string;
-
-  constructor() {
-    this.genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
-    this.model = this.genAI.getGenerativeModel({ model: env.GEMINI_MODEL });
-    // We don't set these variables in the constructor because we want to pass them in the function call
-    // this.summarizeEnabled = env.SUMMARIZE_ENABLED;
-    // this.summarizeLanguage = env.SUMMARIZE_LANGUAGE;
+export class LLMService {
+  private getModel() {
+    const { LLM_PROVIDER, LLM_API_KEY, LLM_MODEL } = env;
+    switch (LLM_PROVIDER) {
+      case "google":
+        return createGoogleGenerativeAI({ apiKey: LLM_API_KEY })(LLM_MODEL);
+      case "openai":
+        return createOpenAI({ apiKey: LLM_API_KEY })(LLM_MODEL);
+      case "anthropic":
+        return createAnthropic({ apiKey: LLM_API_KEY })(LLM_MODEL);
+      default:
+        throw new Error(`Unsupported LLM provider: ${LLM_PROVIDER}`);
+    }
   }
 
   async summarizeBookmarks(
@@ -27,13 +27,10 @@ export class GeminiService {
   ): Promise<string> {
     const content = bookmarks.map((b) => b.highlight).join("\n");
     const prompt = this.generatePrompt(bookTitle, content, summarizeLanguage);
-    const request: GenerateContentRequest = {
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-    };
-    const result: GenerateContentResult =
-      await this.model.generateContent(request);
-    const response = await result.response;
-    const text = response.text();
+    const { text } = await generateText({
+      model: this.getModel(),
+      prompt,
+    });
     return text;
   }
 
