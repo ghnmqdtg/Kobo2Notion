@@ -1,6 +1,6 @@
 import sqlite3 from "sqlite3";
 import { open, Database } from "sqlite";
-import { Book, BookSource, Bookmark } from "../models"; // Create a models.ts to define types
+import { Book, BookContentType, BookSource, Bookmark } from "../models";
 import { env } from "../../config/env.config";
 
 export class KoboService {
@@ -51,6 +51,12 @@ export class KoboService {
     if (mimeType === 'application/x-kobo-html+instapaper') return 'instapaper';
     if (mimeType === 'application/epub+zip' || mimeType === 'application/pdf') return 'external';
     return 'kobo-store';
+  }
+
+  private mimeTypeToContentType(mimeType: string): BookContentType {
+    if (mimeType === 'application/epub+zip') return 'epub';
+    if (mimeType === 'application/pdf') return 'pdf';
+    return null;
   }
 
   async getBooks(): Promise<Book[]> {
@@ -125,6 +131,7 @@ export class KoboService {
         imageId: book.imageId,
         bookmarkCount: countMap.get(cleanedContentId) || 0,
         source: this.mimeTypeToSource(book.mimeType),
+        contentType: this.mimeTypeToContentType(book.mimeType),
       };
     });
 

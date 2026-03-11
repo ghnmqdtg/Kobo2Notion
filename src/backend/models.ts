@@ -2,6 +2,7 @@
 
 // Kobo Models
 export type BookSource = 'kobo-store' | 'instapaper' | 'external';
+export type BookContentType = 'epub' | 'pdf' | null;
 
 export interface Book {
   bookTitle: string;
@@ -15,6 +16,7 @@ export interface Book {
   imageId: string | null;
   bookmarkCount?: number; // Optional for backward compatibility
   source: BookSource;
+  contentType: BookContentType;
 }
 
 export interface Bookmark {

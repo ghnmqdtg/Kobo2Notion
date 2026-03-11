@@ -35,11 +35,6 @@ const sourceLabel: Record<string, string> = {
   'external': 'External',
 };
 
-const sourceColor: Record<string, string> = {
-  'kobo-store': 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-  'external': 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
-};
-
 export function BookListCard({
   bookTitle,
   author,
@@ -47,6 +42,7 @@ export function BookListCard({
   imageId,
   bookmarkCount,
   source,
+  contentType,
   isSelected,
   onSelect,
   onPreview,
@@ -58,7 +54,8 @@ export function BookListCard({
 
   // Check if book has no progress
   const hasNoProgress = readPercent === 0;
-  const isDisabled = hasNoProgress || isProcessing;
+  const isPdfNoBookmarks = contentType === 'pdf' && (!bookmarkCount || bookmarkCount <= 0);
+  const isDisabled = hasNoProgress || isPdfNoBookmarks || isProcessing;
 
   const renderCover = () => {
     if (isCoverLoading) {
@@ -97,7 +94,7 @@ export function BookListCard({
         "relative rounded-lg",
         "before:absolute before:inset-0 before:rounded-lg before:transition-all",
         "before:pointer-events-none",
-        hasNoProgress && "opacity-60",
+        (hasNoProgress || isPdfNoBookmarks) && "opacity-60",
         isSelected && !isExporting && !hasNoProgress
           ? "before:border-2 before:border-primary before:-m-[2px]"
           : "before:border before:border-border",
@@ -106,18 +103,32 @@ export function BookListCard({
         isExported && !isExporting && "before:border-2 before:border-green-500 before:-m-[2px]",
       )}
     >
-      {hasNoProgress ? (
+      {(hasNoProgress || isPdfNoBookmarks) ? (
         <Tooltip>
           <TooltipTrigger asChild>
             <Card
               className={cn(
                 "flex overflow-hidden rounded-lg",
                 isDisabled ? "cursor-not-allowed" : "cursor-pointer",
-                hasNoProgress && "text-muted-foreground"
+                (hasNoProgress || isPdfNoBookmarks) && "text-muted-foreground"
               )}
               onClick={isDisabled ? undefined : onSelect}
             >
-              <div className="aspect-[3/4] h-20 p-2">{renderCover()}</div>
+              <div className="relative aspect-[3/4] h-20 p-2">
+                {renderCover()}
+                <div className="absolute top-1 right-1 flex items-center gap-0.5">
+                  {source !== 'kobo-store' && (
+                    <span className="px-1 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wide bg-black/60 backdrop-blur-sm text-white">
+                      {sourceLabel[source]}
+                    </span>
+                  )}
+                  {contentType && (
+                    <span className="px-1 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wide bg-black/60 backdrop-blur-sm text-white">
+                      {contentType}
+                    </span>
+                  )}
+                </div>
+              </div>
               <CardContent className="flex items-center justify-between w-full pl-2 pr-4">
                 <div className="flex-1">
                   <div className="space-y-1">
@@ -130,11 +141,6 @@ export function BookListCard({
                       >
                         {bookTitle}
                       </h3>
-                      {source !== 'kobo-store' && (
-                        <span className={cn("shrink-0 px-1.5 py-0.5 rounded text-xs font-medium", sourceColor[source])}>
-                          {sourceLabel[source]}
-                        </span>
-                      )}
                       <p title={author} className="text-sm text-muted-foreground">
                         {(() => {
                           const authorsArray = (author || "").split(", ");
@@ -175,7 +181,7 @@ export function BookListCard({
             </Card>
           </TooltipTrigger>
           <TooltipContent side="bottom">
-            <p>No bookmarks found (｡ŏ_ŏ)</p>
+            <p>{isPdfNoBookmarks ? "PDF books don't support highlights" : "No bookmarks found (｡ŏ_ŏ)"}</p>
           </TooltipContent>
         </Tooltip>
       ) : (
@@ -183,11 +189,24 @@ export function BookListCard({
           className={cn(
             "flex overflow-hidden rounded-lg",
             isDisabled ? "cursor-not-allowed" : "cursor-pointer",
-            hasNoProgress && "text-muted-foreground"
           )}
           onClick={isDisabled ? undefined : onSelect}
         >
-          <div className="aspect-[3/4] h-20 p-2">{renderCover()}</div>
+          <div className="relative aspect-[3/4] h-20 p-2">
+            {renderCover()}
+            <div className="absolute top-1 right-1 flex items-center gap-0.5">
+              {source !== 'kobo-store' && (
+                <span className="px-1 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wide bg-black/60 backdrop-blur-sm text-white">
+                  {sourceLabel[source]}
+                </span>
+              )}
+              {contentType && (
+                <span className="px-1 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wide bg-black/60 backdrop-blur-sm text-white">
+                  {contentType}
+                </span>
+              )}
+            </div>
+          </div>
           <CardContent className="flex items-center justify-between w-full pl-2 pr-4">
             <div className="flex-1">
               <div className="space-y-1">

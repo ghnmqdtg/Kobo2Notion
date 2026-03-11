@@ -35,11 +35,6 @@ const sourceLabel: Record<string, string> = {
   'external': 'External',
 };
 
-const sourceColor: Record<string, string> = {
-  'kobo-store': 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-  'external': 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
-};
-
 function BookCard({
   bookTitle,
   subtitle,
@@ -49,6 +44,7 @@ function BookCard({
   imageId,
   bookmarkCount,
   source,
+  contentType,
   isSelected,
   onSelect,
   onPreview,
@@ -60,7 +56,8 @@ function BookCard({
 
   // Check if book has no progress
   const hasNoProgress = readPercent === 0;
-  const isDisabled = hasNoProgress || isProcessing;
+  const isPdfNoBookmarks = contentType === 'pdf' && (!bookmarkCount || bookmarkCount <= 0);
+  const isDisabled = hasNoProgress || isPdfNoBookmarks || isProcessing;
 
   const renderCover = () => {
     if (isCoverLoading) {
@@ -99,7 +96,7 @@ function BookCard({
         "relative rounded-lg h-full",
         "before:absolute before:inset-0 before:rounded-lg before:transition-all",
         "before:pointer-events-none",
-        hasNoProgress && "opacity-60",
+        (hasNoProgress || isPdfNoBookmarks) && "opacity-60",
         isSelected && !isExporting && !hasNoProgress
           ? "before:border-2 before:border-primary before:-m-[2px]"
           : "before:border before:border-border",
@@ -108,23 +105,37 @@ function BookCard({
         isExported && !isExporting && "before:border-2 before:border-green-500 before:-m-[2px]",
       )}
     >
-      {hasNoProgress ? (
+      {(hasNoProgress || isPdfNoBookmarks) ? (
         <Tooltip>
           <TooltipTrigger asChild>
             <Card
               className={cn(
                 "flex flex-col overflow-hidden rounded-lg h-full",
                 isDisabled ? "cursor-not-allowed" : "cursor-pointer",
-                hasNoProgress && "text-muted-foreground"
+                (hasNoProgress || isPdfNoBookmarks) && "text-muted-foreground"
               )}
               onClick={isDisabled ? undefined : onSelect}
             >
-              <div className="relative aspect-[3/4] w-full p-4">{renderCover()}</div>
+              <div className="relative aspect-[3/4] w-full p-4">
+                {renderCover()}
+                <div className="absolute top-5 right-5 flex items-center gap-1">
+                  {source !== 'kobo-store' && (
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-black/60 backdrop-blur-sm text-white">
+                      {sourceLabel[source]}
+                    </span>
+                  )}
+                  {contentType && (
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-black/60 backdrop-blur-sm text-white">
+                      {contentType}
+                    </span>
+                  )}
+                </div>
+              </div>
               <CardContent className="flex-1 p-4 pt-0 pb-4">
                 <div className="space-y-1">
                   <h3 className={cn(
                     "font-bold line-clamp-2",
-                    hasNoProgress && "text-muted-foreground"
+                    (hasNoProgress || isPdfNoBookmarks) && "text-muted-foreground"
                   )}>{bookTitle}</h3>
                   <p title={author} className="text-sm text-muted-foreground">
                     {(() => {
@@ -137,11 +148,6 @@ function BookCard({
                       return `${firstThreeAuthors}${remainingAuthors}`;
                     })()}
                   </p>
-                  {source !== 'kobo-store' && (
-                    <span className={cn("inline-block px-1.5 py-0.5 rounded text-xs font-medium", sourceColor[source])}>
-                      {sourceLabel[source]}
-                    </span>
-                  )}
                 </div>
               </CardContent>
               <CardFooter className="flex items-center p-4 pt-0 mt-auto text-sm text-muted-foreground">
@@ -162,7 +168,7 @@ function BookCard({
             </Card>
           </TooltipTrigger>
           <TooltipContent side="bottom">
-            <p>No bookmarks found (｡ŏ_ŏ)</p>
+            <p>{isPdfNoBookmarks ? "PDF books don't support highlights" : "No bookmarks found (｡ŏ_ŏ)"}</p>
           </TooltipContent>
         </Tooltip>
       ) : (
@@ -170,16 +176,28 @@ function BookCard({
           className={cn(
             "flex flex-col overflow-hidden rounded-lg h-full",
             isDisabled ? "cursor-not-allowed" : "cursor-pointer",
-            hasNoProgress && "text-muted-foreground"
           )}
           onClick={isDisabled ? undefined : onSelect}
         >
-          <div className="relative aspect-[3/4] w-full p-4">{renderCover()}</div>
+          <div className="relative aspect-[3/4] w-full p-4">
+            {renderCover()}
+            <div className="absolute top-5 right-5 flex items-center gap-1">
+              {source !== 'kobo-store' && (
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-black/60 backdrop-blur-sm text-white">
+                  {sourceLabel[source]}
+                </span>
+              )}
+              {contentType && (
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-black/60 backdrop-blur-sm text-white">
+                  {contentType}
+                </span>
+              )}
+            </div>
+          </div>
           <CardContent className="flex-1 p-4 pt-0 pb-4">
             <div className="space-y-1">
               <h3 className={cn(
                 "font-bold line-clamp-2",
-                hasNoProgress && "text-muted-foreground"
               )}>{bookTitle}</h3>
               <p title={author} className="text-sm text-muted-foreground">
                 {(() => {
@@ -192,11 +210,6 @@ function BookCard({
                   return `${firstThreeAuthors}${remainingAuthors}`;
                 })()}
               </p>
-              {source !== 'kobo-store' && (
-                <span className={cn("inline-block px-1.5 py-0.5 rounded text-xs font-medium", sourceColor[source])}>
-                  {sourceLabel[source]}
-                </span>
-              )}
             </div>
           </CardContent>
           <CardFooter className="flex items-center p-4 pt-0 mt-auto text-sm text-muted-foreground">
