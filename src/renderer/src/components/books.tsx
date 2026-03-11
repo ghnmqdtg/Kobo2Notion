@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { Book, BookSource } from "../../../backend/models";
+import { Book } from "../../../backend/models";
 import { Footer } from "@/components/footer";
 import { ConfirmOverwriteDialog } from "./confirm-overwrite-dialog";
 import { DeletePagesDialog } from "./delete-pages-dialog";
@@ -24,9 +24,6 @@ export function Books({ onExportStateChange }: BooksProps) {
   // UI states
   const [isGridView, setIsGridView] = useState(true);
   const [selectAll, setSelectAll] = useState(false);
-  const [sourceFilter, setSourceFilter] = useState<Set<BookSource>>(
-    new Set(['kobo-store', 'external'])
-  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
@@ -69,11 +66,6 @@ export function Books({ onExportStateChange }: BooksProps) {
   // Toast
   const { toast } = useToast();
 
-  const filteredBooks = useMemo(
-    () => books.filter(book => sourceFilter.has(book.source)),
-    [books, sourceFilter]
-  );
-
 
   useEffect(() => {
     loadBooks();
@@ -91,7 +83,7 @@ export function Books({ onExportStateChange }: BooksProps) {
   }, [error, retryCount]);
 
   useEffect(() => {
-    const selectableBooks = filteredBooks.filter((book) => book.readPercent > 0);
+    const selectableBooks = books.filter((book) => book.readPercent > 0);
     if (selectAll) {
       const allBookTitles = selectableBooks.map((book) => book.bookTitle);
       setSelectedBooks(new Set(allBookTitles));
@@ -100,7 +92,7 @@ export function Books({ onExportStateChange }: BooksProps) {
         setSelectedBooks(new Set());
       }
     }
-  }, [selectAll, filteredBooks]);
+  }, [selectAll, books]);
 
   const loadBooks = async () => {
     setIsLoading(true);
@@ -118,8 +110,8 @@ export function Books({ onExportStateChange }: BooksProps) {
     }
   };
 
-  const handleSelectBook = (bookTitle: string) => {
-    const selectableBookCount = filteredBooks.filter((book) => book.readPercent > 0).length;
+  const handleSelectBook = useCallback((bookTitle: string) => {
+    const selectableBookCount = books.filter((book) => book.readPercent > 0).length;
     setSelectedBooks((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(bookTitle)) {
@@ -131,12 +123,12 @@ export function Books({ onExportStateChange }: BooksProps) {
       }
       return newSet;
     });
-  };
+  }, [books]);
 
-  const handlePreviewBookmarks = (bookTitle: string) => {
+  const handlePreviewBookmarks = useCallback((bookTitle: string) => {
     setPreviewBookTitle(bookTitle);
     setIsPreviewOpen(true);
-  };
+  }, []);
 
   if (error) {
     return <ErrorDisplay error={error} onRetry={loadBooks} retryCount={retryCount} maxRetries={maxRetries} />;
@@ -155,12 +147,10 @@ export function Books({ onExportStateChange }: BooksProps) {
           isGridView={isGridView}
           setIsGridView={setIsGridView}
           isDisabled={isExporting || isCanceling || isChecking}
-          sourceFilter={sourceFilter}
-          setSourceFilter={setSourceFilter}
         />
         <BookDisplay
           isGridView={isGridView}
-          books={filteredBooks}
+          books={books}
           selectedBooks={selectedBooks}
           onSelectBook={handleSelectBook}
           onPreviewBookmarks={handlePreviewBookmarks}

@@ -1,7 +1,5 @@
 import { CheckSquare, LayoutGrid, List } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
-import { BookSource } from "../../../../backend/models";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface HeaderProps {
     selectAll: boolean;
@@ -9,14 +7,7 @@ interface HeaderProps {
     isGridView: boolean;
     setIsGridView: (isGrid: boolean) => void;
     isDisabled: boolean;
-    sourceFilter: Set<BookSource>;
-    setSourceFilter: (filter: Set<BookSource>) => void;
 }
-
-const sources: { value: BookSource; label: string }[] = [
-    { value: "kobo-store", label: "Kobo" },
-    { value: "external", label: "External" },
-];
 
 export function Header({
     selectAll,
@@ -24,32 +15,12 @@ export function Header({
     isGridView,
     setIsGridView,
     isDisabled,
-    sourceFilter,
-    setSourceFilter,
 }: HeaderProps) {
     return (
         <div className="flex justify-between items-center p-4 pb-0">
             <h1 className="text-2xl font-bold">Your Books</h1>
 
             <div className="flex items-center gap-2">
-                <ToggleGroup
-                    type="multiple"
-                    value={Array.from(sourceFilter)}
-                    onValueChange={(value: string[]) => {
-                        if (value.length === 0) return;
-                        setSourceFilter(new Set(value as BookSource[]));
-                    }}
-                    variant="outline"
-                    size="sm"
-                    disabled={isDisabled}
-                >
-                    {sources.map(({ value, label }) => (
-                        <ToggleGroupItem key={value} value={value}>
-                            {label}
-                        </ToggleGroupItem>
-                    ))}
-                </ToggleGroup>
-
                 <Toggle
                     pressed={selectAll}
                     onPressedChange={setSelectAll}
