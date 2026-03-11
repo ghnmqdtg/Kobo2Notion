@@ -11,10 +11,10 @@ files:
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
 extraResources:
-  - from: ".env.example"
-    to: ".env.example"
-  - from: ".env.example"
-    to: ".env"
+  - from: '.env.example'
+    to: '.env.example'
+  - from: '.env.example'
+    to: '.env'
 asarUnpack:
   - resources/**
 win:

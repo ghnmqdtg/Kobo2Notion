@@ -1,9 +1,9 @@
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { useNetworkState } from "@uidotdev/usehooks";
-import { AlertCircle, Loader2, XCircle } from "lucide-react";
-import { useState } from "react";
-import { useEffect } from "react";
+import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
+import { useNetworkState } from '@uidotdev/usehooks'
+import { AlertCircle, Loader2, XCircle } from 'lucide-react'
+import { useState } from 'react'
+import { useEffect } from 'react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,19 +12,19 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog'
 
 interface FooterProps {
-  selectedCount: number;
-  isExporting: boolean;
-  isCanceling: boolean;
-  isChecking?: boolean;
-  currentBook?: string;
-  currentStep?: string;
-  completed: number;
-  onExport: () => void;
-  onCancel: () => void;
+  selectedCount: number
+  isExporting: boolean
+  isCanceling: boolean
+  isChecking?: boolean
+  currentBook?: string
+  currentStep?: string
+  completed: number
+  onExport: () => void
+  onCancel: () => void
 }
 
 export function Footer({
@@ -36,27 +36,24 @@ export function Footer({
   currentStep,
   completed,
   onExport,
-  onCancel,
+  onCancel
 }: FooterProps) {
-  const isOnline = useNetworkState();
-  const [showCancelDialog, setShowCancelDialog] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
+  const isOnline = useNetworkState()
+  const [showCancelDialog, setShowCancelDialog] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
 
   const handleCancelClick = () => {
-    setShowCancelDialog(true);
-  };
+    setShowCancelDialog(true)
+  }
 
   const handleConfirmCancel = () => {
-    setShowCancelDialog(false);
-    onCancel();
-  };
+    setShowCancelDialog(false)
+    onCancel()
+  }
 
   return (
     <>
-      <div
-        id="footer"
-        className="w-4/5 fixed bottom-0 bg-background backdrop-blur-none border-t"
-      >
+      <div id="footer" className="w-4/5 fixed bottom-0 bg-background backdrop-blur-none border-t">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex flex-col gap-2 flex-1 mr-4">
             {!isOnline.online ? (
@@ -67,9 +64,7 @@ export function Footer({
                 </span>
               </div>
             ) : isChecking ? (
-              <div className="text-md font-bold">
-                Checking for existing pages...
-              </div>
+              <div className="text-md font-bold">Checking for existing pages...</div>
             ) : isExporting ? (
               <>
                 <div className="flex justify-between text-sm text-muted-foreground">
@@ -81,24 +76,24 @@ export function Footer({
                   )}
                 </div>
                 <Progress value={(completed / selectedCount) * 100} />
-              </>)
-              : (
-                <div className="text-md font-bold">
-                  {selectedCount > 0
-                    ? `${selectedCount} book${selectedCount > 1 ? "s" : ""} selected`
-                    : "Select books to export"}
-                </div>
-              )}
+              </>
+            ) : (
+              <div className="text-md font-bold">
+                {selectedCount > 0
+                  ? `${selectedCount} book${selectedCount > 1 ? 's' : ''} selected`
+                  : 'Select books to export'}
+              </div>
+            )}
           </div>
           <Button
-            className={`text-md font-bold ${!isOnline.online ? "bg-destructive/60" : ""}`}
+            className={`text-md font-bold ${!isOnline.online ? 'bg-destructive/60' : ''}`}
             onClick={isExporting && !isCanceling ? handleCancelClick : onExport}
             disabled={selectedCount === 0 || !isOnline.online || isChecking || isCanceling}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
             {!isOnline.online ? (
-              "No Network Connection ;("
+              'No Network Connection ;('
             ) : isExporting ? (
               <div className="flex items-center space-x-2 justify-center">
                 {isCanceling ? (
@@ -124,7 +119,7 @@ export function Footer({
                 <span>Checking...</span>
               </div>
             ) : (
-              "Export to Notion"
+              'Export to Notion'
             )}
           </Button>
         </div>
@@ -140,12 +135,10 @@ export function Footer({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Continue Exporting</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmCancel}>
-              Yes, Cancel Export
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleConfirmCancel}>Yes, Cancel Export</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </>
-  );
+  )
 }

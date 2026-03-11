@@ -1,39 +1,39 @@
-import React, { useState, useEffect } from "react";
-import { Book } from "../../../backend/models";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn, formatAuthors } from "@/lib/utils";
-import { useNetworkState } from "@uidotdev/usehooks";
-import { Button } from "./ui/button";
-import { Separator } from "./ui/separator";
-import { useBookCover } from "@/hooks/use-book-cover";
+import React, { useState, useEffect } from 'react'
+import { Book } from '../../../backend/models'
+import { Card, CardContent, CardFooter } from '@/components/ui/card'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Progress } from '@/components/ui/progress'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { cn, formatAuthors } from '@/lib/utils'
+import { useNetworkState } from '@uidotdev/usehooks'
+import { Button } from './ui/button'
+import { Separator } from './ui/separator'
+import { useBookCover } from '@/hooks/use-book-cover'
 
 interface BookGridProps {
-  books: Book[];
-  selectedBooks: Set<string>;
-  onSelectBook: (bookTitle: string) => void;
-  onPreviewBookmarks: (bookTitle: string) => void;
-  isProcessing: boolean;
-  currentBook: string;
-  exportedBooks: Set<string>;
+  books: Book[]
+  selectedBooks: Set<string>
+  onSelectBook: (bookTitle: string) => void
+  onPreviewBookmarks: (bookTitle: string) => void
+  isProcessing: boolean
+  currentBook: string
+  exportedBooks: Set<string>
 }
 
 interface BookCardProps extends Book {
-  isSelected: boolean;
-  onSelect: () => void;
-  onPreview: () => void;
-  isProcessing: boolean;
-  isExporting: boolean;
-  isExported: boolean;
+  isSelected: boolean
+  onSelect: () => void
+  onPreview: () => void
+  isProcessing: boolean
+  isExporting: boolean
+  isExported: boolean
 }
 
 const sourceLabel: Record<string, string> = {
   'kobo-store': 'Kobo',
-  'external': 'External',
-};
+  external: 'External'
+}
 
 const BookCard = React.memo(function BookCard({
   bookTitle,
@@ -50,18 +50,18 @@ const BookCard = React.memo(function BookCard({
   onPreview,
   isProcessing,
   isExporting,
-  isExported,
+  isExported
 }: BookCardProps) {
-  const { coverDataUrl, isLoading: isCoverLoading } = useBookCover(imageId);
+  const { coverDataUrl, isLoading: isCoverLoading } = useBookCover(imageId)
 
   // Check if book has no progress
-  const hasNoProgress = readPercent === 0;
-  const isPdfNoBookmarks = contentType === 'pdf' && (!bookmarkCount || bookmarkCount <= 0);
-  const isDisabled = hasNoProgress || isPdfNoBookmarks || isProcessing;
+  const hasNoProgress = readPercent === 0
+  const isPdfNoBookmarks = contentType === 'pdf' && (!bookmarkCount || bookmarkCount <= 0)
+  const isDisabled = hasNoProgress || isPdfNoBookmarks || isProcessing
 
   const renderCover = () => {
     if (isCoverLoading) {
-      return <Skeleton className="w-full h-full" />;
+      return <Skeleton className="w-full h-full" />
     }
 
     if (coverDataUrl) {
@@ -70,49 +70,49 @@ const BookCard = React.memo(function BookCard({
           src={coverDataUrl}
           alt={`${bookTitle} cover`}
           className={cn(
-            "object-cover w-full h-full select-none",
-            hasNoProgress && "opacity-50 grayscale",
+            'object-cover w-full h-full select-none',
+            hasNoProgress && 'opacity-50 grayscale'
           )}
           draggable="false"
         />
-      );
+      )
     }
 
     return (
       <div
         className={cn(
-          "w-full h-full bg-muted flex items-center justify-center",
-          hasNoProgress && "opacity-50",
+          'w-full h-full bg-muted flex items-center justify-center',
+          hasNoProgress && 'opacity-50'
         )}
       >
         <span className="text-muted-foreground">No cover</span>
       </div>
-    );
-  };
+    )
+  }
 
   return (
     <div
       className={cn(
-        "relative rounded-lg h-full",
-        "before:absolute before:inset-0 before:rounded-lg before:transition-all",
-        "before:pointer-events-none",
-        (hasNoProgress || isPdfNoBookmarks) && "opacity-60",
+        'relative rounded-lg h-full',
+        'before:absolute before:inset-0 before:rounded-lg before:transition-all',
+        'before:pointer-events-none',
+        (hasNoProgress || isPdfNoBookmarks) && 'opacity-60',
         isSelected && !isExporting && !hasNoProgress
-          ? "before:border-2 before:border-primary before:-m-[2px]"
-          : "before:border before:border-border",
-        !hasNoProgress && !isDisabled && "hover:before:border-primary",
-        isExporting && "before:animate-border-breathing before:-m-[2px]",
-        isExported && !isExporting && "before:border-2 before:border-green-500 before:-m-[2px]",
+          ? 'before:border-2 before:border-primary before:-m-[2px]'
+          : 'before:border before:border-border',
+        !hasNoProgress && !isDisabled && 'hover:before:border-primary',
+        isExporting && 'before:animate-border-breathing before:-m-[2px]',
+        isExported && !isExporting && 'before:border-2 before:border-green-500 before:-m-[2px]'
       )}
     >
-      {(hasNoProgress || isPdfNoBookmarks) ? (
+      {hasNoProgress || isPdfNoBookmarks ? (
         <Tooltip>
           <TooltipTrigger asChild>
             <Card
               className={cn(
-                "flex flex-col overflow-hidden rounded-lg h-full",
-                isDisabled ? "cursor-not-allowed" : "cursor-pointer",
-                (hasNoProgress || isPdfNoBookmarks) && "text-muted-foreground"
+                'flex flex-col overflow-hidden rounded-lg h-full',
+                isDisabled ? 'cursor-not-allowed' : 'cursor-pointer',
+                (hasNoProgress || isPdfNoBookmarks) && 'text-muted-foreground'
               )}
               onClick={isDisabled ? undefined : onSelect}
             >
@@ -133,12 +133,16 @@ const BookCard = React.memo(function BookCard({
               </div>
               <CardContent className="flex-1 p-4 pt-0 pb-4">
                 <div className="space-y-1">
-                  <h3 className={cn(
-                    "font-bold line-clamp-2",
-                    (hasNoProgress || isPdfNoBookmarks) && "text-muted-foreground"
-                  )}>{bookTitle}</h3>
+                  <h3
+                    className={cn(
+                      'font-bold line-clamp-2',
+                      (hasNoProgress || isPdfNoBookmarks) && 'text-muted-foreground'
+                    )}
+                  >
+                    {bookTitle}
+                  </h3>
                   <p title={author} className="text-sm text-muted-foreground">
-    {formatAuthors(author)}
+                    {formatAuthors(author)}
                   </p>
                 </div>
               </CardContent>
@@ -147,8 +151,8 @@ const BookCard = React.memo(function BookCard({
                   variant="ghost"
                   className="flex items-center w-full h-auto p-0 text-sm font-normal text-muted-foreground hover:text-foreground disabled:opacity-50"
                   onClick={(e) => {
-                    e.stopPropagation();
-                    onPreview();
+                    e.stopPropagation()
+                    onPreview()
                   }}
                   disabled={!bookmarkCount || bookmarkCount <= 0}
                 >
@@ -160,14 +164,18 @@ const BookCard = React.memo(function BookCard({
             </Card>
           </TooltipTrigger>
           <TooltipContent side="bottom">
-            <p>{isPdfNoBookmarks ? "PDF books don't support highlights" : "No bookmarks found (｡ŏ_ŏ)"}</p>
+            <p>
+              {isPdfNoBookmarks
+                ? "PDF books don't support highlights"
+                : 'No bookmarks found (｡ŏ_ŏ)'}
+            </p>
           </TooltipContent>
         </Tooltip>
       ) : (
         <Card
           className={cn(
-            "flex flex-col overflow-hidden rounded-lg h-full",
-            isDisabled ? "cursor-not-allowed" : "cursor-pointer",
+            'flex flex-col overflow-hidden rounded-lg h-full',
+            isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'
           )}
           onClick={isDisabled ? undefined : onSelect}
         >
@@ -188,18 +196,14 @@ const BookCard = React.memo(function BookCard({
           </div>
           <CardContent className="flex-1 p-4 pt-0 pb-4">
             <div className="space-y-1">
-              <h3 className={cn(
-                "font-bold line-clamp-2",
-              )}>{bookTitle}</h3>
+              <h3 className={cn('font-bold line-clamp-2')}>{bookTitle}</h3>
               <p title={author} className="text-sm text-muted-foreground">
                 {(() => {
-                  const authorsArray = (author || "").split(", ");
-                  const firstThreeAuthors = authorsArray.slice(0, 3).join(", ");
+                  const authorsArray = (author || '').split(', ')
+                  const firstThreeAuthors = authorsArray.slice(0, 3).join(', ')
                   const remainingAuthors =
-                    authorsArray.slice(3).length > 0
-                      ? `, ${authorsArray.slice(3).length} more`
-                      : "";
-                  return `${firstThreeAuthors}${remainingAuthors}`;
+                    authorsArray.slice(3).length > 0 ? `, ${authorsArray.slice(3).length} more` : ''
+                  return `${firstThreeAuthors}${remainingAuthors}`
                 })()}
               </p>
             </div>
@@ -209,8 +213,8 @@ const BookCard = React.memo(function BookCard({
               variant="ghost"
               className="flex items-center w-full h-auto p-0 text-sm font-normal text-muted-foreground hover:text-foreground disabled:opacity-50"
               onClick={(e) => {
-                e.stopPropagation();
-                onPreview();
+                e.stopPropagation()
+                onPreview()
               }}
               disabled={!bookmarkCount || bookmarkCount <= 0}
             >
@@ -222,8 +226,8 @@ const BookCard = React.memo(function BookCard({
         </Card>
       )}
     </div>
-  );
-});
+  )
+})
 
 export function BookGrid({
   books,
@@ -232,7 +236,7 @@ export function BookGrid({
   onPreviewBookmarks,
   isProcessing,
   currentBook,
-  exportedBooks,
+  exportedBooks
 }: BookGridProps) {
   return (
     <TooltipProvider delayDuration={0}>
@@ -253,5 +257,5 @@ export function BookGrid({
         </div>
       </ScrollArea>
     </TooltipProvider>
-  );
+  )
 }

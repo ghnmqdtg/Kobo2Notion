@@ -1,71 +1,71 @@
-const { fontFamily } = require('tailwindcss/defaultTheme');
+const { fontFamily } = require('tailwindcss/defaultTheme')
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: ["class"],
-  content: ["./src/renderer/index.html", "./src/renderer/src/**/*.{svelte,js,ts,jsx,tsx}"],
+  darkMode: ['class'],
+  content: ['./src/renderer/index.html', './src/renderer/src/**/*.{svelte,js,ts,jsx,tsx}'],
   theme: {
     extend: {
       fontFamily: {
         sans: ['"JF Open Huninn"', '"Noto Sans TC"', ...fontFamily.sans],
-        serif: ['"Noto Serif TC"', ...fontFamily.serif],
+        serif: ['"Noto Serif TC"', ...fontFamily.serif]
       },
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))'
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+          DEFAULT: 'hsl(var(--secondary))',
+          foreground: 'hsl(var(--secondary-foreground))'
         },
         destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+          DEFAULT: 'hsl(var(--destructive))',
+          foreground: 'hsl(var(--destructive-foreground))'
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          DEFAULT: 'hsl(var(--muted))',
+          foreground: 'hsl(var(--muted-foreground))'
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+          DEFAULT: 'hsl(var(--accent))',
+          foreground: 'hsl(var(--accent-foreground))'
         },
         popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
+          DEFAULT: 'hsl(var(--popover))',
+          foreground: 'hsl(var(--popover-foreground))'
         },
         card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
+          DEFAULT: 'hsl(var(--card))',
+          foreground: 'hsl(var(--card-foreground))'
+        }
       },
       borderRadius: {
         lg: `var(--radius)`,
         md: `calc(var(--radius) - 2px)`,
-        sm: "calc(var(--radius) - 4px)",
+        sm: 'calc(var(--radius) - 4px)'
       },
       keyframes: {
         'border-breathing': {
-          '0%, 100%': { 
+          '0%, 100%': {
             borderColor: 'hsl(var(--primary))',
-            borderWidth: '2px',
+            borderWidth: '2px'
           },
-          '50%': { 
+          '50%': {
             borderColor: 'hsl(var(--primary) / 0.1)',
-            borderWidth: '2px',
-          },
-        },
+            borderWidth: '2px'
+          }
+        }
       },
       animation: {
-        'border-breathing': 'border-breathing 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-      },
-    },
+        'border-breathing': 'border-breathing 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+      }
+    }
   },
-  plugins: [require("tailwindcss-animate")],
-};
+  plugins: [require('tailwindcss-animate')]
+}
