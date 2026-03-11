@@ -2,7 +2,7 @@ import { Client } from "@notionhq/client";
 import {
   CreatePageParameters,
   UpdatePageParameters,
-  QueryDatabaseParameters,
+  QueryDataSourceParameters,
 } from "@notionhq/client/build/src/api-endpoints";
 import { Book, Bookmark, NotionBlock, Block } from "../models";
 import { fetchBookCover, parseMarkdownToNotionBlocks } from "../utils";
@@ -62,8 +62,8 @@ export class NotionService {
   }
 
   private async _queryExistingPage(bookTitle: string) {
-    const queryParams: QueryDatabaseParameters = {
-      database_id: this.databaseId,
+    const queryParams: QueryDataSourceParameters = {
+      data_source_id: this.databaseId,
       filter: {
         property: "Title",
         title: {
@@ -72,7 +72,7 @@ export class NotionService {
       },
     };
 
-    const response = await this.notion.databases.query(queryParams);
+    const response = await this.notion.dataSources.query(queryParams);
     return response.results[0];
   }
 
