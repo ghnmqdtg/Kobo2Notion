@@ -37,17 +37,19 @@ jobs:
           SKIP_NOTARIZE: true
         run: |
           npm run build
-          npx electron-builder --mac
+          npx electron-builder --mac --publish never
 
       - name: Build Windows
         if: matrix.platform == 'windows'
-        run: npm run build:win
+        run: |
+          npm run build
+          npx electron-builder --win --publish never
 
       - name: Build Linux
         if: matrix.platform == 'linux'
         run: |
           npm run build
-          npx electron-builder --linux AppImage deb
+          npx electron-builder --linux AppImage deb --publish never
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v5
