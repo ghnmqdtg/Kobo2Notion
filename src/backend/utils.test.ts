@@ -1,4 +1,5 @@
-// @ts-nocheck — NotionBlock is a discriminated union; test assertions use direct property access
+/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/explicit-function-return-type, @typescript-eslint/no-namespace */
+// @ts-nocheck — Test file; Jest globals and discriminated union property access bypass type-checking
 import { fetchBookCover, parseMarkdownToNotionBlocks } from './utils'
 
 describe('fetchBookCover', () => {
