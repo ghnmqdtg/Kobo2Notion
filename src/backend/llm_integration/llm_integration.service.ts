@@ -1,4 +1,4 @@
-import { generateText, LanguageModelV1 } from 'ai'
+import { generateText, LanguageModel } from 'ai'
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { createOpenAI } from '@ai-sdk/openai'
 import { createAnthropic } from '@ai-sdk/anthropic'
@@ -73,7 +73,7 @@ async function fetchAnthropicModels(apiKey: string): Promise<string[]> {
 }
 
 export class LLMService {
-  private getModel(): LanguageModelV1 {
+  private getModel(): LanguageModel {
     const { LLM_PROVIDER, LLM_API_KEY, LLM_MODEL } = env
     switch (LLM_PROVIDER) {
       case 'google':
