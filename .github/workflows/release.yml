@@ -62,6 +62,7 @@ jobs:
           name: build-${{ matrix.platform }}
           path: |
             release/**/*.dmg
+            release/**/*.zip
             release/**/*.exe
             release/**/*.AppImage
             release/**/*.deb
@@ -91,7 +92,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          find artifacts -maxdepth 2 -type f \( -name "*.dmg" -o -name "*-setup.exe" -o -name "*.AppImage" -o -name "*.deb" -o -name "latest*.yml" \) > /tmp/release-files.txt
+          find artifacts -maxdepth 2 -type f \( -name "*.dmg" -o -name "*.zip" -o -name "*-setup.exe" -o -name "*.AppImage" -o -name "*.deb" -o -name "latest*.yml" \) > /tmp/release-files.txt
           echo "Uploading files:"
           cat /tmp/release-files.txt
           gh release create "v${{ steps.version.outputs.version }}" \

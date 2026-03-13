@@ -33,6 +33,7 @@ mac:
   icon: resources/icon.icns
   target:
     - dmg
+    - zip
   category: public.app-category.utilities
 dmg:
   artifactName: ${name}-${version}.${ext}
