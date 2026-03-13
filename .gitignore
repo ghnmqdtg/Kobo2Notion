@@ -21,5 +21,8 @@ scripts/*.p12
 certs/
 
 # Temp files
-tmp_*.claude/worktrees/
+tmp_*
+
+# Claude Code
+.claude/worktrees/
 .prompts.md
