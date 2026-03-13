@@ -1,14 +1,14 @@
-import { Settings } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { ThemeToggle } from './theme-toggle'
-import { Logo } from './logo'
+import { Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "./theme-toggle";
+import { Logo } from "./logo";
 
 interface NavbarProps {
-  onSettingsClick: () => void
-  isFirstTime?: boolean
-  isExporting?: boolean
-  isCanceling?: boolean
-  isChecking?: boolean
+  onSettingsClick: () => void;
+  isFirstTime?: boolean;
+  isExporting?: boolean;
+  isCanceling?: boolean;
+  isChecking?: boolean;
 }
 
 export function Navbar({
@@ -16,15 +16,16 @@ export function Navbar({
   isFirstTime,
   isExporting,
   isCanceling,
-  isChecking
-}: NavbarProps) {
-  const isDisabled = isFirstTime || isExporting || isCanceling || isChecking
-  const getTooltipText = () => {
-    if (isFirstTime) return 'Please complete the initial setup first'
-    if (isChecking) return 'Please wait while checking existing pages'
-    if (isExporting || isCanceling) return 'Please wait until the export is complete'
-    return 'Settings'
-  }
+  isChecking,
+}: NavbarProps): React.JSX.Element {
+  const isDisabled = isFirstTime || isExporting || isCanceling || isChecking;
+  const getTooltipText = (): string => {
+    if (isFirstTime) return "Please complete the initial setup first";
+    if (isChecking) return "Please wait while checking existing pages";
+    if (isExporting || isCanceling)
+      return "Please wait until the export is complete";
+    return "Settings";
+  };
 
   return (
     <nav className="border-b">
@@ -44,5 +45,5 @@ export function Navbar({
         </div>
       </div>
     </nav>
-  )
+  );
 }

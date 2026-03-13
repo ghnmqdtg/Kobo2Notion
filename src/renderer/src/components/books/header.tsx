@@ -1,12 +1,12 @@
-import { CheckSquare, LayoutGrid, List } from 'lucide-react'
-import { Toggle } from '@/components/ui/toggle'
+import { CheckSquare, LayoutGrid, List } from "lucide-react";
+import { Toggle } from "@/components/ui/toggle";
 
 interface HeaderProps {
-  selectAll: boolean
-  setSelectAll: (selected: boolean) => void
-  isGridView: boolean
-  setIsGridView: (isGrid: boolean) => void
-  isDisabled: boolean
+  selectAll: boolean;
+  setSelectAll: (selected: boolean) => void;
+  isGridView: boolean;
+  setIsGridView: (isGrid: boolean) => void;
+  isDisabled: boolean;
 }
 
 export function Header({
@@ -14,8 +14,8 @@ export function Header({
   setSelectAll,
   isGridView,
   setIsGridView,
-  isDisabled
-}: HeaderProps) {
+  isDisabled,
+}: HeaderProps): React.JSX.Element {
   return (
     <div className="flex justify-between items-center p-4 pb-0">
       <h1 className="text-2xl font-bold">Your Books</h1>
@@ -51,5 +51,5 @@ export function Header({
         </Toggle>
       </div>
     </div>
-  )
+  );
 }

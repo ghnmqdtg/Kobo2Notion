@@ -1,16 +1,16 @@
-import { BookGrid } from '@/components/book-grid'
-import { BookList } from '@/components/book-list'
-import { Book } from '../../../../backend/models'
+import { BookGrid } from "@/components/book-grid";
+import { BookList } from "@/components/book-list";
+import { Book } from "../../../../backend/models";
 
 interface BookDisplayProps {
-  isGridView: boolean
-  books: Book[]
-  selectedBooks: Set<string>
-  onSelectBook: (bookTitle: string) => void
-  onPreviewBookmarks: (bookTitle: string) => void
-  isProcessing: boolean
-  currentBook: string
-  exportedBooks: Set<string>
+  isGridView: boolean;
+  books: Book[];
+  selectedBooks: Set<string>;
+  onSelectBook: (bookTitle: string) => void;
+  onPreviewBookmarks: (bookTitle: string) => void;
+  isProcessing: boolean;
+  currentBook: string;
+  exportedBooks: Set<string>;
 }
 
 export function BookDisplay({
@@ -21,8 +21,8 @@ export function BookDisplay({
   onPreviewBookmarks,
   isProcessing,
   currentBook,
-  exportedBooks
-}: BookDisplayProps) {
+  exportedBooks,
+}: BookDisplayProps): React.JSX.Element {
   return (
     <div className="relative">
       {isGridView ? (
@@ -48,5 +48,5 @@ export function BookDisplay({
       )}
       <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent pointer-events-none" />
     </div>
-  )
+  );
 }

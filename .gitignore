@@ -17,4 +17,8 @@ release/
 
 # Code signing
 scripts/set-signing-env.sh
+scripts/*.p12
 certs/
+
+# Temp files
+tmp_*
