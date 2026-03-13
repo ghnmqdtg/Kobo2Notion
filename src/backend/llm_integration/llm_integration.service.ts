@@ -1,122 +1,108 @@
-import { generateText, LanguageModelV1 } from "ai";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { createOpenAI } from "@ai-sdk/openai";
-import { createAnthropic } from "@ai-sdk/anthropic";
-import { Bookmark } from "../models";
-import { env } from "../../config/env.config";
+import { generateText, LanguageModelV1 } from 'ai'
+import { createGoogleGenerativeAI } from '@ai-sdk/google'
+import { createOpenAI } from '@ai-sdk/openai'
+import { createAnthropic } from '@ai-sdk/anthropic'
+import { Bookmark } from '../models'
+import { env } from '../../config/env.config'
 
 interface GoogleModel {
-  name: string;
-  supportedGenerationMethods?: string[];
+  name: string
+  supportedGenerationMethods?: string[]
 }
 
 interface ModelEntry {
-  id: string;
+  id: string
 }
 
 const fallbackModels: Record<string, string[]> = {
-  google: ["gemini-2.5-flash", "gemini-2.5-pro"],
-  openai: ["gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-4.1-mini"],
-  anthropic: ["claude-sonnet-4-5-20250514", "claude-haiku-4-5-20251001"],
-};
+  google: ['gemini-2.5-flash', 'gemini-2.5-pro'],
+  openai: ['gpt-4o', 'gpt-4o-mini', 'gpt-4.1', 'gpt-4.1-mini'],
+  anthropic: ['claude-sonnet-4-5-20250514', 'claude-haiku-4-5-20251001']
+}
 
-export async function fetchAvailableModels(
-  provider: string,
-  apiKey: string,
-): Promise<string[]> {
+export async function fetchAvailableModels(provider: string, apiKey: string): Promise<string[]> {
   try {
     switch (provider) {
-      case "google":
-        return await fetchGoogleModels(apiKey);
-      case "openai":
-        return await fetchOpenAIModels(apiKey);
-      case "anthropic":
-        return await fetchAnthropicModels(apiKey);
+      case 'google':
+        return await fetchGoogleModels(apiKey)
+      case 'openai':
+        return await fetchOpenAIModels(apiKey)
+      case 'anthropic':
+        return await fetchAnthropicModels(apiKey)
       default:
-        return [];
+        return []
     }
   } catch (error) {
-    console.warn(
-      `Failed to fetch models for ${provider}, using fallbacks:`,
-      error,
-    );
-    return fallbackModels[provider] || [];
+    console.warn(`Failed to fetch models for ${provider}, using fallbacks:`, error)
+    return fallbackModels[provider] || []
   }
 }
 
 async function fetchGoogleModels(apiKey: string): Promise<string[]> {
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`,
-  );
-  if (!res.ok) throw new Error(`Google API error: ${res.status}`);
-  const data = await res.json();
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`)
+  if (!res.ok) throw new Error(`Google API error: ${res.status}`)
+  const data = await res.json()
   return (data.models || [])
-    .filter((m: GoogleModel) =>
-      m.supportedGenerationMethods?.includes("generateContent"),
-    )
-    .map((m: GoogleModel) => m.name.replace("models/", ""))
-    .sort();
+    .filter((m: GoogleModel) => m.supportedGenerationMethods?.includes('generateContent'))
+    .map((m: GoogleModel) => m.name.replace('models/', ''))
+    .sort()
 }
 
 async function fetchOpenAIModels(apiKey: string): Promise<string[]> {
-  const res = await fetch("https://api.openai.com/v1/models", {
-    headers: { Authorization: `Bearer ${apiKey}` },
-  });
-  if (!res.ok) throw new Error(`OpenAI API error: ${res.status}`);
-  const data = await res.json();
+  const res = await fetch('https://api.openai.com/v1/models', {
+    headers: { Authorization: `Bearer ${apiKey}` }
+  })
+  if (!res.ok) throw new Error(`OpenAI API error: ${res.status}`)
+  const data = await res.json()
   return (data.data || [])
     .map((m: ModelEntry) => m.id)
     .filter((id: string) => /^(gpt-|o[0-9])/.test(id))
-    .sort();
+    .sort()
 }
 
 async function fetchAnthropicModels(apiKey: string): Promise<string[]> {
-  const res = await fetch("https://api.anthropic.com/v1/models", {
+  const res = await fetch('https://api.anthropic.com/v1/models', {
     headers: {
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-  });
-  if (!res.ok) throw new Error(`Anthropic API error: ${res.status}`);
-  const data = await res.json();
-  return (data.data || []).map((m: ModelEntry) => m.id).sort();
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01'
+    }
+  })
+  if (!res.ok) throw new Error(`Anthropic API error: ${res.status}`)
+  const data = await res.json()
+  return (data.data || []).map((m: ModelEntry) => m.id).sort()
 }
 
 export class LLMService {
   private getModel(): LanguageModelV1 {
-    const { LLM_PROVIDER, LLM_API_KEY, LLM_MODEL } = env;
+    const { LLM_PROVIDER, LLM_API_KEY, LLM_MODEL } = env
     switch (LLM_PROVIDER) {
-      case "google":
-        return createGoogleGenerativeAI({ apiKey: LLM_API_KEY })(LLM_MODEL);
-      case "openai":
-        return createOpenAI({ apiKey: LLM_API_KEY })(LLM_MODEL);
-      case "anthropic":
-        return createAnthropic({ apiKey: LLM_API_KEY })(LLM_MODEL);
+      case 'google':
+        return createGoogleGenerativeAI({ apiKey: LLM_API_KEY })(LLM_MODEL)
+      case 'openai':
+        return createOpenAI({ apiKey: LLM_API_KEY })(LLM_MODEL)
+      case 'anthropic':
+        return createAnthropic({ apiKey: LLM_API_KEY })(LLM_MODEL)
       default:
-        throw new Error(`Unsupported LLM provider: ${LLM_PROVIDER}`);
+        throw new Error(`Unsupported LLM provider: ${LLM_PROVIDER}`)
     }
   }
 
   async summarizeBookmarks(
     bookTitle: string,
     bookmarks: Bookmark[],
-    summarizeLanguage: string,
+    summarizeLanguage: string
   ): Promise<string> {
-    const content = bookmarks.map((b) => b.highlight).join("\n");
-    const prompt = this.generatePrompt(bookTitle, content, summarizeLanguage);
+    const content = bookmarks.map((b) => b.highlight).join('\n')
+    const prompt = this.generatePrompt(bookTitle, content, summarizeLanguage)
     const { text } = await generateText({
       model: this.getModel(),
-      prompt,
-    });
-    return text;
+      prompt
+    })
+    return text
   }
 
-  private generatePrompt(
-    bookTitle: string,
-    content: string,
-    summarizeLanguage: string,
-  ): string {
-    if (summarizeLanguage === "en") {
+  private generatePrompt(bookTitle: string, content: string, summarizeLanguage: string): string {
+    if (summarizeLanguage === 'en') {
       return `
         The following is a list of highlights from a book: ${bookTitle}.
         \`\`\`
@@ -129,7 +115,7 @@ export class LLMService {
         3. It's okay to have numbers in the heading, such as "# 1. Section Title" or "# 二、段落標題"
         4. If there are duplicate highlights, please remove them to keep the summary concise.
         5. Please add abstract at the beginning and conclusion at the end, both with heading.
-        `;
+        `
     } else {
       return `
         以下是從《${bookTitle}》節錄的重點：
@@ -145,7 +131,7 @@ export class LLMService {
         6. 中、英文及數字間以半形空格隔開。
         7. 若重點有所重複，可以刪減以保持簡潔。
         8. 請於最開頭加上摘要，並於最後加上總結，兩段落皆使用 heading。
-        `;
+        `
     }
   }
 }

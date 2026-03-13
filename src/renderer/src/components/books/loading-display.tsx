@@ -1,4 +1,4 @@
-import { Loader2 } from "lucide-react";
+import { Loader2 } from 'lucide-react'
 
 export function LoadingDisplay(): React.JSX.Element {
   return (
@@ -6,5 +6,5 @@ export function LoadingDisplay(): React.JSX.Element {
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
       <p className="text-lg text-muted-foreground">Loading books...</p>
     </div>
-  );
+  )
 }

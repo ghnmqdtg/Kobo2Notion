@@ -1,107 +1,107 @@
 // This file serves as a central location to define the data structures (or data models) that our application works with.
 
 // Kobo Models
-export type BookSource = "kobo-store" | "instapaper" | "external";
-export type BookContentType = "epub" | "pdf" | null;
+export type BookSource = 'kobo-store' | 'instapaper' | 'external'
+export type BookContentType = 'epub' | 'pdf' | null
 
 export interface Book {
-  bookTitle: string;
-  subtitle: string | null;
-  author: string;
-  publisher: string;
-  isbn: string;
-  series: string | null;
-  seriesNumber: number | null;
-  readPercent: number;
-  imageId: string | null;
-  bookmarkCount?: number; // Optional for backward compatibility
-  source: BookSource;
-  contentType: BookContentType;
+  bookTitle: string
+  subtitle: string | null
+  author: string
+  publisher: string
+  isbn: string
+  series: string | null
+  seriesNumber: number | null
+  readPercent: number
+  imageId: string | null
+  bookmarkCount?: number // Optional for backward compatibility
+  source: BookSource
+  contentType: BookContentType
 }
 
 export interface Bookmark {
-  volumeId: string;
-  highlight: string;
-  annotation: string | null;
-  createdOn: string;
-  type: string;
+  volumeId: string
+  highlight: string
+  annotation: string | null
+  createdOn: string
+  type: string
 }
 
 // Notion Block Types
 
 type ParagraphBlock = {
-  type: "paragraph";
+  type: 'paragraph'
   paragraph: {
-    rich_text: RichTextItem[];
-    children?: Block[];
-  };
-};
+    rich_text: RichTextItem[]
+    children?: Block[]
+  }
+}
 
 type Heading1Block = {
-  type: "heading_1";
+  type: 'heading_1'
   heading_1: {
-    rich_text: RichTextItem[];
-    children?: Block[];
-  };
-};
+    rich_text: RichTextItem[]
+    children?: Block[]
+  }
+}
 
 type Heading2Block = {
-  type: "heading_2";
+  type: 'heading_2'
   heading_2: {
-    rich_text: RichTextItem[];
-    children?: Block[];
-  };
-};
+    rich_text: RichTextItem[]
+    children?: Block[]
+  }
+}
 
 type Heading3Block = {
-  type: "heading_3";
+  type: 'heading_3'
   heading_3: {
-    rich_text: RichTextItem[];
-    children?: Block[];
-  };
-};
+    rich_text: RichTextItem[]
+    children?: Block[]
+  }
+}
 
 type BulletedListItemBlock = {
-  type: "bulleted_list_item";
+  type: 'bulleted_list_item'
   bulleted_list_item: {
-    rich_text: RichTextItem[];
-    children?: Block[];
-  };
-};
+    rich_text: RichTextItem[]
+    children?: Block[]
+  }
+}
 
 type NumberedListItemBlock = {
-  type: "numbered_list_item";
+  type: 'numbered_list_item'
   numbered_list_item: {
-    rich_text: RichTextItem[];
-    children?: Block[];
-  };
-};
+    rich_text: RichTextItem[]
+    children?: Block[]
+  }
+}
 
 type QuoteBlock = {
-  type: "quote";
+  type: 'quote'
   quote: {
-    rich_text: RichTextItem[];
-    children?: Block[];
-  };
-};
+    rich_text: RichTextItem[]
+    children?: Block[]
+  }
+}
 
 export type RichTextItem = {
-  type: "text";
+  type: 'text'
   text: {
-    content: string;
-    link?: string | null;
-  };
+    content: string
+    link?: string | null
+  }
   annotations?: {
-    bold?: boolean;
-    italic?: boolean;
-    strikethrough?: boolean;
-    underline?: boolean;
-    code?: boolean;
-    color?: string;
-  };
-  plain_text?: string;
-  href?: string | null;
-};
+    bold?: boolean
+    italic?: boolean
+    strikethrough?: boolean
+    underline?: boolean
+    code?: boolean
+    color?: string
+  }
+  plain_text?: string
+  href?: string | null
+}
 
 // Add other block types as needed...
 
@@ -112,6 +112,6 @@ export type Block =
   | Heading3Block
   | BulletedListItemBlock
   | NumberedListItemBlock
-  | QuoteBlock;
+  | QuoteBlock
 
-export type NotionBlock = Block & { object: "block" };
+export type NotionBlock = Block & { object: 'block' }
