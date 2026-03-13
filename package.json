@@ -1,7 +1,7 @@
 {
   "name": "kobo2notion",
   "productName": "Kobo2Notion",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Easily sync your Kobo highlights to Notion.",
   "main": "./out/main/index.js",
   "author": "ghnmqdtg@gmail.com",
