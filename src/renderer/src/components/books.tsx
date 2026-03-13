@@ -1,36 +1,39 @@
-import { useState, useEffect, useCallback } from 'react'
-import { useToast } from '@/hooks/use-toast'
-import { Book } from '../../../backend/models'
-import { Footer } from '@/components/footer'
-import { ConfirmOverwriteDialog } from './confirm-overwrite-dialog'
-import { DeletePagesDialog } from './delete-pages-dialog'
-import { useBookExport } from '@/hooks/use-book-export'
-import { ErrorDisplay } from './books/error-display'
-import { LoadingDisplay } from './books/loading-display'
-import { Header } from './books/header'
-import { BookDisplay } from './books/book-display'
-import { BookmarksPreviewDialog } from './bookmarks-preview-dialog'
+import { useState, useEffect, useCallback } from "react";
+import { Book } from "../../../backend/models";
+import { Footer } from "@/components/footer";
+import { ConfirmOverwriteDialog } from "./confirm-overwrite-dialog";
+import { DeletePagesDialog } from "./delete-pages-dialog";
+import { useBookExport } from "@/hooks/use-book-export";
+import { ErrorDisplay } from "./books/error-display";
+import { LoadingDisplay } from "./books/loading-display";
+import { Header } from "./books/header";
+import { BookDisplay } from "./books/book-display";
+import { BookmarksPreviewDialog } from "./bookmarks-preview-dialog";
 
 interface BooksProps {
-  onExportStateChange?: (exporting: boolean, canceling: boolean, checking: boolean) => void
+  onExportStateChange?: (
+    exporting: boolean,
+    canceling: boolean,
+    checking: boolean,
+  ) => void;
 }
 
-export function Books({ onExportStateChange }: BooksProps) {
+export function Books({ onExportStateChange }: BooksProps): React.JSX.Element {
   // Book data states
-  const [books, setBooks] = useState<Book[]>([])
-  const [selectedBooks, setSelectedBooks] = useState<Set<string>>(new Set())
-  const [exportedBooks, setExportedBooks] = useState<Set<string>>(new Set())
+  const [books, setBooks] = useState<Book[]>([]);
+  const [selectedBooks, setSelectedBooks] = useState<Set<string>>(new Set());
+  const [exportedBooks, setExportedBooks] = useState<Set<string>>(new Set());
 
   // UI states
-  const [isGridView, setIsGridView] = useState(true)
-  const [selectAll, setSelectAll] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [retryCount, setRetryCount] = useState(0)
+  const [isGridView, setIsGridView] = useState(true);
+  const [selectAll, setSelectAll] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   // Preview dialog states
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
-  const [previewBookTitle, setPreviewBookTitle] = useState<string | null>(null)
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [previewBookTitle, setPreviewBookTitle] = useState<string | null>(null);
 
   // Export states and handlers
   const {
@@ -48,89 +51,93 @@ export function Books({ onExportStateChange }: BooksProps) {
     showDeleteDialog,
     showOverwriteDialog,
     setShowDeleteDialog,
-    setShowOverwriteDialog
+    setShowOverwriteDialog,
   } = useBookExport({
     books,
     selectedBooks,
     setSelectedBooks,
     exportedBooks,
     setExportedBooks,
-    onExportStateChange
-  })
+    onExportStateChange,
+  });
 
   // Constants
-  const maxRetries = 3
-  const retryInterval = 5000
-  const minLoadingTime = 300
-
-  // Toast
-  const { toast } = useToast()
+  const maxRetries = 3;
+  const retryInterval = 5000;
+  const minLoadingTime = 300;
 
   useEffect(() => {
-    loadBooks()
-  }, [])
+    loadBooks();
+  }, []);
 
   useEffect(() => {
-    let intervalId: NodeJS.Timeout
+    let intervalId: NodeJS.Timeout;
     if (error && retryCount < maxRetries) {
       intervalId = setInterval(() => {
-        setRetryCount((prevCount) => prevCount + 1)
-        loadBooks()
-      }, retryInterval)
+        setRetryCount((prevCount) => prevCount + 1);
+        loadBooks();
+      }, retryInterval);
     }
-    return () => clearInterval(intervalId)
-  }, [error, retryCount])
+    return (): void => clearInterval(intervalId);
+  }, [error, retryCount]);
 
   useEffect(() => {
-    const selectableBooks = books.filter((book) => book.readPercent > 0)
+    const selectableBooks = books.filter((book) => book.readPercent > 0);
     if (selectAll) {
-      const allBookTitles = selectableBooks.map((book) => book.bookTitle)
-      setSelectedBooks(new Set(allBookTitles))
+      const allBookTitles = selectableBooks.map((book) => book.bookTitle);
+      setSelectedBooks(new Set(allBookTitles));
     } else {
-      if (selectedBooks.size === selectableBooks.length && selectableBooks.length > 0) {
-        setSelectedBooks(new Set())
+      if (
+        selectedBooks.size === selectableBooks.length &&
+        selectableBooks.length > 0
+      ) {
+        setSelectedBooks(new Set());
       }
     }
-  }, [selectAll, books])
+  }, [selectAll, books]);
 
-  const loadBooks = async () => {
-    setIsLoading(true)
-    setError(null)
+  const loadBooks = async (): Promise<void> => {
+    setIsLoading(true);
+    setError(null);
     try {
-      const loadedBooks = await window.api.getBooks()
-      setBooks(loadedBooks)
-      setError(null)
-      setRetryCount(0)
-    } catch (error) {
-      console.error('Error loading books:', error)
-      setError('Failed to load the books.\nPlease ensure the kobo is connected and try again.')
+      const loadedBooks = await window.api.getBooks();
+      setBooks(loadedBooks);
+      setError(null);
+      setRetryCount(0);
+    } catch (err) {
+      console.error("Error loading books:", err);
+      setError(
+        "Failed to load the books.\nPlease ensure the kobo is connected and try again.",
+      );
     } finally {
-      setTimeout(() => setIsLoading(false), minLoadingTime)
+      setTimeout(() => setIsLoading(false), minLoadingTime);
     }
-  }
+  };
 
   const handleSelectBook = useCallback(
     (bookTitle: string) => {
-      const selectableBookCount = books.filter((book) => book.readPercent > 0).length
+      const selectableBookCount = books.filter(
+        (book) => book.readPercent > 0,
+      ).length;
       setSelectedBooks((prev) => {
-        const newSet = new Set(prev)
+        const newSet = new Set(prev);
         if (newSet.has(bookTitle)) {
-          newSet.delete(bookTitle)
-          if (newSet.size < selectableBookCount) setSelectAll(false)
+          newSet.delete(bookTitle);
+          if (newSet.size < selectableBookCount) setSelectAll(false);
         } else {
-          newSet.add(bookTitle)
-          if (newSet.size === selectableBookCount) setSelectAll(true)
+          newSet.add(bookTitle);
+          if (newSet.size === selectableBookCount) setSelectAll(true);
         }
-        return newSet
-      })
+        return newSet;
+      });
     },
-    [books]
-  )
+    [books],
+  );
 
   const handlePreviewBookmarks = useCallback((bookTitle: string) => {
-    setPreviewBookTitle(bookTitle)
-    setIsPreviewOpen(true)
-  }, [])
+    setPreviewBookTitle(bookTitle);
+    setIsPreviewOpen(true);
+  }, []);
 
   if (error) {
     return (
@@ -140,11 +147,11 @@ export function Books({ onExportStateChange }: BooksProps) {
         retryCount={retryCount}
         maxRetries={maxRetries}
       />
-    )
+    );
   }
 
   if (isLoading) {
-    return <LoadingDisplay />
+    return <LoadingDisplay />;
   }
 
   return (
@@ -202,5 +209,5 @@ export function Books({ onExportStateChange }: BooksProps) {
         bookTitle={previewBookTitle}
       />
     </>
-  )
+  );
 }

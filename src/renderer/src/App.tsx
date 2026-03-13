@@ -1,28 +1,32 @@
-import { useState, useEffect } from 'react'
-import { Navbar } from '@/components/navbar'
-import { Books } from '@/components/books'
-import { Settings } from '@/components/settings'
-import { Toaster } from '@/components/ui/toaster'
-import { ThemeProvider } from '@/components/theme-provider'
+import { useState, useEffect } from "react";
+import { Navbar } from "@/components/navbar";
+import { Books } from "@/components/books";
+import { Settings } from "@/components/settings";
+import { Toaster } from "@/components/ui/toaster";
+import { ThemeProvider } from "@/components/theme-provider";
 
 function App(): React.JSX.Element {
-  const [showSettings, setShowSettings] = useState(false)
-  const [isFirstTime, setIsFirstTime] = useState(true)
-  const [isExporting, setIsExporting] = useState(false)
-  const [isCanceling, setIsCanceling] = useState(false)
-  const [isChecking, setIsChecking] = useState(false)
+  const [showSettings, setShowSettings] = useState(false);
+  const [isFirstTime, setIsFirstTime] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isCanceling, setIsCanceling] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
   useEffect(() => {
     // Check if all required env values are set
-    const requiredEnvs = ['SQLITE_SOURCE', 'NOTION_API_KEY', 'NOTION_DATA_SOURCE_ID']
+    const requiredEnvs = [
+      "SQLITE_SOURCE",
+      "NOTION_API_KEY",
+      "NOTION_DATA_SOURCE_ID",
+    ];
 
-    const missingEnvs = requiredEnvs.filter((key) => !window.env[key])
-    const isFirstTimeSetup = missingEnvs.length > 0
+    const missingEnvs = requiredEnvs.filter((key) => !window.env[key]);
+    const isFirstTimeSetup = missingEnvs.length > 0;
 
-    setIsFirstTime(isFirstTimeSetup)
+    setIsFirstTime(isFirstTimeSetup);
     if (isFirstTimeSetup) {
-      setShowSettings(true)
+      setShowSettings(true);
     }
-  }, [])
+  }, []);
 
   return (
     <ThemeProvider>
@@ -43,11 +47,11 @@ function App(): React.JSX.Element {
                 onExportStateChange={(
                   exporting: boolean,
                   canceling: boolean,
-                  checking: boolean
+                  checking: boolean,
                 ) => {
-                  setIsExporting(exporting)
-                  setIsCanceling(canceling)
-                  setIsChecking(checking)
+                  setIsExporting(exporting);
+                  setIsCanceling(canceling);
+                  setIsChecking(checking);
                 }}
               />
             )}
@@ -56,7 +60,7 @@ function App(): React.JSX.Element {
         <Toaster />
       </div>
     </ThemeProvider>
-  )
+  );
 }
 
-export default App
+export default App;
