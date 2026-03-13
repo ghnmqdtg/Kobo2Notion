@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - platform: macos
@@ -53,10 +54,11 @@ jobs:
         with:
           name: build-${{ matrix.platform }}
           path: |
-            dist/*.dmg
-            dist/*.exe
-            dist/*.AppImage
-            dist/*.deb
+            release/**/*.dmg
+            release/**/*.exe
+            release/**/*.AppImage
+            release/**/*.deb
+            release/**/*.yml
           if-no-files-found: error
 
   publish:
@@ -82,8 +84,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          find artifacts -type f \( -name "*.dmg" -o -name "*.exe" -o -name "*.AppImage" -o -name "*.deb" -o -name "*.yml" \) > /tmp/release-files.txt
+          echo "Uploading files:"
+          cat /tmp/release-files.txt
           gh release create "v${{ steps.version.outputs.version }}" \
             --title "v${{ steps.version.outputs.version }}" \
             --draft \
             --generate-notes \
-            artifacts/*
+            $(cat /tmp/release-files.txt | tr '\n' ' ')
