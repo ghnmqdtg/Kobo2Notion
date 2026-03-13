@@ -24,14 +24,12 @@ nsis:
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
-afterSign: './scripts/notarize.js'
 mac:
   hardenedRuntime: true
   gatekeeperAssess: false
   entitlements: config/entitlements.mac.plist
   entitlementsInherit: config/entitlements.mac.plist
-  # TODO: Enable notarization
-  notarize: false
+  notarize: true
   icon: resources/icon.icns
   target:
     - dmg
