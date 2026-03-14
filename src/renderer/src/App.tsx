@@ -29,6 +29,7 @@ function App(): React.JSX.Element {
       <div className="h-screen flex flex-col w-full">
         <Navbar
           onSettingsClick={() => setShowSettings(!showSettings)}
+          showSettings={showSettings}
           isFirstTime={isFirstTime}
           isExporting={isExporting}
           isCanceling={isCanceling}

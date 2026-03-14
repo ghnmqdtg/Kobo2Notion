@@ -1,10 +1,12 @@
 import { Settings } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from './theme-toggle'
 import { Logo } from './logo'
 
 interface NavbarProps {
   onSettingsClick: () => void
+  showSettings?: boolean
   isFirstTime?: boolean
   isExporting?: boolean
   isCanceling?: boolean
@@ -13,6 +15,7 @@ interface NavbarProps {
 
 export function Navbar({
   onSettingsClick,
+  showSettings,
   isFirstTime,
   isExporting,
   isCanceling,
@@ -39,7 +42,7 @@ export function Navbar({
             disabled={isDisabled}
             title={getTooltipText()}
           >
-            <Settings className="h-5 w-5" />
+            <Settings className={cn('h-5 w-5', showSettings && 'text-primary')} />
           </Button>
         </div>
       </div>
