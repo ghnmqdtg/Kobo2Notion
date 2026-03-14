@@ -51,5 +51,3 @@ publish:
   provider: github
   owner: ghnmqdtg
   repo: Kobo2Notion
-electronDownload:
-  mirror: https://npmmirror.com/mirrors/electron/
