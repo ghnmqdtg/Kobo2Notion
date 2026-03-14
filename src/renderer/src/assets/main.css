@@ -29,7 +29,7 @@ code {
 }
 
 #root {
-  width: 80%;
+  width: 100%;
   max-width: 1200px;
   min-width: 800px;
   display: flex;
@@ -40,7 +40,7 @@ code {
 }
 
 #footer {
-  width: 80%;
+  width: 100%;
   max-width: 1200px;
   min-width: 800px;
 }

@@ -52,7 +52,7 @@ export function Footer({
 
   return (
     <>
-      <div id="footer" className="w-4/5 fixed bottom-0 bg-background backdrop-blur-none border-t">
+      <div id="footer" className="w-full fixed bottom-0 bg-background backdrop-blur-none border-t">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex flex-col gap-2 flex-1 mr-4">
             {!isOnline.online ? (
@@ -85,7 +85,7 @@ export function Footer({
             )}
           </div>
           <Button
-            className={`text-md font-bold ${!isOnline.online ? 'bg-destructive/60' : ''}`}
+            className={`text-md font-bold rounded-full ${!isOnline.online ? 'bg-destructive/60' : ''}`}
             onClick={isExporting && !isCanceling ? handleCancelClick : onExport}
             disabled={selectedCount === 0 || !isOnline.online || isChecking || isCanceling}
             onMouseEnter={() => setIsHovered(true)}
