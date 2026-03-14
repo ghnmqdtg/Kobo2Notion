@@ -121,19 +121,19 @@ export const BookListCard = React.memo(function BookListCard({
                     <div className="flex items-center space-x-2">
                       <h3
                         className={cn(
-                          'font-bold line-clamp-1',
+                          'font-bold font-mono line-clamp-1',
                           hasNoProgress && 'text-muted-foreground'
                         )}
                       >
                         {bookTitle}
                       </h3>
                       {source !== 'kobo-store' && (
-                        <span className="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wide bg-muted text-muted-foreground">
+                        <span className="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wide bg-[#64748B] text-white">
                           {sourceLabel[source]}
                         </span>
                       )}
                       {contentType && (
-                        <span className="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wide bg-muted text-muted-foreground">
+                        <span className="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wide bg-[#1E293B] text-white">
                           {contentType}
                         </span>
                       )}
@@ -191,19 +191,19 @@ export const BookListCard = React.memo(function BookListCard({
                 <div className="flex items-center space-x-2">
                   <h3
                     className={cn(
-                      'font-bold line-clamp-1',
+                      'font-bold font-mono line-clamp-1',
                       hasNoProgress && 'text-muted-foreground'
                     )}
                   >
                     {bookTitle}
                   </h3>
                   {source !== 'kobo-store' && (
-                    <span className="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wide bg-muted text-muted-foreground">
+                    <span className="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wide bg-[#64748B] text-white">
                       {sourceLabel[source]}
                     </span>
                   )}
                   {contentType && (
-                    <span className="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wide bg-muted text-muted-foreground">
+                    <span className="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wide bg-[#1E293B] text-white">
                       {contentType}
                     </span>
                   )}
