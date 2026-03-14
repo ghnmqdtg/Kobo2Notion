@@ -7,7 +7,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"JF Open Huninn"', '"Noto Sans TC"', ...fontFamily.sans],
+        sans: ['Geist', '"Noto Sans TC"', '"JF Open Huninn"', ...fontFamily.sans],
+        mono: ['"JetBrains Mono"', ...fontFamily.mono],
         serif: ['"Noto Serif TC"', ...fontFamily.serif]
       },
       colors: {

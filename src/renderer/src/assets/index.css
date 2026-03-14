@@ -5,7 +5,7 @@
 
 @layer utilities {
   .font-noto-sans {
-    font-family: 'Noto Sans TC', sans-serif;
+    font-family: 'Geist', 'Noto Sans TC', sans-serif;
     font-optical-sizing: auto;
     font-style: normal;
   }
@@ -32,6 +32,6 @@
 
   body {
     @apply bg-background text-foreground antialiased font-sans;
-    font-family: 'Noto Sans TC', sans-serif;
+    font-family: 'Geist', 'Noto Sans TC', sans-serif;
   }
 }

@@ -1,3 +1,9 @@
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/700.css';
+@import '@fontsource/geist/400.css';
+@import '@fontsource/geist/500.css';
+@import '@fontsource/geist/700.css';
+
 @font-face {
   font-family: 'JF Open Huninn';
   src: url('../assets/fonts/jf-openhuninn-2.1.ttf') format('truetype');
