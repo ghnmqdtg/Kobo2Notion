@@ -206,7 +206,7 @@ export function Settings(): React.JSX.Element {
     <>
       <ScrollArea className="h-[calc(100vh-8rem)]">
         <div className="flex justify-between items-center p-4 pb-0">
-          <h1 className="text-2xl font-bold">Settings</h1>
+          <h1 className="text-2xl font-bold font-mono">Settings</h1>
         </div>
         <div className="p-4 flex justify-center mt-4 md:mt-8 lg:mt-12 2xl:mt-24">
           <div className="grid gap-6 w-full lg:w-1/2 xl:w-2/5">

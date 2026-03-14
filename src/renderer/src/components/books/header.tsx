@@ -18,7 +18,7 @@ export function Header({
 }: HeaderProps): React.JSX.Element {
   return (
     <div className="flex justify-between items-center p-4 pb-0">
-      <h1 className="text-2xl font-bold">Your Books</h1>
+      <h1 className="text-2xl font-bold font-mono">Your Books</h1>
 
       <div className="flex items-center gap-2">
         <Toggle
