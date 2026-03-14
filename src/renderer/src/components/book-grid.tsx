@@ -77,11 +77,11 @@ const BookCard = React.memo(function BookCard({
     return (
       <div
         className={cn(
-          'w-full h-full bg-muted flex items-center justify-center',
+          'w-full h-full bg-[#E2E8F0] dark:bg-slate-800 flex items-center justify-center',
           hasNoProgress && 'opacity-50'
         )}
       >
-        <span className="text-muted-foreground">No cover</span>
+        <span className="text-[#94A3B8]">No cover</span>
       </div>
     )
   }
@@ -116,12 +116,12 @@ const BookCard = React.memo(function BookCard({
                 {renderCover()}
                 <div className="absolute top-5 right-5 flex items-center gap-1">
                   {source !== 'kobo-store' && (
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-black/60 backdrop-blur-sm text-white">
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-[#64748B] text-white">
                       {sourceLabel[source]}
                     </span>
                   )}
                   {contentType && (
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-black/60 backdrop-blur-sm text-white">
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-[#1E293B] text-white">
                       {contentType}
                     </span>
                   )}
@@ -131,7 +131,7 @@ const BookCard = React.memo(function BookCard({
                 <div className="space-y-1">
                   <h3
                     className={cn(
-                      'font-bold line-clamp-2',
+                      'font-bold font-mono line-clamp-2',
                       (hasNoProgress || isPdfNoBookmarks) && 'text-muted-foreground'
                     )}
                   >
@@ -179,12 +179,12 @@ const BookCard = React.memo(function BookCard({
             {renderCover()}
             <div className="absolute top-5 right-5 flex items-center gap-1">
               {source !== 'kobo-store' && (
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-black/60 backdrop-blur-sm text-white">
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide text-white">
                   {sourceLabel[source]}
                 </span>
               )}
               {contentType && (
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-black/60 backdrop-blur-sm text-white">
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-[#1E293B] text-white">
                   {contentType}
                 </span>
               )}
@@ -192,7 +192,7 @@ const BookCard = React.memo(function BookCard({
           </div>
           <CardContent className="flex-1 p-4 pt-0 pb-4">
             <div className="space-y-1">
-              <h3 className={cn('font-bold line-clamp-2')}>{bookTitle}</h3>
+              <h3 className={cn('font-bold font-mono line-clamp-2')}>{bookTitle}</h3>
               <p title={author} className="text-sm text-muted-foreground">
                 {((): string => {
                   const authorsArray = (author || '').split(', ')
