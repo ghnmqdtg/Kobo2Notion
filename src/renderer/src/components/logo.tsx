@@ -1,12 +1,12 @@
 import { cn } from '@/lib/utils'
-import { BookMarked } from 'lucide-react'
+import iconUrl from '@/assets/icon.png'
 
 interface LogoProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function Logo({ className, ...props }: LogoProps): React.JSX.Element {
   return (
     <div className={cn('flex items-center gap-2', className)} {...props}>
-      <BookMarked className="h-6 w-6" />
+      <img src={iconUrl} alt="Kobo2Notion" className="h-8 w-8" />
       <span className="text-xl font-bold font-mono">Kobo2Notion</span>
     </div>
   )
