@@ -23,8 +23,8 @@ const getEnvPath = (): string => {
   if (is.dev) {
     return path.resolve(__dirname, '../../.env')
   }
-  // In production, use the app.getAppPath() to get the app.asar directory
-  return path.join(app.getAppPath(), '../.env')
+  // In production, use userData directory so settings persist across app updates
+  return path.join(app.getPath('userData'), '.env')
 }
 
 const getExampleEnvPath = (): string => {
@@ -90,14 +90,30 @@ async function ensureEnvFile(): Promise<void> {
 
   try {
     await fs.access(envPath)
+    return // .env already exists at the target location
   } catch {
-    // If .env doesn't exist, copy from .env.example
+    // .env doesn't exist at the target location
+  }
+
+  // Migration: check if .env exists at the old location (next to app.asar)
+  if (!is.dev) {
+    const oldEnvPath = path.join(app.getAppPath(), '../.env')
     try {
-      const exampleContent = await fs.readFile(exampleEnvPath, 'utf-8')
-      await fs.writeFile(envPath, exampleContent)
-    } catch (error) {
-      console.error('Failed to create .env file:', error)
+      const oldContent = await fs.readFile(oldEnvPath, 'utf-8')
+      await fs.writeFile(envPath, oldContent)
+      console.log('Migrated .env from app directory to userData')
+      return
+    } catch {
+      // Old .env doesn't exist, fall through to create from template
     }
+  }
+
+  // Create from .env.example template
+  try {
+    const exampleContent = await fs.readFile(exampleEnvPath, 'utf-8')
+    await fs.writeFile(envPath, exampleContent)
+  } catch (error) {
+    console.error('Failed to create .env file:', error)
   }
 }
 
