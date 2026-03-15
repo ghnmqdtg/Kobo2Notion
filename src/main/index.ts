@@ -89,8 +89,11 @@ async function ensureEnvFile(): Promise<void> {
   const exampleEnvPath = getExampleEnvPath()
 
   try {
-    await fs.access(envPath)
-    return // .env already exists at the target location
+    const stat = await fs.stat(envPath)
+    if (stat.size > 0) {
+      return // .env already exists with content at the target location
+    }
+    // .env exists but is empty, treat as missing
   } catch {
     // .env doesn't exist at the target location
   }
@@ -100,9 +103,11 @@ async function ensureEnvFile(): Promise<void> {
     const oldEnvPath = path.join(app.getAppPath(), '../.env')
     try {
       const oldContent = await fs.readFile(oldEnvPath, 'utf-8')
-      await fs.writeFile(envPath, oldContent)
-      console.log('Migrated .env from app directory to userData')
-      return
+      if (oldContent.trim().length > 0) {
+        await fs.writeFile(envPath, oldContent)
+        console.log('Migrated .env from app directory to userData')
+        return
+      }
     } catch {
       // Old .env doesn't exist, fall through to create from template
     }
