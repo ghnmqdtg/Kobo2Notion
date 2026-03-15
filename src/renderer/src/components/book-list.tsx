@@ -52,10 +52,10 @@ export const BookListCard = React.memo(function BookListCard({
 }: BookListCardProps): React.JSX.Element {
   const { coverDataUrl, isLoading: isCoverLoading } = useBookCover(imageId)
 
-  // Check if book has no progress
-  const hasNoProgress = readPercent === 0
+  // Check if book has no progress and no bookmarks
+  const hasNoProgressAndNoBookmarks = readPercent === 0 && (!bookmarkCount || bookmarkCount <= 0)
   const isPdfNoBookmarks = contentType === 'pdf' && (!bookmarkCount || bookmarkCount <= 0)
-  const isDisabled = hasNoProgress || isPdfNoBookmarks || isProcessing
+  const isDisabled = hasNoProgressAndNoBookmarks || isPdfNoBookmarks || isProcessing
 
   const renderCover = (): React.JSX.Element => {
     if (isCoverLoading) {
@@ -69,7 +69,7 @@ export const BookListCard = React.memo(function BookListCard({
           alt={`${bookTitle} cover`}
           className={cn(
             'object-cover w-full h-full select-none',
-            hasNoProgress && 'opacity-50 grayscale'
+            hasNoProgressAndNoBookmarks && 'opacity-50 grayscale'
           )}
           draggable="false"
         />
@@ -80,7 +80,7 @@ export const BookListCard = React.memo(function BookListCard({
       <div
         className={cn(
           'w-full h-full bg-muted flex items-center justify-center rounded',
-          hasNoProgress && 'opacity-50'
+          hasNoProgressAndNoBookmarks && 'opacity-50'
         )}
       >
         <BookOpen className="w-5 h-5 text-muted-foreground/60" />
@@ -94,23 +94,23 @@ export const BookListCard = React.memo(function BookListCard({
         'relative rounded-lg',
         'before:absolute before:inset-0 before:rounded-lg before:transition-all',
         'before:pointer-events-none',
-        (hasNoProgress || isPdfNoBookmarks) && 'opacity-60',
-        isSelected && !isExporting && !hasNoProgress
+        (hasNoProgressAndNoBookmarks || isPdfNoBookmarks) && 'opacity-60',
+        isSelected && !isExporting && !hasNoProgressAndNoBookmarks
           ? 'before:border-2 before:border-primary before:-m-[2px]'
           : 'before:border before:border-border',
-        !hasNoProgress && !isDisabled && 'hover:before:border-primary',
+        !hasNoProgressAndNoBookmarks && !isDisabled && 'hover:before:border-primary',
         isExporting && 'before:animate-border-breathing before:-m-[2px]',
         isExported && !isExporting && 'before:border-2 before:border-green-500 before:-m-[2px]'
       )}
     >
-      {hasNoProgress || isPdfNoBookmarks ? (
+      {hasNoProgressAndNoBookmarks || isPdfNoBookmarks ? (
         <Tooltip>
           <TooltipTrigger asChild>
             <Card
               className={cn(
                 'flex overflow-hidden rounded-lg',
                 isDisabled ? 'cursor-not-allowed' : 'cursor-pointer',
-                (hasNoProgress || isPdfNoBookmarks) && 'text-muted-foreground'
+                (hasNoProgressAndNoBookmarks || isPdfNoBookmarks) && 'text-muted-foreground'
               )}
               onClick={isDisabled ? undefined : onSelect}
             >
@@ -122,7 +122,7 @@ export const BookListCard = React.memo(function BookListCard({
                       <h3
                         className={cn(
                           'font-bold font-mono line-clamp-1',
-                          hasNoProgress && 'text-muted-foreground'
+                          hasNoProgressAndNoBookmarks && 'text-muted-foreground'
                         )}
                       >
                         {bookTitle}
@@ -158,7 +158,7 @@ export const BookListCard = React.memo(function BookListCard({
                     <span className="text-sm text-muted-foreground">Read</span>
                     <Progress
                       value={Math.round(readPercent)}
-                      className={cn('h-1 flex-1', hasNoProgress && 'opacity-50')}
+                      className={cn('h-1 flex-1', hasNoProgressAndNoBookmarks && 'opacity-50')}
                     />
                     <span className="w-12 text-right text-sm text-muted-foreground">
                       {Math.round(readPercent)}%
@@ -192,7 +192,7 @@ export const BookListCard = React.memo(function BookListCard({
                   <h3
                     className={cn(
                       'font-bold font-mono line-clamp-1',
-                      hasNoProgress && 'text-muted-foreground'
+                      hasNoProgressAndNoBookmarks && 'text-muted-foreground'
                     )}
                   >
                     {bookTitle}
@@ -236,7 +236,7 @@ export const BookListCard = React.memo(function BookListCard({
                 <span className="text-sm text-muted-foreground">Read</span>
                 <Progress
                   value={Math.round(readPercent)}
-                  className={cn('h-1 flex-1', hasNoProgress && 'opacity-50')}
+                  className={cn('h-1 flex-1', hasNoProgressAndNoBookmarks && 'opacity-50')}
                 />
                 <span className="w-12 text-right text-sm text-muted-foreground">
                   {Math.round(readPercent)}%

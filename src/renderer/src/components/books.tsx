@@ -77,8 +77,16 @@ export function Books({ onExportStateChange }: BooksProps): React.JSX.Element {
     return (): void => clearInterval(intervalId)
   }, [error, retryCount])
 
+  const isBookSelectable = (book: Book): boolean => {
+    const hasNoProgressAndNoBookmarks =
+      book.readPercent === 0 && (!book.bookmarkCount || book.bookmarkCount <= 0)
+    const isPdfNoBookmarks =
+      book.contentType === 'pdf' && (!book.bookmarkCount || book.bookmarkCount <= 0)
+    return !hasNoProgressAndNoBookmarks && !isPdfNoBookmarks
+  }
+
   useEffect(() => {
-    const selectableBooks = books.filter((book) => book.readPercent > 0)
+    const selectableBooks = books.filter(isBookSelectable)
     if (selectAll) {
       const allBookTitles = selectableBooks.map((book) => book.bookTitle)
       setSelectedBooks(new Set(allBookTitles))
@@ -107,7 +115,7 @@ export function Books({ onExportStateChange }: BooksProps): React.JSX.Element {
 
   const handleSelectBook = useCallback(
     (bookTitle: string) => {
-      const selectableBookCount = books.filter((book) => book.readPercent > 0).length
+      const selectableBookCount = books.filter(isBookSelectable).length
       setSelectedBooks((prev) => {
         const newSet = new Set(prev)
         if (newSet.has(bookTitle)) {

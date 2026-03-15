@@ -50,10 +50,10 @@ const BookCard = React.memo(function BookCard({
 }: BookCardProps): React.JSX.Element {
   const { coverDataUrl, isLoading: isCoverLoading } = useBookCover(imageId)
 
-  // Check if book has no progress
-  const hasNoProgress = readPercent === 0
+  // Check if book has no progress and no bookmarks
+  const hasNoProgressAndNoBookmarks = readPercent === 0 && (!bookmarkCount || bookmarkCount <= 0)
   const isPdfNoBookmarks = contentType === 'pdf' && (!bookmarkCount || bookmarkCount <= 0)
-  const isDisabled = hasNoProgress || isPdfNoBookmarks || isProcessing
+  const isDisabled = hasNoProgressAndNoBookmarks || isPdfNoBookmarks || isProcessing
 
   const renderCover = (): React.JSX.Element => {
     if (isCoverLoading) {
@@ -67,7 +67,7 @@ const BookCard = React.memo(function BookCard({
           alt={`${bookTitle} cover`}
           className={cn(
             'object-cover w-full h-full select-none',
-            hasNoProgress && 'opacity-50 grayscale'
+            hasNoProgressAndNoBookmarks && 'opacity-50 grayscale'
           )}
           draggable="false"
         />
@@ -78,7 +78,7 @@ const BookCard = React.memo(function BookCard({
       <div
         className={cn(
           'w-full h-full bg-[#E2E8F0] dark:bg-slate-800 flex items-center justify-center',
-          hasNoProgress && 'opacity-50'
+          hasNoProgressAndNoBookmarks && 'opacity-50'
         )}
       >
         <span className="text-[#94A3B8]">No cover</span>
@@ -92,23 +92,23 @@ const BookCard = React.memo(function BookCard({
         'relative rounded-lg h-full',
         'before:absolute before:inset-0 before:rounded-lg before:transition-all',
         'before:pointer-events-none',
-        (hasNoProgress || isPdfNoBookmarks) && 'opacity-60',
-        isSelected && !isExporting && !hasNoProgress
+        (hasNoProgressAndNoBookmarks || isPdfNoBookmarks) && 'opacity-60',
+        isSelected && !isExporting && !hasNoProgressAndNoBookmarks
           ? 'before:border-2 before:border-primary before:-m-[2px]'
           : 'before:border before:border-border',
-        !hasNoProgress && !isDisabled && 'hover:before:border-primary',
+        !hasNoProgressAndNoBookmarks && !isDisabled && 'hover:before:border-primary',
         isExporting && 'before:animate-border-breathing before:-m-[2px]',
         isExported && !isExporting && 'before:border-2 before:border-green-500 before:-m-[2px]'
       )}
     >
-      {hasNoProgress || isPdfNoBookmarks ? (
+      {hasNoProgressAndNoBookmarks || isPdfNoBookmarks ? (
         <Tooltip>
           <TooltipTrigger asChild>
             <Card
               className={cn(
                 'flex flex-col overflow-hidden rounded-lg h-full',
                 isDisabled ? 'cursor-not-allowed' : 'cursor-pointer',
-                (hasNoProgress || isPdfNoBookmarks) && 'text-muted-foreground'
+                (hasNoProgressAndNoBookmarks || isPdfNoBookmarks) && 'text-muted-foreground'
               )}
               onClick={isDisabled ? undefined : onSelect}
             >
@@ -132,7 +132,7 @@ const BookCard = React.memo(function BookCard({
                   <h3
                     className={cn(
                       'font-bold font-mono line-clamp-2',
-                      (hasNoProgress || isPdfNoBookmarks) && 'text-muted-foreground'
+                      (hasNoProgressAndNoBookmarks || isPdfNoBookmarks) && 'text-muted-foreground'
                     )}
                   >
                     {bookTitle}
