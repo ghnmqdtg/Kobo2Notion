@@ -30,10 +30,10 @@ export function Navbar({
   }
 
   return (
-    <nav className="border-b">
-      <div className="flex h-16 items-center px-4">
+    <nav className="w-full border-b">
+      <div className="flex h-16 items-center justify-between px-4">
         <Logo />
-        <div className="ml-auto flex items-center space-x-2">
+        <div className="flex items-center space-x-2">
           <ThemeToggle disabled={isDisabled ?? false} />
           <Button
             variant="ghost"
