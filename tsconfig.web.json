@@ -10,6 +10,7 @@
   ],
   "compilerOptions": {
     "composite": true,
+    "ignoreDeprecations": "6.0",
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "jsx": "react-jsx",

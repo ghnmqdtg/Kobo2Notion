@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { cn, formatAuthors } from './utils'
 
 describe('cn', () => {

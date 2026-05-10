@@ -1,7 +1,4 @@
 @import './fonts.css';
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 @layer utilities {
   .font-noto-sans {
@@ -14,24 +11,5 @@
     font-family: 'Noto Serif TC', serif;
     font-optical-sizing: auto;
     font-style: normal;
-  }
-}
-
-@layer base {
-  :root {
-    /* ... your existing root variables ... */
-  }
-
-  .dark {
-    /* ... your existing dark theme variables ... */
-  }
-
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply bg-background text-foreground antialiased font-sans;
-    font-family: 'Geist', 'Noto Sans TC', sans-serif;
   }
 }
