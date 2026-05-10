@@ -1,13 +1,38 @@
-import { Block, NotionBlock, RichTextItem } from './models'
+/// <reference types="node" />
+import { NotionBlock, RichTextItem } from './models'
+import { env } from '../config/env.config'
+
+const KOBO_CDN_BASE = 'https://cdn.kobo.com/book-images'
+
+function buildProxyUrl(koboUrl: string): string {
+  const key = env.CORSPROXY_KEY
+  return key
+    ? `https://corsproxy.io/?key=${key}&url=${encodeURIComponent(koboUrl)}`
+    : `https://corsproxy.io/?url=${encodeURIComponent(koboUrl)}`
+}
 
 /**
- * Fetches the book cover from Kobo CDN.
- * @param imageId - The image ID of the book.
- * @returns The URL of the book cover.
+ * Returns a proxied Kobo CDN URL for a book cover. Used by the Notion API,
+ * which cannot access Kobo CDN directly.
  */
 export async function fetchBookCover(imageId: string): Promise<string> {
-  // Get the image URL from Kobo CDN, using corsproxy to avoid CORS issues
-  return `https://corsproxy.io/?url=https://cdn.kobo.com/book-images/${imageId}/800/800/90/False/0.jpg`
+  if (!imageId) return ''
+  return buildProxyUrl(`${KOBO_CDN_BASE}/${imageId}/800/800/90/False/0.jpg`)
+}
+
+/**
+ * Fetches the book cover from Kobo CDN in Node.js context (no CORS) and returns
+ * a base64 data URL suitable for use as an <img src> in the renderer.
+ */
+export async function fetchBookCoverDataUrl(imageId: string): Promise<string> {
+  if (!imageId) return ''
+  const url = `${KOBO_CDN_BASE}/${imageId}/800/800/90/False/0.jpg`
+  const response = await fetch(url)
+  if (!response.ok) throw new Error(`Failed to fetch cover: ${response.status}`)
+  const buffer = await response.arrayBuffer()
+  const base64 = Buffer.from(buffer).toString('base64')
+  const contentType = response.headers.get('content-type') || 'image/jpeg'
+  return `data:${contentType};base64,${base64}`
 }
 
 /**
@@ -42,7 +67,8 @@ export function parseMarkdownToNotionBlocks(markdownText: string): NotionBlock[]
     } as NotionBlock
 
     if (children.length > 0) {
-      ;(block[blockType] as { rich_text: RichTextItem[]; children?: Block[] }).children = children
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(block as any)[blockType].children = children
     }
     return block
   }

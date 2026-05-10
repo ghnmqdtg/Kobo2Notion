@@ -12,6 +12,7 @@ export interface EnvironmentConfig {
   SUMMARIZE_ENABLED: boolean
   SUMMARIZE_LANGUAGE: string
   THEME: string
+  CORSPROXY_KEY: string
 }
 
 // Providing defaults for missing values (or simply empty strings)
@@ -28,7 +29,8 @@ const defaultConfig: EnvironmentConfig = {
   LLM_MODEL: '',
   SUMMARIZE_ENABLED: false,
   SUMMARIZE_LANGUAGE: 'zh',
-  THEME: 'light'
+  THEME: 'light',
+  CORSPROXY_KEY: ''
 }
 
 const providerKeyMap: Record<string, string> = {
@@ -61,7 +63,7 @@ const initConfig = (): EnvironmentConfig => {
   const perProviderEnvKey = providerKeyMap[provider]
   const activeKey =
     process.env.LLM_API_KEY ||
-    (perProviderEnvKey ? perProviderKeys[perProviderEnvKey] : '') ||
+    (perProviderEnvKey ? perProviderKeys[perProviderEnvKey as keyof typeof perProviderKeys] : '') ||
     legacyApiKey ||
     defaultConfig.LLM_API_KEY
 
@@ -75,7 +77,8 @@ const initConfig = (): EnvironmentConfig => {
     LLM_MODEL: process.env.LLM_MODEL || legacyModel || defaultConfig.LLM_MODEL,
     SUMMARIZE_ENABLED: process.env.SUMMARIZE_ENABLED === 'true' || defaultConfig.SUMMARIZE_ENABLED,
     SUMMARIZE_LANGUAGE: process.env.SUMMARIZE_LANGUAGE || defaultConfig.SUMMARIZE_LANGUAGE,
-    THEME: process.env.THEME || defaultConfig.THEME
+    THEME: process.env.THEME || defaultConfig.THEME,
+    CORSPROXY_KEY: process.env.CORSPROXY_KEY || defaultConfig.CORSPROXY_KEY
   }
 
   const missingKeys = Object.entries(config)

@@ -1,28 +1,27 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/explicit-function-return-type, @typescript-eslint/no-namespace */
+/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-namespace */
 // @ts-nocheck — Test file; Jest globals and discriminated union property access bypass type-checking
 import { fetchBookCover, parseMarkdownToNotionBlocks } from './utils'
 
 describe('fetchBookCover', () => {
-  it('should return the correct CDN URL for a given image ID', async () => {
+  it('should return a plain corsproxy URL when no key is set', async () => {
     const imageId = 'abc-123-def'
     const result = await fetchBookCover(imageId)
-    expect(result).toBe(
-      'https://corsproxy.io/?url=https://cdn.kobo.com/book-images/abc-123-def/800/800/90/False/0.jpg'
-    )
+    // CORSPROXY_KEY is empty in test env, so no key param
+    expect(result).toStartWith('https://corsproxy.io/?url=')
+    expect(result).toContain('cdn.kobo.com')
+    expect(result).not.toContain('key=')
   })
 
-  it('should handle image IDs with special characters', async () => {
+  it('should proxy image IDs with special characters', async () => {
     const imageId = 'some/path/with-dashes'
     const result = await fetchBookCover(imageId)
-    expect(result).toContain(imageId)
-    expect(result).toStartWith('https://corsproxy.io/?url=https://cdn.kobo.com/book-images/')
+    expect(result).toStartWith('https://corsproxy.io/?url=')
+    expect(result).toContain('cdn.kobo.com')
   })
 
-  it('should handle empty image ID', async () => {
+  it('should return empty string for empty image ID', async () => {
     const result = await fetchBookCover('')
-    expect(result).toBe(
-      'https://corsproxy.io/?url=https://cdn.kobo.com/book-images//800/800/90/False/0.jpg'
-    )
+    expect(result).toBe('')
   })
 })
 

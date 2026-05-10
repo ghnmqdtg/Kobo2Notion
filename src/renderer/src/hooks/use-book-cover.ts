@@ -42,32 +42,13 @@ export function useBookCover(imageId: string | null): UseBookCoverReturn {
       setError(null)
 
       try {
-        const url = await window.api.fetchBookCover(imageId)
-        const response = await fetch(url)
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
+        const dataUrl = await window.api.fetchBookCover(imageId)
+        if (!dataUrl) throw new Error('No cover available')
+        if (!isCancelled) {
+          imageCache.set(imageId, dataUrl)
+          setCoverDataUrl(dataUrl)
+          setIsLoading(false)
         }
-
-        const blob = await response.blob()
-
-        // Convert blob to Base64 data URI
-        const reader = new FileReader()
-        reader.onloadend = (): void => {
-          if (!isCancelled) {
-            const dataUrl = reader.result as string
-            imageCache.set(imageId, dataUrl)
-            setCoverDataUrl(dataUrl)
-            setIsLoading(false)
-          }
-        }
-        reader.onerror = (): void => {
-          if (!isCancelled) {
-            setError('Failed to read blob data.')
-            setIsLoading(false)
-          }
-        }
-        reader.readAsDataURL(blob)
       } catch (err) {
         console.error('Error loading book cover:', err)
         if (!isCancelled) {

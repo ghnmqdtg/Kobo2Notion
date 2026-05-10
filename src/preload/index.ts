@@ -7,7 +7,7 @@ import {
   fetchAvailableModels
 } from '../backend/llm_integration/llm_integration.service'
 import { env } from '../config/env.config'
-import { fetchBookCover } from '../backend/utils'
+import { fetchBookCoverDataUrl } from '../backend/utils'
 import { Book } from '../backend/models'
 import { ExistingPage } from '../backend/notion/notion.service'
 import { Bookmark } from '../backend/models'
@@ -56,7 +56,7 @@ const api = {
     await notionService.syncSummary(parentPageId, summary)
   },
   fetchBookCover: async (imageId: string): Promise<string> => {
-    return fetchBookCover(imageId)
+    return fetchBookCoverDataUrl(imageId)
   },
   updateEnvValue: async (entries: { key: string; value: string }[]): Promise<boolean> => {
     try {
