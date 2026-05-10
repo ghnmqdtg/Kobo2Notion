@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment, no-constant-binary-expression */
 // @ts-nocheck
 import { cn, formatAuthors } from './utils'
 

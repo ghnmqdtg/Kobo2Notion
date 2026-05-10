@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { Block, NotionBlock, RichTextItem } from './models'
+import { NotionBlock, RichTextItem } from './models'
 
 const KOBO_CDN_BASE = 'https://cdn.kobo.com/book-images'
 const CORS_PROXY = 'https://corsproxy.io/?url='
