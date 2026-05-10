@@ -3,18 +3,18 @@
 import { fetchBookCover, parseMarkdownToNotionBlocks } from './utils'
 
 describe('fetchBookCover', () => {
-  it('should return a whateverorigin-proxied URL for a given image ID', async () => {
+  it('should return an allorigins-proxied URL for a given image ID', async () => {
     const imageId = 'abc-123-def'
     const result = await fetchBookCover(imageId)
     expect(result).toBe(
-      'https://www.whateverorigin.org/get?url=https%3A%2F%2Fcdn.kobo.com%2Fbook-images%2Fabc-123-def%2F800%2F800%2F90%2FFalse%2F0.jpg'
+      'https://api.allorigins.win/raw?url=https%3A%2F%2Fcdn.kobo.com%2Fbook-images%2Fabc-123-def%2F800%2F800%2F90%2FFalse%2F0.jpg'
     )
   })
 
   it('should proxy image IDs with special characters', async () => {
     const imageId = 'some/path/with-dashes'
     const result = await fetchBookCover(imageId)
-    expect(result).toStartWith('https://www.whateverorigin.org/get?url=')
+    expect(result).toStartWith('https://api.allorigins.win/raw?url=')
     expect(result).toContain('cdn.kobo.com')
   })
 

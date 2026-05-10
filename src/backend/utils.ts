@@ -2,7 +2,7 @@
 import { Block, NotionBlock, RichTextItem } from './models'
 
 const KOBO_CDN_BASE = 'https://cdn.kobo.com/book-images'
-const CORS_PROXY = 'https://www.whateverorigin.org/get?url='
+const CORS_PROXY = 'https://api.allorigins.win/raw?url='
 
 /**
  * Returns a proxied Kobo CDN URL for a book cover. Used by the Notion API,
