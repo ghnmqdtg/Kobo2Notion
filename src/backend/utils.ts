@@ -20,13 +20,9 @@ export async function fetchBookCover(imageId: string): Promise<string> {
  */
 export async function fetchBookCoverDataUrl(imageId: string): Promise<string> {
   if (!imageId) return ''
-  const url = `${KOBO_CDN_BASE}/${imageId}/800/800/90/False/0.jpg`
-  const response = await fetch(url, {
-    headers: {
-      'User-Agent':
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-    }
-  })
+  const koboUrl = `${KOBO_CDN_BASE}/${imageId}/800/800/90/False/0.jpg`
+  const url = `${CORS_PROXY}${encodeURIComponent(koboUrl)}`
+  const response = await fetch(url)
   if (!response.ok) throw new Error(`Failed to fetch cover: ${response.status}`)
   const buffer = await response.arrayBuffer()
   const base64 = Buffer.from(buffer).toString('base64')
