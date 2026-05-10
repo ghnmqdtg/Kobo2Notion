@@ -1,8 +1,15 @@
 /// <reference types="node" />
 import { NotionBlock, RichTextItem } from './models'
+import { env } from '../config/env.config'
 
 const KOBO_CDN_BASE = 'https://cdn.kobo.com/book-images'
-const CORS_PROXY = 'https://corsproxy.io/?url='
+
+function buildProxyUrl(koboUrl: string): string {
+  const key = env.CORSPROXY_KEY
+  return key
+    ? `https://corsproxy.io/?key=${key}&url=${encodeURIComponent(koboUrl)}`
+    : `https://corsproxy.io/?url=${encodeURIComponent(koboUrl)}`
+}
 
 /**
  * Returns a proxied Kobo CDN URL for a book cover. Used by the Notion API,
@@ -10,8 +17,7 @@ const CORS_PROXY = 'https://corsproxy.io/?url='
  */
 export async function fetchBookCover(imageId: string): Promise<string> {
   if (!imageId) return ''
-  const koboUrl = `${KOBO_CDN_BASE}/${imageId}/800/800/90/False/0.jpg`
-  return `${CORS_PROXY}${encodeURIComponent(koboUrl)}`
+  return buildProxyUrl(`${KOBO_CDN_BASE}/${imageId}/800/800/90/False/0.jpg`)
 }
 
 /**

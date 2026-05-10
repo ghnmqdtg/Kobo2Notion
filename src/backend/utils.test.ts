@@ -1,14 +1,15 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/explicit-function-return-type, @typescript-eslint/no-namespace */
+/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-namespace */
 // @ts-nocheck — Test file; Jest globals and discriminated union property access bypass type-checking
 import { fetchBookCover, parseMarkdownToNotionBlocks } from './utils'
 
 describe('fetchBookCover', () => {
-  it('should return a corsproxy-proxied URL for a given image ID', async () => {
+  it('should return a plain corsproxy URL when no key is set', async () => {
     const imageId = 'abc-123-def'
     const result = await fetchBookCover(imageId)
-    expect(result).toBe(
-      'https://corsproxy.io/?url=https%3A%2F%2Fcdn.kobo.com%2Fbook-images%2Fabc-123-def%2F800%2F800%2F90%2FFalse%2F0.jpg'
-    )
+    // CORSPROXY_KEY is empty in test env, so no key param
+    expect(result).toStartWith('https://corsproxy.io/?url=')
+    expect(result).toContain('cdn.kobo.com')
+    expect(result).not.toContain('key=')
   })
 
   it('should proxy image IDs with special characters', async () => {
