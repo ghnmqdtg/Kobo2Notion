@@ -3,26 +3,24 @@
 import { fetchBookCover, parseMarkdownToNotionBlocks } from './utils'
 
 describe('fetchBookCover', () => {
-  it('should return the correct CDN URL for a given image ID', async () => {
+  it('should return a whateverorigin-proxied URL for a given image ID', async () => {
     const imageId = 'abc-123-def'
     const result = await fetchBookCover(imageId)
     expect(result).toBe(
-      'https://corsproxy.io/?url=https://cdn.kobo.com/book-images/abc-123-def/800/800/90/False/0.jpg'
+      'https://www.whateverorigin.org/get?url=https%3A%2F%2Fcdn.kobo.com%2Fbook-images%2Fabc-123-def%2F800%2F800%2F90%2FFalse%2F0.jpg'
     )
   })
 
-  it('should handle image IDs with special characters', async () => {
+  it('should proxy image IDs with special characters', async () => {
     const imageId = 'some/path/with-dashes'
     const result = await fetchBookCover(imageId)
-    expect(result).toContain(imageId)
-    expect(result).toStartWith('https://corsproxy.io/?url=https://cdn.kobo.com/book-images/')
+    expect(result).toStartWith('https://www.whateverorigin.org/get?url=')
+    expect(result).toContain('cdn.kobo.com')
   })
 
-  it('should handle empty image ID', async () => {
+  it('should return empty string for empty image ID', async () => {
     const result = await fetchBookCover('')
-    expect(result).toBe(
-      'https://corsproxy.io/?url=https://cdn.kobo.com/book-images//800/800/90/False/0.jpg'
-    )
+    expect(result).toBe('')
   })
 })
 
