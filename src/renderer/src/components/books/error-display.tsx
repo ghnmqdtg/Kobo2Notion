@@ -1,12 +1,11 @@
-import { Button } from '@/components/ui/button'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle, Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui/button';
+import { AlertCircle, Loader2 } from 'lucide-react';
 
 interface ErrorDisplayProps {
-  error: string
-  onRetry: () => void
-  retryCount: number
-  maxRetries: number
+  error: string;
+  onRetry: () => void;
+  retryCount: number;
+  maxRetries: number;
 }
 
 export function ErrorDisplay({
@@ -15,31 +14,34 @@ export function ErrorDisplay({
   retryCount,
   maxRetries
 }: ErrorDisplayProps): React.JSX.Element {
+  const [title, ...lines] = error.split('\n');
+  const isRetrying = retryCount < maxRetries;
+
   return (
-    <div className="flex flex-col items-center justify-center h-full space-y-6">
-      <Alert variant="destructive" className="max-w-lg rounded-md">
-        <div className="flex items-center space-x-3">
-          <AlertCircle className="h-6 w-6" />
-          <AlertDescription className="text-lg whitespace-pre-line">{error}</AlertDescription>
+    <div className="flex h-full flex-col items-center justify-center gap-8 px-6">
+      <div className="flex max-w-md flex-col items-center gap-4 text-center">
+        <div className="flex size-14 items-center justify-center rounded-full bg-destructive/10">
+          <AlertCircle className="size-7 text-destructive" />
         </div>
-      </Alert>
-      <Button
-        className="text-md font-bold"
-        onClick={onRetry}
-        variant="outline"
-        disabled={retryCount < maxRetries}
-      >
-        {retryCount < maxRetries ? (
+        <div className="space-y-1.5">
+          <h2 className="text-lg font-semibold">{title}</h2>
+          {lines.length > 0 && (
+            <p className="whitespace-pre-line text-sm text-muted-foreground">
+              {lines.join('\n')}
+            </p>
+          )}
+        </div>
+      </div>
+      <Button variant="outline" onClick={onRetry} disabled={isRetrying}>
+        {isRetrying ? (
           <>
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span className="ml-1">
-              Retrying... ({retryCount}/{maxRetries})
-            </span>
+            <Loader2 className="animate-spin" />
+            Retrying... ({retryCount}/{maxRetries})
           </>
         ) : (
           'Retry'
         )}
       </Button>
     </div>
-  )
+  );
 }
